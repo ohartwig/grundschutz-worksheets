@@ -1,0 +1,14 @@
+{
+  "title": "Test tailoring",
+  "version": "1",
+  "last-modified": "2026-09-27T00:00:00Z",
+  "catalog": {
+    "path": "control_layer/Mindeststandard-TLS/Entwurf-Mindeststandard-TLS-catalog.json",
+    "commit": "367d775010abee641b258926bb482fcd05270059"
+  },
+  "applicable": [
+    "KONF.2.2",
+    "NOPE.9.9"
+  ],
+  "not-applicable": []
+}
