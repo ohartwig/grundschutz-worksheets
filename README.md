@@ -92,12 +92,35 @@ node worksheet.mjs $CAT --profile profile.json --commit $C   # the worksheet for
   reason, under this repository's namespace. A system security plan is where
   OSCAL expects that statement; until you have one, it lives here.
 
+## Self-describing images: a component definition per build
+
+`component.mjs` turns a small source file — which requirements a product or
+pipeline supports, in your own words, with evidence links — into an OSCAL
+component definition (1.2.2, the version the BSI library's own components use).
+With `--subject image@sha256:…` it describes one specific image, so a build
+pipeline can generate it per image and attach it next to the SBOM, for example
+with `cosign attest --type <predicate URI> --predicate component.json`.
+
+```bash
+node component.mjs source.json --subject registry.example.org/app@sha256:... \
+  --prop pipeline=https://ci.example.org/p/123 > component.json
+node validate.mjs component.json
+```
+
+- Every requirement carries both identifiers: the Grundschutz++ ID as
+  `control-id` and the catalog's `alt-identifier` UUID as a prop, because the
+  BSI's own component definitions refer by UUID.
+- Every ID is checked against the catalog at the pinned commit; unknown or
+  duplicate IDs and requirements without a description are errors.
+- It describes what a component supports, not that a system is compliant.
+  Whether a control is actually in effect is a measurement, not a claim.
+
 ## Validating OSCAL files
 
 `validate.mjs` checks OSCAL JSON against the official NIST schema for the
 version each file declares (`metadata.oscal-version`). The BSI library mixes
 versions — catalogs and profiles 1.1.3, component definitions 1.2.2 — so the
-schema is chosen per file. Schemas are downloaded from the NIST release and
+schema is chosen per file. The schemas ship in `schemas/` (NIST releases, unchanged) and are
 checked against the SHA-256 in `schemas.json`; an unknown version is an error,
 not a skip.
 

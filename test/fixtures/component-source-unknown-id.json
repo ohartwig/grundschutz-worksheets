@@ -1,0 +1,35 @@
+{
+  "title": "Supply-chain controls of an example image pipeline",
+  "version": "1.0.0",
+  "last-modified": "2026-09-27T00:00:00Z",
+  "catalog": {
+    "path": "control_layer/Grundschutz++/Grundschutz++-resolved_catalog.json",
+    "commit": "367d775010abee641b258926bb482fcd05270059"
+  },
+  "component": {
+    "type": "software",
+    "title": "Example image pipeline",
+    "description": "A CI pipeline that builds, scans, signs and attests container images.",
+    "purpose": "Build and release container images."
+  },
+  "requirements": [
+    {
+      "id": "DEV.4.3",
+      "description": "Every image gets a CycloneDX SBOM generated from the image content and attached to its digest as a signed attestation before the release.",
+      "evidence": [
+        {
+          "text": "attest:sbom job",
+          "href": "https://example.org/pipeline/attest-sbom"
+        }
+      ]
+    },
+    {
+      "id": "TEST.3.1.3",
+      "description": "After signing, the pipeline verifies the signature against the signing key and checks that every promised tag carries the built digest."
+    },
+    {
+      "id": "NOPE.1.1",
+      "description": "x"
+    }
+  ]
+}
