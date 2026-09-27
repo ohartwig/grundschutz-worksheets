@@ -7,8 +7,9 @@
 // versions (catalogs and profiles 1.1.3, component definitions 1.2.2), so the
 // schema is chosen per file, not once.
 //
-// The schemas are downloaded from the NIST release and checked against the
-// SHA-256 recorded in schemas.json. An unknown version or a hash mismatch is an
+// The schemas ship in schemas/ (and are otherwise downloaded from the NIST
+// release); either way they are checked against the SHA-256 recorded in
+// schemas.json. An unknown version or a hash mismatch is an
 // error, not a skip: a check that quietly validates nothing is worse than none.
 //
 //   node validate.mjs <file.json> [...]
@@ -40,6 +41,13 @@ const sha256 = (buf) => createHash("sha256").update(buf).digest("hex");
 async function schemaFor(version) {
   const pin = pins[version];
   if (!pin) throw new Error(`no pinned schema for OSCAL ${version} (schemas.json knows ${Object.keys(pins).join(", ")})`);
+  // The copy shipped in schemas/ first, then the download cache.
+  const shipped = join(here, "schemas", `oscal_complete_schema-${version}.json`);
+  if (existsSync(shipped)) {
+    const b = readFileSync(shipped);
+    if (sha256(b) !== pin.sha256) throw new Error(`hash mismatch for shipped OSCAL ${version} schema`);
+    return JSON.parse(b.toString("utf8"));
+  }
   const file = join(cacheDir, `oscal_complete_schema-${version}.json`);
   let buf = existsSync(file) ? readFileSync(file) : null;
   if (!buf || sha256(buf) !== pin.sha256) {
