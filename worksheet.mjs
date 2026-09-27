@@ -26,6 +26,8 @@
 //   --sources <list|@file> with --mapping: only these source controls
 //                         (e.g. your applicable Annex A controls), comma-separated
 //                         or one per line in a file
+//   --profile <file>      only the requirements an OSCAL profile includes (see
+//                         profile.mjs); its catalog import must name --commit
 //   --practices <list>    only these practices, e.g. DET,KONF
 //   --format md|csv       Markdown checklist (default) or CSV for a spreadsheet
 //   --summary             counts by practice, level, modal verb and action word
@@ -35,7 +37,7 @@ import { readFileSync } from "node:fs";
 const REPO = "https://raw.githubusercontent.com/BSI-Bund/Stand-der-Technik-Bibliothek";
 
 const args = process.argv.slice(2);
-const valued = ["--commit", "--mapping", "--sources", "--practices", "--format"];
+const valued = ["--commit", "--mapping", "--sources", "--profile", "--practices", "--format"];
 const opt = (name) => {
   const i = args.indexOf(name);
   return i >= 0 ? args[i + 1] ?? "" : "";
@@ -44,6 +46,7 @@ const valueAt = new Set(valued.map((n) => args.indexOf(n) + 1).filter((i) => i >
 const path = args.find((a, i) => !a.startsWith("--") && !valueAt.has(i));
 const commit = opt("--commit");
 const mappingPath = opt("--mapping");
+const profilePath = opt("--profile");
 const list = (s) => s.split(/[,\n]/).map((x) => x.trim()).filter(Boolean);
 const sourcesArg = opt("--sources");
 const sourceFilter = new Set(sourcesArg.startsWith("@") ? list(readFileSync(sourcesArg.slice(1), "utf8")) : list(sourcesArg));
@@ -52,8 +55,12 @@ const format = opt("--format") || "md";
 const summary = args.includes("--summary");
 
 if (!path || !/^[0-9a-f]{40}$/.test(commit) || !["md", "csv"].includes(format)) {
-  console.error("usage: worksheet.mjs <catalog path> --commit <40-char sha> [--mapping <path>] [--sources <list|@file>] [--practices A,B] [--format md|csv] [--summary]");
+  console.error("usage: worksheet.mjs <catalog path> --commit <40-char sha> [--mapping <path>] [--sources <list|@file>] [--profile <file>] [--practices A,B] [--format md|csv] [--summary]");
   console.error("A branch name is refused on purpose: the library republishes continuously.");
+  process.exit(2);
+}
+if (profilePath && mappingPath) {
+  console.error("--profile and --mapping exclude each other");
   process.exit(2);
 }
 if (sourceFilter.size && !mappingPath) {
@@ -150,6 +157,23 @@ if (mappingPath) {
     selected.push({ ...r, depth: 0, from: [...src] });
   }
 }
+if (profilePath) {
+  const { profile } = JSON.parse(readFileSync(profilePath, "utf8"));
+  const imp = profile?.imports?.[0];
+  if (!imp || !imp.href.includes(`/${commit}/`)) {
+    console.error(`profile does not import the catalog at commit ${commit}: ${imp?.href}`);
+    process.exit(2);
+  }
+  const include = new Set((imp["include-controls"] ?? []).flatMap((x) => x["with-ids"] ?? []));
+  const exclude = new Set((imp["exclude-controls"] ?? []).flatMap((x) => x["with-ids"] ?? []));
+  selected = [];
+  for (const id of [...include].sort((a, b) => a.localeCompare(b, "en", { numeric: true }))) {
+    if (exclude.has(id)) continue;
+    const r = rows.get(id);
+    if (!r) orphans.push(`${id} (from the profile)`);
+    else selected.push({ ...r, depth: 0 });
+  }
+}
 if (practices.length) selected = selected.filter((r) => practices.includes(r.practice));
 
 const meta = `${catalog.metadata?.title} · catalog version ${catalog.metadata?.version} · commit ${commit}`;
@@ -174,6 +198,7 @@ if (summary) {
 } else {
   console.log(`# Worksheet: ${meta}`);
   if (mappingPath) console.log(`Mapping: ${mappingPath.split("/").pop()}${sourceFilter.size ? ` · ${sourceFilter.size} source controls` : ""}`);
+  if (profilePath) console.log(`Profile: ${profilePath.split("/").pop()}`);
   console.log("");
   let practice;
   for (const r of selected) {

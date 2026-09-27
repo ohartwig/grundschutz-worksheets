@@ -58,6 +58,40 @@ A Markdown row looks like this:
       Konfiguration für IT-Systeme SOLLTE eine Grundkonfiguration dokumentieren.
 ```
 
+## Your tailoring as an OSCAL profile
+
+`profile.mjs` turns a small tailoring file — which requirements apply, which do
+not and why — into an OSCAL profile that imports the BSI catalog at a pinned
+commit. It is the Statement of Applicability as data.
+
+```json
+{
+  "title": "Grundschutz++ tailoring of Example GmbH",
+  "version": "2026-09-27",
+  "last-modified": "2026-09-27T00:00:00Z",
+  "catalog": { "path": "control_layer/Grundschutz++/Grundschutz++-resolved_catalog.json",
+               "commit": "367d775010abee641b258926bb482fcd05270059" },
+  "applicable": ["DET.2.1", "KONF.3.2"],
+  "not-applicable": [{ "id": "ARCH.6.1", "reason": "no own WAN links" }]
+}
+```
+
+```bash
+node profile.mjs tailoring.json > profile.json
+node validate.mjs profile.json
+node worksheet.mjs $CAT --profile profile.json --commit $C   # the worksheet for exactly your scope
+```
+
+- **Nothing is dropped:** every ID is checked against the catalog at the pinned
+  commit; unknown, duplicate or contradictory IDs are errors.
+- **Deterministic:** UUIDs are derived from the content and `last-modified`
+  comes from the input, so the same tailoring gives the same bytes and a change
+  shows up as a small diff.
+- **Why not applicable:** OSCAL profiles have no field for an exclusion reason.
+  The not-applicable requirements are listed as back-matter resources with the
+  reason, under this repository's namespace. A system security plan is where
+  OSCAL expects that statement; until you have one, it lives here.
+
 ## Validating OSCAL files
 
 `validate.mjs` checks OSCAL JSON against the official NIST schema for the
