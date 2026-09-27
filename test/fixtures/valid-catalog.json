@@ -1,0 +1,35 @@
+{
+  "catalog": {
+    "uuid": "5b7c3f6e-3d7a-4f35-9d8e-2b6f0f2b4a11",
+    "metadata": {
+      "title": "Test catalog",
+      "last-modified": "2026-09-27T00:00:00Z",
+      "version": "1",
+      "oscal-version": "1.1.3"
+    },
+    "groups": [
+      {
+        "id": "T",
+        "title": "Test practice",
+        "controls": [
+          {
+            "id": "T.1.1",
+            "title": "Test requirement",
+            "props": [{ "name": "sec_level", "value": "normal-SdT" }],
+            "parts": [
+              {
+                "id": "T.1.1_stm",
+                "name": "statement",
+                "props": [
+                  { "name": "modal_verb", "value": "SOLLTE" },
+                  { "name": "action_word", "value": "aktivieren" }
+                ],
+                "prose": "Test SOLLTE something aktivieren."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,46 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  schedule:
+    # Weekly: the BSI library republishes continuously. A pinned commit does
+    # not change, but this catches a schema or URL that stopped resolving.
+    - cron: "17 5 * * 1"
+
+permissions:
+  contents: read
+
+env:
+  # The BSI library commit every check here is pinned to. Raise it deliberately.
+  BSI_COMMIT: 367d775010abee641b258926bb482fcd05270059
+  CATALOG: control_layer/Grundschutz++/Grundschutz++-resolved_catalog.json
+  MAPPING: control_layer/Mappings/ISO-27001-zu-GSpp/ISO27001-AnnexA-to-GS++-mapping_collection.json
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 22
+      - run: npm ci
+      - name: Validator self-test (valid fixtures pass, broken ones fail)
+        run: npm test
+      - name: BSI files validate against the NIST schema of their declared version
+        run: |
+          node validate.mjs --bsi "$CATALOG" --commit "$BSI_COMMIT"
+          node validate.mjs --bsi control_layer/Grundschutz++/sources/profiles/Grundschutz++-profile.json --commit "$BSI_COMMIT"
+          node validate.mjs --bsi implementation_layer/Keycloak/Keycloak-component_definition.json --commit "$BSI_COMMIT"
+      - name: Worksheet smoke test (ISO 27001 mapping yields 280 requirements at the pinned commit)
+        run: |
+          n=$(node worksheet.mjs "$CATALOG" --mapping "$MAPPING" --summary --commit "$BSI_COMMIT" 2>/dev/null | sed -n 's/^\([0-9]*\) requirements$/\1/p')
+          echo "requirements: $n"
+          test "$n" = "280"
+      - name: A branch name instead of a commit is refused
+        run: |
+          set +e
+          node worksheet.mjs "$CATALOG" --commit main
+          test $? -eq 2

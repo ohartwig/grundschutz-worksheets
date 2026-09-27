@@ -1,0 +1,33 @@
+{
+  "component-definition": {
+    "uuid": "0f3f2a9c-6f7e-4a57-9a7e-7d0c4c1b2e33",
+    "metadata": {
+      "title": "Test component definition",
+      "last-modified": "2026-09-27T00:00:00Z",
+      "version": "1",
+      "oscal-version": "1.2.2"
+    },
+    "components": [
+      {
+        "uuid": "8e1f0a3b-2c4d-4e5f-8a9b-0c1d2e3f4a5b",
+        "type": "",
+        "title": "Test component",
+        "description": "A component for the validator's own tests.",
+        "control-implementations": [
+          {
+            "uuid": "1a2b3c4d-5e6f-4a7b-8c9d-0e1f2a3b4c5d",
+            "source": "https://example.org/catalog.json",
+            "description": "Test implementation.",
+            "implemented-requirements": [
+              {
+                "uuid": "2b3c4d5e-6f7a-4b8c-9d0e-1f2a3b4c5d6e",
+                "control-id": "t.1.1",
+                "description": "Implements the test requirement."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

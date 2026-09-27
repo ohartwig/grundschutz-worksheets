@@ -18,7 +18,7 @@ Background and method: [Grundschutz++ against my own documentation](https://ole-
 
 ## Usage
 
-Node 18 or later, no dependencies, no install. The catalog is fetched from the
+Node 18 or later. `worksheet.mjs` has no dependencies and needs no install. The catalog is fetched from the
 library at the commit you name.
 
 ```bash
@@ -57,6 +57,25 @@ A Markdown row looks like this:
 - [ ] **KONF.2.1** Grundkonfiguration für Systeme · normal-SdT · SOLLTE · dokumentieren · subject Konfiguration für IT-Systeme · doc Konfigurationshistorie · effort 3 · from 8.9
       Konfiguration für IT-Systeme SOLLTE eine Grundkonfiguration dokumentieren.
 ```
+
+## Validating OSCAL files
+
+`validate.mjs` checks OSCAL JSON against the official NIST schema for the
+version each file declares (`metadata.oscal-version`). The BSI library mixes
+versions — catalogs and profiles 1.1.3, component definitions 1.2.2 — so the
+schema is chosen per file. Schemas are downloaded from the NIST release and
+checked against the SHA-256 in `schemas.json`; an unknown version is an error,
+not a skip.
+
+```bash
+npm ci                                   # dev dependencies for the validator only
+node validate.mjs my-component.json      # local files
+node validate.mjs --bsi $CAT --commit $C # a file from the BSI library, pinned
+npm test                                 # valid fixtures pass, broken ones fail
+```
+
+CI runs the self-test, validates BSI files at the pinned commit and checks that
+the ISO 27001 mapping still yields the expected number of requirements.
 
 ## Two rules built in
 
