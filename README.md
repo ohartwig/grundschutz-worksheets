@@ -115,6 +115,60 @@ node validate.mjs component.json
 - It describes what a component supports, not that a system is compliant.
   Whether a control is actually in effect is a measurement, not a claim.
 
+### Claim only what has evidence
+
+A component definition built from a pipeline's *settings* says what the
+pipeline is configured to do, not what happened to the image in front of you.
+If the signing job failed, or the SBOM was never attached, a settings-based
+definition still lists both. Build the source file from evidence instead: after
+signing and scanning, check the pushed digest, then list a requirement only
+where its evidence is there.
+
+```bash
+REF=registry.example.org/app@sha256:...
+cosign verify --key cosign.pub "$REF"                                # signature
+cosign verify-attestation --key cosign.pub --type cyclonedx "$REF"   # SBOM
+# plus the scan verdict of the same pipeline, for this digest
+```
+
+Put the result into the source file's `evidence` links, leave out whatever did
+not verify, and say so in the job log. In a CI system where the consumer picks
+the stage of the signing jobs, run this after all stages (GitLab: `.post`), or
+the pipeline is refused as invalid wherever signing comes later than you
+assumed.
+
+Verify an attached definition from outside the pipeline that made it:
+
+```bash
+cosign verify-attestation --key cosign.pub \
+  --type https://github.com/ohartwig/grundschutz-worksheets/predicate/oscal-component-definition/v1 \
+  "$REF" | jq -r .payload | base64 -d | jq .predicate > component.json
+node validate.mjs component.json
+```
+
+The predicate type is the one this repository uses; any URI you own works.
+
+## When the catalog moves
+
+`recheck.mjs` compares the requirements a component definition claims with
+another state of the catalog, by ID and by `alt-identifier` UUID:
+
+```bash
+node recheck.mjs component.json --commit <newer library commit>
+node recheck.mjs component.json --catalog edited-catalog.json   # simulate a bump
+```
+
+| Result | Meaning |
+|---|---|
+| `unchanged` | same ID, same UUID |
+| `renamed to X` | the UUID is still there, under another ID |
+| `uuid-changed` | the ID is still there, but the requirement behind it may not be |
+| `withdrawn` | neither is in the catalog any more |
+
+Exit 1 when anything needs review, so it can run as a scheduled job against the
+library's main branch. Checking by UUID as well as by ID is why every
+requirement carries both.
+
 ## Validating OSCAL files
 
 `validate.mjs` checks OSCAL JSON against the official NIST schema for the
