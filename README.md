@@ -119,8 +119,9 @@ node validate.mjs component.json
 
 `validate.mjs` checks OSCAL JSON against the official NIST schema for the
 version each file declares (`metadata.oscal-version`). The BSI library mixes
-versions — catalogs and profiles 1.1.3, component definitions 1.2.2 — so the
-schema is chosen per file. The schemas ship in `schemas/` (NIST releases, unchanged) and are
+versions — at commit `367d775` catalogs and profiles 1.1.3, the mapping and the
+newer component definitions 1.2.2, older component definitions still 1.1.2 — so
+the schema is chosen per file. The schemas ship in `schemas/` (NIST releases, unchanged) and are
 checked against the SHA-256 in `schemas.json`; an unknown version is an error,
 not a skip.
 
@@ -130,6 +131,13 @@ node validate.mjs my-component.json      # local files
 node validate.mjs --bsi $CAT --commit $C # a file from the BSI library, pinned
 npm test                                 # valid fixtures pass, broken ones fail
 ```
+
+Not every file in the library passes. At commit `367d775` the component
+definitions for Lieferkettensicherheit and GA-Lotse and the ISO 27001 mapping
+collection fail the NIST schema of the version they declare (`links` as a single
+object instead of an array, extra properties in `import-component-definitions`
+and in `provenance`). The catalogs, the Grundschutz++ profile and the other
+component definitions validate.
 
 CI runs the self-test, validates BSI files at the pinned commit and checks that
 the ISO 27001 mapping still yields the expected number of requirements.
@@ -152,7 +160,7 @@ for an estate run as Infrastructure as Code and GitOps:
 
 | Action words | Evidence |
 |---|---|
-| aktivieren, deaktivieren, einschränken, installieren, blockieren, verschlüsseln, protokollieren, zuweisen, autorisieren | Configuration: a place in the IaC or GitOps repository at a named commit, plus a measurement that it is in effect |
+| aktivieren, deaktivieren, einschränken, installieren, blockieren, verschlüsseln, protokollieren, zuweisen, autorisieren, authentifizieren, platzieren, untersagen, löschen | Configuration: a place in the IaC or GitOps repository at a named commit, plus a measurement that it is in effect |
 | überprüfen, testen, überwachen, ausführen | A dated run: CI job, alert that fired, restore record |
 | verankern, dokumentieren, festlegen, vereinbaren | A document, contract or approval |
 | sensibilisieren, anweisen, informieren | A dated record of who was told what, and when |

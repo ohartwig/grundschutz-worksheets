@@ -1,4 +1,8 @@
 {
+  "1.1.2": {
+    "url": "https://github.com/usnistgov/OSCAL/releases/download/v1.1.2/oscal_complete_schema.json",
+    "sha256": "f0b24aef59190cb2649b404976f1677b546e6bb1982597d8bccb9e6b1244e18c"
+  },
   "1.1.3": {
     "url": "https://github.com/usnistgov/OSCAL/releases/download/v1.1.3/oscal_complete_schema.json",
     "sha256": "7e8fb0820e72254e024b8ca9adc9adf70f71665d66248aa963ec267a9ed7ff26"
