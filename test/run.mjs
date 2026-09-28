@@ -63,4 +63,17 @@ for (const [file, want] of cases) {
   failed += badSubject.status !== 1;
   console.log(`${badSubject.status === 1 ? "ok  " : "FAIL"} subject without a digest is refused (exit ${badSubject.status})`);
 }
+// recheck.mjs: an unchanged catalog passes; a bumped one names every change.
+{
+  const run = (cat) => spawnSync(process.execPath, ["recheck.mjs", "test/fixtures/recheck-component.json", "--catalog", cat], { encoding: "utf8" });
+  const same = run("test/fixtures/recheck-catalog.json");
+  failed += same.status !== 0;
+  console.log(`${same.status === 0 ? "ok  " : "FAIL"} recheck: unchanged catalog passes (exit ${same.status})`);
+  const bumped = run("test/fixtures/recheck-catalog-bumped.json");
+  const want = ["DEV.4.3: renamed to DEV.4.4", "TEST.3.1.3: withdrawn", "DEV.4.5: uuid-changed", "ok     DET.5.3: unchanged"];
+  const ok = bumped.status === 1 && want.every((w) => bumped.stdout.includes(w));
+  failed += !ok;
+  console.log(`${ok ? "ok  " : "FAIL"} recheck: bump reports rename, withdrawal and new UUID (exit ${bumped.status})`);
+  if (!ok) console.log(bumped.stdout + bumped.stderr);
+}
 process.exit(failed ? 1 : 0);
