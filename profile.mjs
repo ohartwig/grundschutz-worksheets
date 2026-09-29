@@ -142,6 +142,13 @@ const profile = {
               { name: "control-id", ns: NS, value: e.id },
               { name: "tailoring", ns: NS, value: "not-applicable" },
             ],
+            // OSCAL requires a resource to carry its content (rlink or base64);
+            // the JSON schema does not enforce it, the Metaschema constraints do.
+            base64: {
+              filename: `not-applicable-${e.id}.txt`,
+              "media-type": "text/plain",
+              value: Buffer.from(e.reason, "utf8").toString("base64"),
+            },
           })),
       },
     }),

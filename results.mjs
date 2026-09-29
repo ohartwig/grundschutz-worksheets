@@ -112,6 +112,7 @@ if (unknown.length) fail(`not in the catalog at ${r.catalog.commit.slice(0, 7)}:
 if (new Set(r.requirements).size !== r.requirements.length) fail("a requirement is listed twice");
 
 const run = `${r.check}:${r.start}`;
+const b64 = (s) => Buffer.from(s, "utf8").toString("base64");
 const planUuid = uuid5(`plan:${r.check}`);
 const evidence = (r.evidence ?? []).map((e) => ({ href: e.href, description: e.text || e.href }));
 const subjects = [...r.subjects].sort((a, b) => a.title.localeCompare(b.title));
@@ -120,11 +121,19 @@ const resources = [
     uuid: planUuid,
     title: `Assessment plan: ${r.title}`,
     description: r.description,
+    // A resource must carry its content (rlink or base64): here, the plan text.
+    base64: { filename: `${r.check}-plan.txt`, "media-type": "text/plain", value: b64(r.description) },
   },
 ];
 const observations = subjects.map((s) => {
   const res = uuid5(`subject:${r.check}:${s.title}`);
-  resources.push({ uuid: res, title: s.title, ...(s.href && { rlinks: [{ href: s.href }] }) });
+  resources.push({
+    uuid: res,
+    title: s.title,
+    ...(s.href
+      ? { rlinks: [{ href: s.href }] }
+      : { base64: { filename: "subject.txt", "media-type": "text/plain", value: b64(s.title) } }),
+  });
   return {
     uuid: uuid5(`observation:${run}:${s.title}`),
     title: `${s.title}: ${s.satisfied ? "as required" : "NOT as required"}`,

@@ -223,6 +223,12 @@ component definitions validate.
 CI runs the self-test, validates BSI files at the pinned commit and checks that
 the ISO 27001 mapping still yields the expected number of requirements.
 
+
+The CI runs a second, independent validator as well: NIST's
+[oscal-cli](https://github.com/usnistgov/oscal-cli). It checks the Metaschema
+constraints, which the JSON schema cannot express. A back-matter resource
+without content, for example, passes the JSON schema and fails here. Every
+generator's output passes both, and any warning fails the build.
 ## Two rules built in
 
 **Pinned.** The library republishes continuously. A check against "the current
