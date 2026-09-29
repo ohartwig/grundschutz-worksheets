@@ -1,0 +1,16 @@
+{
+  "check": "protected-branches",
+  "title": "Protected branches and tags",
+  "description": "Every default branch is protected against force push and deletion; merges need a green pipeline.",
+  "method": "TEST",
+  "start": "2026-09-30T03:00:00Z",
+  "end": "2026-09-30T03:04:12Z",
+  "catalog": { "path": "control_layer/Grundschutz++/Grundschutz++-resolved_catalog.json",
+               "commit": "367d775010abee641b258926bb482fcd05270059" },
+  "requirements": ["TEST.3.1.3", "DEV.4.3"],
+  "evidence": [{ "text": "pipeline 1234", "href": "https://ci.example.org/p/1234" }],
+  "subjects": [
+    { "title": "group/app", "href": "https://git.example.org/group/app", "satisfied": true, "detail": "main protected, force push off" },
+    { "title": "group/lib", "href": "https://git.example.org/group/lib", "satisfied": true, "detail": "main protected, force push off" }
+  ]
+}
