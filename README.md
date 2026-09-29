@@ -18,7 +18,7 @@ Background and method: [Grundschutz++ against my own documentation](https://ole-
 
 ## Usage
 
-Node 18 or later. `worksheet.mjs` has no dependencies and needs no install. The catalog is fetched from the
+Node 24 (the current LTS) or later. `worksheet.mjs` has no dependencies and needs no install. The catalog is fetched from the
 library at the commit you name.
 
 ```bash

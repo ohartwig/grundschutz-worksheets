@@ -4,7 +4,7 @@
   "type": "module",
   "description": "Turn the BSI Grundschutz++ OSCAL catalog into review worksheets",
   "license": "MIT",
-  "engines": { "node": ">=18" },
+  "engines": { "node": ">=24" },
   "scripts": {
     "test": "node test/run.mjs"
   },

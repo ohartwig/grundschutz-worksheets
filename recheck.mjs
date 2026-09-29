@@ -22,7 +22,7 @@
 // Exit 0: nothing changed. Exit 1: at least one requirement needs review.
 // Exit 2: usage or input error.
 //
-// No dependencies. Node 18 or later.
+// No dependencies. Node 24 (LTS) or later.
 
 import { readFileSync } from "node:fs";
 

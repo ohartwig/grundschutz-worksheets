@@ -39,7 +39,7 @@
 //
 //   node component.mjs source.json --subject registry.example/app@sha256:... > component.json
 //
-// No dependencies. Node 18 or later.
+// No dependencies. Node 24 (LTS) or later.
 
 import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
