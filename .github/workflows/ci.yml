@@ -81,6 +81,7 @@ jobs:
           node results.mjs test/fixtures/results-run.json --catalog test/fixtures/recheck-catalog.json > out/results.json
           jq '.subjects[1].satisfied=false | .subjects += [{"title":"group hidden","satisfied":false}]' test/fixtures/results-run.json > out/run-fail.json
           node results.mjs out/run-fail.json --catalog test/fixtures/recheck-catalog.json > out/results-fail.json
+          npm ci
           npm test >/dev/null   # writes the SSP fixture inputs into .schema-cache
           node ssp.mjs test/fixtures/ssp/system.json > out/ssp.json
       - name: Validate with oscal-cli, warnings count
@@ -120,7 +121,14 @@ jobs:
           npm test >/dev/null
           node ssp.mjs test/fixtures/ssp/system.json > ssp.json
       - name: trestle import and validate
+        # trestle resolves every import on import, and the fixtures name
+        # example.org: the profile is pointed at the real BSI catalog at the
+        # pinned commit, the plan at the profile inside the workspace.
         run: |
           mkdir ws && cd ws && trestle init
-          trestle import -f ../ssp.json -o fixture
-          trestle validate -f system-security-plans/fixture/system-security-plan.json
+          CAT="https://raw.githubusercontent.com/BSI-Bund/Stand-der-Technik-Bibliothek/${BSI_COMMIT}/control_layer/Grundschutz%2B%2B/Grundschutz%2B%2B-resolved_catalog.json"
+          jq --arg c "$CAT" '.profile.imports[0].href = $c' ../test/fixtures/ssp/profile.json > ../profile-local.json
+          trestle import -f ../profile-local.json -o fixture-profile
+          jq '.["system-security-plan"]["import-profile"].href = "trestle://profiles/fixture-profile/profile.json"' ../ssp.json > ../ssp-local.json
+          trestle import -f ../ssp-local.json -o fixture
+          trestle validate -a
