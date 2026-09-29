@@ -34,7 +34,7 @@
 //
 //   node profile.mjs tailoring.json > profile.json
 //
-// No dependencies. Node 18 or later.
+// No dependencies. Node 24 (LTS) or later.
 
 import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";

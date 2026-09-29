@@ -15,7 +15,7 @@
 //   - Nothing is dropped silently: nested requirements are resolved, and
 //     mapping targets that the catalog no longer contains are listed at the end.
 //
-// No dependencies. Node 18 or later (global fetch).
+// No dependencies. Node 24 (LTS) or later.
 //
 // Usage:
 //   node worksheet.mjs <catalog path> --commit <sha> [options]
