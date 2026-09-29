@@ -1,0 +1,28 @@
+{
+ "title": "Fixture plan",
+ "version": "1",
+ "last-modified": "2026-09-29T12:00:00Z",
+ "system": {
+  "id": "fixture",
+  "name": "Fixture system",
+  "description": "A fixture.",
+  "sensitivity": "moderate",
+  "information-type": {
+   "title": "Web content",
+   "description": "Pages."
+  },
+  "boundary": "Everything in this file.",
+  "status": "operational"
+ },
+ "profile": {
+  "file": "profile.json",
+  "href": "https://example.org/profile.json"
+ },
+ "components": [
+  "../../../.schema-cache/ssp-component.json"
+ ],
+ "results": [
+  "../../../.schema-cache/ssp-results.json"
+ ],
+ "reviews": "reviews.json"
+}
