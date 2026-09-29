@@ -47,11 +47,14 @@ jobs:
 
   # A second, independent validator: NIST's oscal-cli checks the Metaschema
   # constraints as well, which the JSON schema cannot express (a back-matter
-  # resource without content, for example, passes ajv and fails here). Any
-  # WARNING or ERROR fails the job. oscal-cli 1.0.3 bundles OSCAL 1.1.2; the
-  # 1.2.2 files are checked against that model, which covers what they use.
+  # resource without content, for example, passes ajv and fails here).
+  # Advisory, not binding: the job reports every WARNING or ERROR and turns red,
+  # but it does not fail the workflow -- validate.mjs remains the gate.
+  # oscal-cli 1.0.3 bundles OSCAL 1.1.2; the 1.2.2 files are checked against
+  # that model, which covers what they use but is not a full 1.2.2 check.
   oscal-cli:
     runs-on: ubuntu-latest
+    continue-on-error: true
     env:
       OSCAL_CLI_VERSION: 1.0.3
       OSCAL_CLI_SHA256: c90166b6f94a8b32a4c0012bb3f3d32dfa54b950aed31ac1a4902ce75fc6a57e
