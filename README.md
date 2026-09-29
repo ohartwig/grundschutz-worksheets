@@ -148,6 +148,33 @@ node validate.mjs component.json
 
 The predicate type is the one this repository uses; any URI you own works.
 
+## Measurements as assessment results
+
+`results.mjs` turns one run of an automated check into OSCAL assessment results
+(1.2.2): which requirements the check evidences, what it looked at, what it saw
+for each subject, and whether each requirement was satisfied in this run. The
+check writes a small run file; the generator does the OSCAL.
+
+```bash
+node results.mjs run.json > results.json
+node validate.mjs results.json
+```
+
+- **One run, one file.** Start and end come from the run; the date is part of
+  the evidence. The same run gives the same bytes.
+- **One failed subject fails the requirement.** Its finding names the
+  observations that were not as required.
+- **Nothing examined is an error, not a pass.** A check that looked at no
+  subject has shown nothing.
+- **IDs checked** against the catalog at the pinned commit, as in the other
+  generators.
+- **Not a verdict on the system.** It states what this run observed. Whether a
+  system meets the requirements is an assessment by a person.
+
+Signed and stored next to the thing it measures, for example as an OCI artefact
+with `oras push` and `cosign sign`, a result becomes evidence a third party can
+verify without trusting the pipeline that wrote it.
+
 ## When the catalog moves
 
 `recheck.mjs` compares the requirements a component definition claims with

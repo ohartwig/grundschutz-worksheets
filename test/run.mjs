@@ -76,4 +76,31 @@ for (const [file, want] of cases) {
   console.log(`${ok ? "ok  " : "FAIL"} recheck: bump reports rename, withdrawal and new UUID (exit ${bumped.status})`);
   if (!ok) console.log(bumped.stdout + bumped.stderr);
 }
+// results.mjs: a run validates, a failed subject fails the requirement, no subjects is an error.
+{
+  const { writeFileSync, readFileSync, mkdirSync } = await import("node:fs");
+  mkdirSync(".schema-cache", { recursive: true });
+  const cat = ["--catalog", "test/fixtures/recheck-catalog.json"];
+  const gen = (f) => spawnSync(process.execPath, ["results.mjs", f, ...cat], { encoding: "utf8" });
+  const ok = gen("test/fixtures/results-run.json");
+  writeFileSync(".schema-cache/test-results.json", ok.stdout);
+  const v = spawnSync(process.execPath, ["validate.mjs", ".schema-cache/test-results.json"], { encoding: "utf8" });
+  const same = ok.stdout === gen("test/fixtures/results-run.json").stdout;
+  const pass = ok.status === 0 && v.status === 0 && same;
+  failed += !pass;
+  console.log(`${pass ? "ok  " : "FAIL"} results: a run validates and is deterministic${pass ? "" : ": " + ok.stderr + v.stdout}`);
+  const run = JSON.parse(readFileSync("test/fixtures/results-run.json", "utf8"));
+  run.subjects[1].satisfied = false;
+  writeFileSync(".schema-cache/results-fail.json", JSON.stringify(run));
+  const bad = gen(".schema-cache/results-fail.json");
+  const states = JSON.parse(bad.stdout)["assessment-results"].results[0].findings.map((f) => f.target.status.state);
+  const f2 = states.every((s) => s === "not-satisfied");
+  failed += !f2;
+  console.log(`${f2 ? "ok  " : "FAIL"} results: one failed subject makes every requirement not-satisfied`);
+  run.subjects = [];
+  writeFileSync(".schema-cache/results-empty.json", JSON.stringify(run));
+  const empty = gen(".schema-cache/results-empty.json");
+  failed += empty.status !== 1;
+  console.log(`${empty.status === 1 ? "ok  " : "FAIL"} results: a run without subjects is refused (exit ${empty.status})`);
+}
 process.exit(failed ? 1 : 0);
