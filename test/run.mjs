@@ -103,4 +103,48 @@ for (const [file, want] of cases) {
   failed += empty.status !== 1;
   console.log(`${empty.status === 1 ? "ok  " : "FAIL"} results: a run without subjects is refused (exit ${empty.status})`);
 }
+// ssp.mjs: claims, measurements and reviews become one plan, in that order of precedence.
+{
+  const { writeFileSync, readFileSync, mkdirSync } = await import("node:fs");
+  mkdirSync(".schema-cache", { recursive: true });
+  const cat = ["--catalog", "test/fixtures/recheck-catalog.json"];
+  // A component claiming DEV.4.3 and TEST.3.1.3, a run measuring TEST.3.1.3 as failed.
+  const cd = JSON.parse(readFileSync("test/fixtures/recheck-component.json", "utf8"));
+  const ci = cd["component-definition"].components[0]["control-implementations"][0];
+  ci["implemented-requirements"] = ci["implemented-requirements"]
+    .filter((r) => ["DEV.4.3", "TEST.3.1.3"].includes(r["control-id"]))
+    .map((r) => ({ ...r, links: [{ href: "https://ci.example.org/job/1", rel: "reference", text: "evidence job" }] }));
+  writeFileSync(".schema-cache/ssp-component.json", JSON.stringify(cd));
+  const run = JSON.parse(readFileSync("test/fixtures/results-run.json", "utf8"));
+  run.requirements = ["TEST.3.1.3"];
+  run.subjects[0].satisfied = false;
+  writeFileSync(".schema-cache/ssp-run.json", JSON.stringify(run));
+  const ar = spawnSync(process.execPath, ["results.mjs", ".schema-cache/ssp-run.json", ...cat], { encoding: "utf8" });
+  writeFileSync(".schema-cache/ssp-results.json", ar.stdout);
+  const gen = () => spawnSync(process.execPath, ["ssp.mjs", "test/fixtures/ssp/system.json"], { encoding: "utf8" });
+  const a = gen();
+  const same = a.status === 0 && a.stdout === gen().stdout;
+  writeFileSync(".schema-cache/test-ssp.json", a.stdout);
+  const v = spawnSync(process.execPath, ["validate.mjs", ".schema-cache/test-ssp.json"], { encoding: "utf8" });
+  const pass = same && v.status === 0;
+  failed += !pass;
+  console.log(`${pass ? "ok  " : "FAIL"} ssp: assembles, validates and is deterministic${pass ? "" : ": " + a.stderr + v.stdout}`);
+  if (a.status === 0) {
+    const reqs = Object.fromEntries(JSON.parse(a.stdout)["system-security-plan"]["control-implementation"]["implemented-requirements"]
+      .map((r) => [r["control-id"], r]));
+    const st = (id) => reqs[id].props.find((p) => p.name === "implementation-status").value;
+    const basis = (id) => reqs[id]["by-components"][0].props.find((p) => p.name === "basis").value;
+    const cases = [
+      ["claimed and not measured is implemented", st("DEV.4.3") === "implemented" && basis("DEV.4.3") === "claimed"],
+      ["a failed measurement makes a claim partial", st("TEST.3.1.3") === "partial" && basis("TEST.3.1.3") === "measured"],
+      ["a review speaks where nothing else does", st("DET.5.3") === "partial" && basis("DET.5.3") === "reviewed"],
+      ["nothing at all is planned, and says so", st("DEV.4.5") === "planned" && basis("DEV.4.5") === "none"],
+      ["evidence links survive", (reqs["DEV.4.3"]["by-components"][0].links ?? [])[0]?.href === "https://ci.example.org/job/1"],
+    ];
+    for (const [name, ok] of cases) {
+      failed += !ok;
+      console.log(`${ok ? "ok  " : "FAIL"} ssp: ${name}`);
+    }
+  }
+}
 process.exit(failed ? 1 : 0);

@@ -1,0 +1,11 @@
+{
+ "date": "2026-09-26",
+ "source": "Fixture review",
+ "requirements": [
+  {
+   "id": "DET.5.3",
+   "state": "partial",
+   "note": "reviewed by hand"
+  }
+ ]
+}

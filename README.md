@@ -148,6 +148,36 @@ node validate.mjs component.json
 
 The predicate type is the one this repository uses; any URI you own works.
 
+## A security plan assembled, not written
+
+`ssp.mjs` puts the other outputs together into an OSCAL system security plan
+(1.2.2). For every requirement the profile includes, it states one of
+*implemented*, *partial* or *planned*, and on what that rests:
+
+| Basis | Source | Wins over |
+|---|---|---|
+| measured | the latest assessment result for the requirement | everything |
+| claimed | a component definition, with its evidence links | a review |
+| reviewed | a dated manual check (optional `reviews` file) | nothing |
+| none | nothing speaks for it: *planned*, and the plan says so | – |
+
+```bash
+node ssp.mjs system.json > ssp.json
+node validate.mjs ssp.json
+```
+
+A small `system.json` names the system, its boundary and the input files; see
+the header of `ssp.mjs`. A requirement that a component or measurement names
+but the profile does not include is reported: either the profile lacks it, or
+the claim is out of scope. On its first real run that found three requirements
+the image pipeline implements but our Statement of Applicability did not list.
+
+Why not compliance-trestle, which assembles plans too: at 5.1.0 its
+`ssp-assemble` rejects version-5 UUIDs, drops the links of implemented
+requirements, flattens nested catalog groups and has no way to take status from
+assessment results. The CI still reads every generated plan with trestle, as an
+advisory cross-check.
+
 ## Measurements as assessment results
 
 `results.mjs` turns one run of an automated check into OSCAL assessment results
