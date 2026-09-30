@@ -146,5 +146,38 @@ for (const [file, want] of cases) {
       console.log(`${ok ? "ok  " : "FAIL"} ssp: ${name}`);
     }
   }
+  // A measurement against a review: it may lower the review, never raise it.
+  const run2 = JSON.parse(readFileSync("test/fixtures/results-run.json", "utf8"));
+  run2.check = "second-check";
+  run2.requirements = ["DET.5.3"];
+  run2.subjects.forEach((x) => (x.satisfied = true));
+  writeFileSync(".schema-cache/ssp-run2.json", JSON.stringify(run2));
+  writeFileSync(".schema-cache/ssp-results2.json",
+    spawnSync(process.execPath, ["results.mjs", ".schema-cache/ssp-run2.json", ...cat], { encoding: "utf8" }).stdout);
+  const run3 = { ...run2, check: "third-check", requirements: ["DEV.4.5"], subjects: run2.subjects.map((x, i) => ({ ...x, satisfied: i > 0 })) };
+  writeFileSync(".schema-cache/ssp-run3.json", JSON.stringify(run3));
+  writeFileSync(".schema-cache/ssp-results3.json",
+    spawnSync(process.execPath, ["results.mjs", ".schema-cache/ssp-run3.json", ...cat], { encoding: "utf8" }).stdout);
+  const sys2 = JSON.parse(readFileSync("test/fixtures/ssp/system.json", "utf8"));
+  sys2.profile.file = "../test/fixtures/ssp/profile.json";
+  sys2.components = ["ssp-component.json"];
+  sys2.results = ["ssp-results.json", "ssp-results2.json", "ssp-results3.json"];
+  sys2.reviews = "ssp-reviews2.json";
+  writeFileSync(".schema-cache/ssp-reviews2.json", JSON.stringify({ date: "2026-09-26", source: "Fixture review",
+    requirements: [{ id: "DET.5.3", state: "partial" }, { id: "DEV.4.5", state: "implemented" }] }));
+  writeFileSync(".schema-cache/ssp-system2.json", JSON.stringify(sys2));
+  const b = spawnSync(process.execPath, ["ssp.mjs", ".schema-cache/ssp-system2.json"], { encoding: "utf8" });
+  const reqs2 = b.status === 0 ? Object.fromEntries(JSON.parse(b.stdout)["system-security-plan"]["control-implementation"]["implemented-requirements"]
+    .map((r) => [r["control-id"], r])) : {};
+  const st2 = (id) => reqs2[id]?.props.find((p) => p.name === "implementation-status").value;
+  const cases2 = [
+    ["a passing measurement does not raise a partial review", st2("DET.5.3") === "partial"],
+    ["a failed measurement lowers an implemented review", st2("DEV.4.5") === "partial"],
+    ["the entry says both", /Reviewed 2026-09-26 as partial/.test(JSON.stringify(reqs2["DET.5.3"] ?? {}))],
+  ];
+  for (const [name, ok] of cases2) {
+    failed += !ok;
+    console.log(`${ok ? "ok  " : "FAIL"} ssp: ${name}${b.status ? ": " + b.stderr : ""}`);
+  }
 }
 process.exit(failed ? 1 : 0);
