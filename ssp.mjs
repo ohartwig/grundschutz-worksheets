@@ -17,6 +17,13 @@
 // check per requirement. Precedence is measurement, then component claim,
 // then review, and every entry says which one it rests on.
 //
+// A measurement can lower a review, never raise it. A check usually covers
+// part of a requirement: a passing backup-freshness check says nothing about
+// the review's reason for "partial" (the copies share an account, say). So
+// where both exist, a failed measurement makes the requirement partial (a
+// reviewed gap stays planned), and a passing one confirms the review's state
+// at most (a reviewed gap becomes partial: something is measurably in place).
+//
 // Nothing is written by hand into the plan; the system description comes from
 // a small file, everything else from the inputs. The same inputs give the same
 // bytes.
@@ -191,8 +198,12 @@ const requirements = [...applicable].sort(byId).map((id) => {
     let description, state, remarks, basis;
     if (m) {
       description = `${m.description} (check: ${m.check})`;
-      state = m.state === "satisfied" ? "implemented" : "partial";
-      remarks = `Measured ${m.at} by "${m.title}": ${m.state}.`;
+      const passed = m.state === "satisfied";
+      state = !rv ? (passed ? "implemented" : "partial")
+        : passed ? (rv.state === "planned" ? "partial" : rv.state)
+        : rv.state === "planned" ? "planned" : "partial";
+      remarks = `Measured ${m.at} by "${m.title}": ${m.state}.` +
+        (rv ? ` Reviewed ${review.date} as ${rv.state}; a measurement lowers a review, never raises it.` : "");
       basis = "measured";
     } else if (rv) {
       description = rv.note || `Reviewed in ${review.source}.`;

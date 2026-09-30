@@ -161,6 +161,12 @@ The predicate type is the one this repository uses; any URI you own works.
 | reviewed | a dated manual check (optional `reviews` file) | nothing |
 | none | nothing speaks for it: *planned*, and the plan says so | – |
 
+One exception to "measured wins": a measurement can lower a review, never
+raise it. A check usually covers part of a requirement. If a person reviewed
+it as *partial* for a reason the check does not see, a passing check confirms
+*partial*, not *implemented*; a failing one makes an *implemented* review
+*partial*. The entry names both.
+
 ```bash
 node ssp.mjs system.json > ssp.json
 node validate.mjs ssp.json
