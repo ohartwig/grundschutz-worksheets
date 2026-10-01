@@ -150,25 +150,28 @@ The predicate type is the one this repository uses; any URI you own works.
 
 ## A security plan assembled, not written
 
-`ssp.mjs` puts the other outputs together into an OSCAL system security plan
-(1.2.2). For every requirement the profile includes, it states one of
-*implemented*, *partial* or *planned*, and on what that rests:
+`ssp.mjs` writes an OSCAL system security plan (1.2.2): the owner's
+statement of how the system implements each requirement the profile
+includes. In OSCAL's chain the plan is the claim; whether the claim is true is
+what assessment results record. So the plan states *implemented*, *partial*
+or *planned* from the owner's side only, and says what that rests on:
 
-| Basis | Source | Wins over |
-|---|---|---|
-| measured | the latest assessment result for the requirement | everything |
-| claimed | a component definition, with its evidence links | a review |
-| reviewed | a dated manual check (optional `reviews` file) | nothing |
-| none | nothing speaks for it: *planned*, and the plan says so | – |
+| Basis | Source |
+|---|---|
+| reviewed | the owner's dated verdict (optional `reviews` file) |
+| claimed | no review, but a component definition claims it with evidence |
+| none | nothing speaks for it: *planned*, and the plan says so |
 
-One exception to "measured wins" and "claimed wins": a measurement or a
-claim can lower a review, never raise it. Both cover part of a requirement: a
-check sees what it checks, a component definition says what one build had. If a
-person reviewed the requirement as *partial* for a reason neither sees, a
-passing check or a claim confirms *partial*, not *implemented*; a failing check
-makes an *implemented* review *partial*. The entry names both. A manual spot
-check of the first real plan found the claim case: two requirements an image
-claimed came out *implemented* although the review said *partial*.
+Component definitions add their implementation statements and evidence links
+to every requirement they claim, but never change a reviewed state: one image's
+definition says what that build had, not what the whole system does.
+
+Assessment results are **referenced, not merged**. Each requirement names its
+latest assessment (`assessed`, `assessment-state`, `assessment-check`); one
+claimed as implemented whose latest assessment was not satisfied gets a remark,
+and the metadata counts them. The claim stays until the owner changes it. An
+earlier version let a measurement set the state; a manual spot check of the
+first real plan showed why that mixes the claim with the verdict.
 
 ```bash
 node ssp.mjs system.json > ssp.json
@@ -183,8 +186,7 @@ the image pipeline implements but our Statement of Applicability did not list.
 
 Why not compliance-trestle, which assembles plans too: at 5.1.0 its
 `ssp-assemble` rejects version-5 UUIDs, drops the links of implemented
-requirements, flattens nested catalog groups and has no way to take status from
-assessment results. The CI still reads every generated plan with trestle, as an
+requirements and flattens nested catalog groups. The CI still reads every generated plan with trestle, as an
 advisory cross-check.
 
 ## Measurements as assessment results

@@ -1,30 +1,30 @@
 #!/usr/bin/env node
-// Assemble an OSCAL system security plan from what the other generators wrote:
-// the profile (what applies), component definitions (what the components
-// claim, with evidence links) and assessment results (what was measured).
+// Assemble an OSCAL system security plan: the owner's statement of how the
+// system implements each requirement the profile includes. In OSCAL's chain
+// the plan is the claim ("this is how we do it"); the assessment plan says how
+// it is verified, the assessment results what was found, the POA&M what will
+// be fixed. This tool writes the first and refers to the third.
 //
-// For every requirement the profile includes, the plan says one of three
-// things, and says where it comes from:
+// For every requirement the plan states one of three things, and what the
+// statement rests on (prop `basis`):
 //
-//   implemented   a component claims it and the latest measurement, if any,
-//                 found it satisfied -- or a measurement alone found it so
-//   partial       the latest measurement found it not satisfied
-//   planned       nothing claims or measures it yet: an honest gap, not a
-//                 silence
+//   reviewed   the owner's dated verdict from the `reviews` file
+//              (implemented, partial or planned)
+//   claimed    no review, but a component definition claims it with evidence:
+//              implemented, as far as the components go
+//   none       nothing speaks for it: planned, an honest gap and not a silence
 //
-// Where neither a component nor a measurement speaks, a dated review by a
-// person may: the optional `reviews` file carries the verdict of a manual
-// check per requirement. Precedence is measurement, then component claim,
-// then review, and every entry says which one it rests on.
+// Component definitions also contribute their implementation statements and
+// evidence links to every requirement they claim, reviewed or not. They never
+// change a reviewed state: one image's definition says what that build had,
+// not what the whole system does.
 //
-// A measurement or a component's claim can lower a review, never raise it.
-// Both cover part of a requirement: a passing backup-freshness check says
-// nothing about the review's reason for "partial" (the copies share an
-// account, say), and one image's component definition says what that build
-// had, not what the whole system does. So where a review exists, a failed
-// measurement makes the requirement partial (a reviewed gap stays planned),
-// and a passing measurement or a claim confirms the review's state at most (a
-// reviewed gap becomes partial: something is demonstrably in place).
+// Assessment results are referenced, not merged. Per requirement, the latest
+// one is named (props `assessed`, `assessment-state`, `assessment-check`); a
+// requirement claimed as implemented whose latest assessment was not satisfied
+// gets a remark, and the metadata counts them (`assessment-disagrees`). The
+// claim itself stays until the owner changes it -- whether a statement is true
+// is the assessment's job, and deciding what follows is the owner's.
 //
 // Nothing is written by hand into the plan; the system description comes from
 // a small file, everything else from the inputs. The same inputs give the same
@@ -173,82 +173,77 @@ for (const id of reviewed.keys()) if (!applicable.has(id)) outside.add(`${id} (r
 for (const o of [...outside].sort()) console.error(`ssp: not in the profile: ${o}`);
 
 // --- The plan. -------------------------------------------------------------
+// The plan is the owner's statement of how the system implements each
+// requirement -- a claim, not a verdict. Its state comes from the owner's
+// dated review; where none exists, from a component that claims the
+// requirement with evidence; else it is planned. Measurements do not change
+// it: whether the statement is true is the assessment's job, recorded in the
+// assessment results. The plan refers to the latest one per requirement
+// (props `assessed`, `assessment-state`, `assessment-check`), so a reader sees
+// both, and a disagreement is visible without the claim being rewritten.
 const thisSystem = uuid5(`this-system:${sys.id}`);
 const counts = { implemented: 0, partial: 0, planned: 0 };
-const bases = { measured: 0, claimed: 0, reviewed: 0, none: 0 };
+const bases = { reviewed: 0, claimed: 0, none: 0 };
+let disagreements = 0;
 const requirements = [...applicable].sort(byId).map((id) => {
   const m = measured.get(id);
-  const claimants = components.filter((c) => c.claims.has(id));
   const rv = reviewed.get(id);
+  const claimants = components.filter((c) => c.claims.has(id));
+  const state = rv ? rv.state : claimants.length ? "implemented" : "planned";
+  const basis = rv ? "reviewed" : claimants.length ? "claimed" : "none";
+  counts[state]++;
+  bases[basis]++;
+  // A claim of "implemented" that the latest assessment did not find
+  // satisfied: shown, not resolved. The owner decides (status MR).
+  const disagrees = m && m.state === "not-satisfied" && state === "implemented";
+  if (disagrees) disagreements++;
   const byComponents = claimants.map((c) => {
     const cl = c.claims.get(id);
-    // A claim is evidence for one component, a review judges the whole
-    // system: like a measurement, a claim confirms a review at most.
-    const failed = m?.state === "not-satisfied";
-    const capped = rv && rv.state !== "implemented";
-    const state = failed || capped ? "partial" : "implemented";
-    const reviewNote = rv ? ` Reviewed ${review.date} as ${rv.state}; a claim or measurement lowers a review, never raises it.` : "";
     return {
       "component-uuid": c.uuid,
       uuid: uuid5(`by-component:${sys.id}:${id}:${c.source}`),
       description: cl.description,
       ...(cl.links.length && { links: cl.links }),
+      props: [{ name: "basis", ns: NS, value: "claimed" }],
       "implementation-status": {
-        state,
-        remarks: (m
-          ? `Measured ${m.at} by "${m.title}": ${m.state}.`
-          : "Claimed by the component with evidence; no measurement covers it yet.") + reviewNote,
+        state: "implemented",
+        remarks: "Claimed by the component definition, with the evidence it links. What one component provides, not a statement about the whole system.",
       },
     };
   });
-  if (!claimants.length) {
-    let description, state, remarks, basis;
-    if (m) {
-      description = `${m.description} (check: ${m.check})`;
-      const passed = m.state === "satisfied";
-      state = !rv ? (passed ? "implemented" : "partial")
-        : passed ? (rv.state === "planned" ? "partial" : rv.state)
-        : rv.state === "planned" ? "planned" : "partial";
-      remarks = `Measured ${m.at} by "${m.title}": ${m.state}.` +
-        (rv ? ` Reviewed ${review.date} as ${rv.state}; a measurement lowers a review, never raises it.` : "");
-      basis = "measured";
-    } else if (rv) {
-      description = rv.note || `Reviewed in ${review.source}.`;
-      state = rv.state;
-      remarks = `Reviewed ${review.date} (${review.source}); not measured automatically.`;
-      basis = "reviewed";
-    } else {
-      description = "No component claims this requirement, no measurement covers it and no review assessed it.";
-      state = "planned";
-      basis = "none";
-    }
-    byComponents.push({
-      "component-uuid": thisSystem,
-      uuid: uuid5(`by-component:${sys.id}:${id}:this-system`),
-      description,
-      props: [{ name: "basis", ns: NS, value: basis }],
-      "implementation-status": { state, ...(remarks && { remarks }) },
-    });
-  }
-  for (const b of byComponents) if (b["component-uuid"] !== thisSystem) b.props = [{ name: "basis", ns: NS, value: m ? "measured" : "claimed" }];
-  const overall = byComponents.some((b) => b["implementation-status"].state === "partial")
-    ? "partial"
-    : byComponents.every((b) => b["implementation-status"].state === "planned")
-      ? "planned"
-      : "implemented";
-  counts[overall]++;
-  const basis = byComponents.map((b) => b.props?.[0]?.value).sort((a, b) =>
-    ["measured", "claimed", "reviewed", "none"].indexOf(a) - ["measured", "claimed", "reviewed", "none"].indexOf(b))[0];
-  bases[basis]++;
+  byComponents.push({
+    "component-uuid": thisSystem,
+    uuid: uuid5(`by-component:${sys.id}:${id}:this-system`),
+    description: rv
+      ? rv.note || `Reviewed in ${review.source}.`
+      : claimants.length
+        ? "Implemented by the components named here; no dated review assessed the whole system yet."
+        : "No component claims this requirement and no review assessed it.",
+    props: [{ name: "basis", ns: NS, value: basis }],
+    "implementation-status": {
+      state,
+      ...(rv && { remarks: `Reviewed ${review.date} (${review.source}).` }),
+    },
+  });
   const alt = claimants.map((c) => c.claims.get(id).alt).find(Boolean);
   return {
     uuid: uuid5(`requirement:${sys.id}:${id}`),
     "control-id": id,
     props: [
-      { name: "implementation-status", ns: NS, value: overall },
+      { name: "implementation-status", ns: NS, value: state },
+      { name: "basis", ns: NS, value: basis },
       ...(alt ? [{ name: "alt-identifier", ns: NS, value: alt }] : []),
-      ...(m ? [{ name: "measured", ns: NS, value: m.at }] : []),
+      ...(m
+        ? [
+            { name: "assessed", ns: NS, value: m.at },
+            { name: "assessment-state", ns: NS, value: m.state },
+            { name: "assessment-check", ns: NS, value: m.check },
+          ]
+        : []),
     ],
+    ...(disagrees && {
+      remarks: `The latest assessment (${m.at}, "${m.title}") did not find this requirement satisfied; the claim stands until the owner reviews it.`,
+    }),
     "by-components": byComponents,
   };
 });
@@ -264,10 +259,13 @@ const out = {
       props: [
         ...Object.entries(counts).map(([k, v]) => ({ name: `requirements-${k}`, ns: NS, value: String(v) })),
         ...Object.entries(bases).map(([k, v]) => ({ name: `basis-${k}`, ns: NS, value: String(v) })),
+        { name: "assessed", ns: NS, value: String(measured.size) },
+        { name: "assessment-disagrees", ns: NS, value: String(disagreements) },
       ],
       remarks:
-        "Generated by grundschutz-worksheets ssp.mjs from a profile, component definitions and assessment results. " +
-        "It states what is claimed and measured, not that the system is compliant.",
+        "Generated by grundschutz-worksheets ssp.mjs from a profile, component definitions and the owner's review. " +
+        "It states how the system implements each requirement, as claimed; assessment results are referenced, not merged. " +
+        "It is not a statement that the system is compliant.",
     },
     "import-profile": { href: s.profile.href },
     "system-characteristics": {
@@ -314,5 +312,5 @@ const out = {
   },
 };
 console.error(`ssp: ${applicable.size} requirements -- ${counts.implemented} implemented, ${counts.partial} partial, ${counts.planned} planned`);
-console.error(`ssp: resting on -- ${bases.measured} measured, ${bases.claimed} claimed, ${bases.reviewed} reviewed, ${bases.none} nothing`);
+console.error(`ssp: resting on -- ${bases.reviewed} reviewed, ${bases.claimed} claimed, ${bases.none} nothing; ${measured.size} assessed, ${disagreements} where the assessment disagrees`);
 process.stdout.write(JSON.stringify(out, null, 2) + "\n");
