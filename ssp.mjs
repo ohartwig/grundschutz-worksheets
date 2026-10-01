@@ -43,8 +43,15 @@
 //     "profile": { "file": "profile.json", "href": "https://example.org/profile.json" },
 //     "components": ["component-a.json"],
 //     "results": ["results-2026-10-01.json"],
-//     "reviews": "reviews.json"
+//     "reviews": "reviews.json",
+//     "inventory": "inventory.json"                       optional
 //   }
+// inventory.json (optional): what the infrastructure code declares, as
+//   { "source": "OpenTofu state of example-infra",
+//     "items": [{ "id": "example.org|www.example.org|A", "type": "dns-record",
+//                 "description": "A record www.example.org" }] }
+// becomes the plan's inventory-items, so the plan lists what exists by code,
+// not by memory.
 // reviews.json (optional): { "date": "2026-09-26", "source": "SoA check",
 //   "requirements": [{ "id": "KONF.3.2", "state": "implemented|partial|planned",
 //                      "note": "evidence in your own words" }] }
@@ -151,6 +158,21 @@ for (const f of s.results ?? []) {
       if (!prev || at > prev.at) measured.set(id, { state, at, title: r.title, description: fd.description, check });
     }
   }
+}
+
+// --- What the infrastructure code declares: the inventory. ---------------
+let inventory = [];
+let inventorySource = "";
+if (s.inventory) {
+  const inv = read(s.inventory, "inventory");
+  inventorySource = inv.source || "";
+  const seen = new Set();
+  for (const it of inv.items ?? []) {
+    if (!it.id || !it.type) fail(`inventory: every item needs "id" and "type"`);
+    if (seen.has(it.id)) fail(`inventory: "${it.id}" is listed twice`);
+    seen.add(it.id);
+  }
+  inventory = [...(inv.items ?? [])].sort((a, b) => a.id.localeCompare(b.id));
 }
 
 // --- What a person reviewed, dated. ----------------------------------------
@@ -260,6 +282,7 @@ const out = {
         ...Object.entries(counts).map(([k, v]) => ({ name: `requirements-${k}`, ns: NS, value: String(v) })),
         ...Object.entries(bases).map(([k, v]) => ({ name: `basis-${k}`, ns: NS, value: String(v) })),
         { name: "assessed", ns: NS, value: String(measured.size) },
+        { name: "inventory-items", ns: NS, value: String(inventory.length) },
         { name: "assessment-disagrees", ns: NS, value: String(disagreements) },
       ],
       remarks:
@@ -304,6 +327,17 @@ const out = {
           status: { state: "operational" },
         })),
       ],
+      ...(inventory.length && {
+        "inventory-items": inventory.map((it) => ({
+          uuid: uuid5(`inventory:${sys.id}:${it.id}`),
+          description: it.description || it.id,
+          props: [
+            { name: "asset-id", value: it.id },
+            { name: "asset-type", ns: NS, value: it.type },
+            ...(inventorySource ? [{ name: "inventory-source", ns: NS, value: inventorySource }] : []),
+          ],
+        })),
+      }),
     },
     "control-implementation": {
       description: `${applicable.size} requirements from the imported profile: ${counts.implemented} implemented, ${counts.partial} partial, ${counts.planned} planned.`,
