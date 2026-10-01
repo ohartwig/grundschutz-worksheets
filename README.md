@@ -189,6 +189,26 @@ Why not compliance-trestle, which assembles plans too: at 5.1.0 its
 requirements and flattens nested catalog groups. The CI still reads every generated plan with trestle, as an
 advisory cross-check.
 
+## How the claims are checked: an assessment plan
+
+OSCAL's chain has four links: the security plan says how the system
+implements each requirement, the **assessment plan** how that is checked, the
+assessment results what was found, the POA&M what will be fixed.
+`assessment-plan.mjs` writes the second from a short description of your
+checks: what each examines, by which method, how often, and which
+requirements it gives evidence for.
+
+```bash
+node assessment-plan.mjs checks.json > assessment-plan.json
+node validate.mjs assessment-plan.json
+```
+
+One activity and one recurring task per check, every requirement ID checked
+against the catalog at the pinned commit. The check name is the join: the same
+name is the `check` prop of every result `results.mjs` writes, and a run file
+can name the plan it follows (`"plan": { "href": ... }`), which becomes the
+result's `import-ap`.
+
 ## Measurements as assessment results
 
 `results.mjs` turns one run of an automated check into OSCAL assessment results

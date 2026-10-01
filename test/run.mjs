@@ -188,4 +188,43 @@ for (const [file, want] of cases) {
     console.log(`${ok ? "ok  " : "FAIL"} ssp: ${name}${b.status ? ": " + b.stderr : ""}`);
   }
 }
+// assessment-plan.mjs: how the claims are checked, as OSCAL.
+{
+  const { writeFileSync, readFileSync, mkdirSync } = await import("node:fs");
+  mkdirSync(".schema-cache", { recursive: true });
+  const cat = ["--catalog", "test/fixtures/recheck-catalog.json"];
+  const gen = (f) => spawnSync(process.execPath, ["assessment-plan.mjs", f, ...cat], { encoding: "utf8" });
+  const a = gen("test/fixtures/checks.json");
+  writeFileSync(".schema-cache/test-ap.json", a.stdout);
+  const v = spawnSync(process.execPath, ["validate.mjs", ".schema-cache/test-ap.json"], { encoding: "utf8" });
+  const ap = a.status === 0 ? JSON.parse(a.stdout)["assessment-plan"] : {};
+  const fixture = JSON.parse(readFileSync("test/fixtures/checks.json", "utf8"));
+  const bad = (mutate) => {
+    const c = structuredClone(fixture);
+    mutate(c);
+    writeFileSync(".schema-cache/ap-bad.json", JSON.stringify(c));
+    return gen(".schema-cache/ap-bad.json").status;
+  };
+  const run = JSON.parse(readFileSync("test/fixtures/results-run.json", "utf8"));
+  run.plan = { href: "assessment-plan.json" };
+  writeFileSync(".schema-cache/run-with-plan.json", JSON.stringify(run));
+  const r = spawnSync(process.execPath, ["results.mjs", ".schema-cache/run-with-plan.json", ...cat], { encoding: "utf8" });
+  const cases = [
+    ["assembles, validates and is deterministic", a.status === 0 && v.status === 0 && a.stdout === gen("test/fixtures/checks.json").stdout],
+    ["one activity and one recurring task per check", ap["local-definitions"]?.activities?.length === 2
+      && ap.tasks?.every((t) => t.timing["at-frequency"]?.period > 0)],
+    ["the activity carries the check name the results use", ap["local-definitions"]?.activities?.some((x) =>
+      x.props.some((p) => p.name === "check" && p.value === "protected-tags"))],
+    ["it points to the security plan it verifies", ap["import-ssp"]?.href === "security-plan.json"],
+    ["an ID outside the catalog is refused", bad((c) => c.checks[0].requirements.push("XYZ.9.9")) === 1],
+    ["a check listed twice is refused", bad((c) => c.checks.push(c.checks[0])) === 1],
+    ["a check without subjects is refused", bad((c) => delete c.checks[0].subjects) === 1],
+    ["results point to the plan they follow", r.status === 0
+      && JSON.parse(r.stdout)["assessment-results"]["import-ap"].href === "assessment-plan.json"],
+  ];
+  for (const [name, ok] of cases) {
+    failed += !ok;
+    console.log(`${ok ? "ok  " : "FAIL"} assessment-plan: ${name}`);
+  }
+}
 process.exit(failed ? 1 : 0);

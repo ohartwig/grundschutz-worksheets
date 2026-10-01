@@ -84,6 +84,7 @@ jobs:
           npm ci
           npm test >/dev/null   # writes the SSP fixture inputs into .schema-cache
           node ssp.mjs test/fixtures/ssp/system.json > out/ssp.json
+          node assessment-plan.mjs test/fixtures/checks.json --catalog test/fixtures/recheck-catalog.json > out/ap.json
       - name: Validate with oscal-cli, warnings count
         run: |
           fail=0
@@ -97,6 +98,7 @@ jobs:
           check ar out/results.json
           check ar out/results-fail.json
           check ssp out/ssp.json
+          check ap out/ap.json
           exit $fail
 
   # Cross-check with compliance-trestle, advisory like oscal-cli: can another
