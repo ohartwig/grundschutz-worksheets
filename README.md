@@ -166,6 +166,10 @@ Component definitions add their implementation statements and evidence links
 to every requirement they claim, but never change a reviewed state: one image's
 definition says what that build had, not what the whole system does.
 
+An optional `inventory` file -- what the infrastructure code declares, for
+example the DNS records of an OpenTofu state -- becomes the plan's
+`inventory-items`, so the plan lists what exists by code, not by memory.
+
 Assessment results are **referenced, not merged**. Each requirement names its
 latest assessment (`assessed`, `assessment-state`, `assessment-check`); one
 claimed as implemented whose latest assessment was not satisfied gets a remark,

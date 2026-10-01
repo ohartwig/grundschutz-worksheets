@@ -165,6 +165,10 @@ for (const [file, want] of cases) {
   sys2.components = ["ssp-component.json"];
   sys2.results = ["ssp-results.json", "ssp-results2.json", "ssp-results3.json"];
   sys2.reviews = "ssp-reviews2.json";
+  sys2.inventory = "ssp-inventory2.json";
+  writeFileSync(".schema-cache/ssp-inventory2.json", JSON.stringify({ source: "Fixture state", items: [
+    { id: "example.org|www.example.org|A", type: "dns-record", description: "A record www.example.org" },
+    { id: "example.org|example.org|MX", type: "dns-record" }] }));
   writeFileSync(".schema-cache/ssp-reviews2.json", JSON.stringify({ date: "2026-09-26", source: "Fixture review",
     requirements: [{ id: "DET.5.3", state: "partial" }, { id: "DEV.4.5", state: "implemented" },
       { id: "DEV.4.3", state: "partial" }] }));
@@ -180,6 +184,12 @@ for (const [file, want] of cases) {
     ["the review is named as the basis", /Reviewed 2026-09-26 \(Fixture review\)/.test(JSON.stringify(reqs2["DET.5.3"] ?? {}))],
     ["a claim does not raise a partial review", st2("DEV.4.3") === "partial"
       && reqs2["DEV.4.3"]?.props.find((p) => p.name === "basis")?.value === "reviewed"],
+    ["the declared inventory becomes inventory-items, sorted and validated", b.status === 0
+      && (() => { const out = JSON.parse(b.stdout)["system-security-plan"];
+        const inv = out["system-implementation"]["inventory-items"] ?? [];
+        writeFileSync(".schema-cache/test-ssp2.json", b.stdout);
+        const v2 = spawnSync(process.execPath, ["validate.mjs", ".schema-cache/test-ssp2.json"], { encoding: "utf8" });
+        return inv.length === 2 && inv[0].props[0].value === "example.org|example.org|MX" && v2.status === 0; })()],
     ["the claim's statement and evidence stay with a reviewed requirement",
       reqs2["DEV.4.3"]?.["by-components"].some((b) => (b.links ?? []).length)],
   ];
