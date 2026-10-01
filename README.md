@@ -161,11 +161,14 @@ The predicate type is the one this repository uses; any URI you own works.
 | reviewed | a dated manual check (optional `reviews` file) | nothing |
 | none | nothing speaks for it: *planned*, and the plan says so | – |
 
-One exception to "measured wins": a measurement can lower a review, never
-raise it. A check usually covers part of a requirement. If a person reviewed
-it as *partial* for a reason the check does not see, a passing check confirms
-*partial*, not *implemented*; a failing one makes an *implemented* review
-*partial*. The entry names both.
+One exception to "measured wins" and "claimed wins": a measurement or a
+claim can lower a review, never raise it. Both cover part of a requirement: a
+check sees what it checks, a component definition says what one build had. If a
+person reviewed the requirement as *partial* for a reason neither sees, a
+passing check or a claim confirms *partial*, not *implemented*; a failing check
+makes an *implemented* review *partial*. The entry names both. A manual spot
+check of the first real plan found the claim case: two requirements an image
+claimed came out *implemented* although the review said *partial*.
 
 ```bash
 node ssp.mjs system.json > ssp.json

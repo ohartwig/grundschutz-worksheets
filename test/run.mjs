@@ -164,7 +164,8 @@ for (const [file, want] of cases) {
   sys2.results = ["ssp-results.json", "ssp-results2.json", "ssp-results3.json"];
   sys2.reviews = "ssp-reviews2.json";
   writeFileSync(".schema-cache/ssp-reviews2.json", JSON.stringify({ date: "2026-09-26", source: "Fixture review",
-    requirements: [{ id: "DET.5.3", state: "partial" }, { id: "DEV.4.5", state: "implemented" }] }));
+    requirements: [{ id: "DET.5.3", state: "partial" }, { id: "DEV.4.5", state: "implemented" },
+      { id: "DEV.4.3", state: "partial" }] }));
   writeFileSync(".schema-cache/ssp-system2.json", JSON.stringify(sys2));
   const b = spawnSync(process.execPath, ["ssp.mjs", ".schema-cache/ssp-system2.json"], { encoding: "utf8" });
   const reqs2 = b.status === 0 ? Object.fromEntries(JSON.parse(b.stdout)["system-security-plan"]["control-implementation"]["implemented-requirements"]
@@ -174,6 +175,8 @@ for (const [file, want] of cases) {
     ["a passing measurement does not raise a partial review", st2("DET.5.3") === "partial"],
     ["a failed measurement lowers an implemented review", st2("DEV.4.5") === "partial"],
     ["the entry says both", /Reviewed 2026-09-26 as partial/.test(JSON.stringify(reqs2["DET.5.3"] ?? {}))],
+    ["a claim does not raise a partial review", st2("DEV.4.3") === "partial"
+      && /Reviewed 2026-09-26 as partial/.test(JSON.stringify(reqs2["DEV.4.3"] ?? {}))],
   ];
   for (const [name, ok] of cases2) {
     failed += !ok;

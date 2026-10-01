@@ -17,12 +17,14 @@
 // check per requirement. Precedence is measurement, then component claim,
 // then review, and every entry says which one it rests on.
 //
-// A measurement can lower a review, never raise it. A check usually covers
-// part of a requirement: a passing backup-freshness check says nothing about
-// the review's reason for "partial" (the copies share an account, say). So
-// where both exist, a failed measurement makes the requirement partial (a
-// reviewed gap stays planned), and a passing one confirms the review's state
-// at most (a reviewed gap becomes partial: something is measurably in place).
+// A measurement or a component's claim can lower a review, never raise it.
+// Both cover part of a requirement: a passing backup-freshness check says
+// nothing about the review's reason for "partial" (the copies share an
+// account, say), and one image's component definition says what that build
+// had, not what the whole system does. So where a review exists, a failed
+// measurement makes the requirement partial (a reviewed gap stays planned),
+// and a passing measurement or a claim confirms the review's state at most (a
+// reviewed gap becomes partial: something is demonstrably in place).
 //
 // Nothing is written by hand into the plan; the system description comes from
 // a small file, everything else from the inputs. The same inputs give the same
@@ -177,9 +179,15 @@ const bases = { measured: 0, claimed: 0, reviewed: 0, none: 0 };
 const requirements = [...applicable].sort(byId).map((id) => {
   const m = measured.get(id);
   const claimants = components.filter((c) => c.claims.has(id));
+  const rv = reviewed.get(id);
   const byComponents = claimants.map((c) => {
     const cl = c.claims.get(id);
-    const state = m?.state === "not-satisfied" ? "partial" : "implemented";
+    // A claim is evidence for one component, a review judges the whole
+    // system: like a measurement, a claim confirms a review at most.
+    const failed = m?.state === "not-satisfied";
+    const capped = rv && rv.state !== "implemented";
+    const state = failed || capped ? "partial" : "implemented";
+    const reviewNote = rv ? ` Reviewed ${review.date} as ${rv.state}; a claim or measurement lowers a review, never raises it.` : "";
     return {
       "component-uuid": c.uuid,
       uuid: uuid5(`by-component:${sys.id}:${id}:${c.source}`),
@@ -187,14 +195,13 @@ const requirements = [...applicable].sort(byId).map((id) => {
       ...(cl.links.length && { links: cl.links }),
       "implementation-status": {
         state,
-        remarks: m
+        remarks: (m
           ? `Measured ${m.at} by "${m.title}": ${m.state}.`
-          : "Claimed by the component with evidence; no measurement covers it yet.",
+          : "Claimed by the component with evidence; no measurement covers it yet.") + reviewNote,
       },
     };
   });
   if (!claimants.length) {
-    const rv = reviewed.get(id);
     let description, state, remarks, basis;
     if (m) {
       description = `${m.description} (check: ${m.check})`;
