@@ -236,6 +236,20 @@ Signed and stored next to the thing it measures, for example as an OCI artefact
 with `oras push` and `cosign sign`, a result becomes evidence a third party can
 verify without trusting the pipeline that wrote it.
 
+## What will be fixed: a POA&M
+
+The last link of the chain. `poam.mjs` turns two things into items: a
+requirement the security plan itself claims as *partial* or *planned*, and one
+the latest assessment did not find satisfied, whatever the plan claims. Each
+item gets a risk that stays open until an action closes it. Actions come from
+your own register (ID, title, requirements, due date, status); an item without
+one gets no invented date, says that it has none, and is counted.
+
+```bash
+node poam.mjs poam.json > poam-out.json
+node validate.mjs poam-out.json
+```
+
 ## When the catalog moves
 
 `recheck.mjs` compares the requirements a component definition claims with
