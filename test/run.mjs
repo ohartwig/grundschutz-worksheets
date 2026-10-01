@@ -227,4 +227,43 @@ for (const [file, want] of cases) {
     console.log(`${ok ? "ok  " : "FAIL"} assessment-plan: ${name}`);
   }
 }
+// poam.mjs: gaps from the plan and findings from the results become items.
+{
+  const { writeFileSync } = await import("node:fs");
+  writeFileSync(".schema-cache/poam-in.json", JSON.stringify({ id: "fixture-poam", title: "Fixture POA&M", version: "2026-10-01",
+    "last-modified": "2026-10-01T00:00:00Z", ssp: { file: "test-ssp.json", href: "security-plan.json" },
+    results: ["ssp-results.json"], actions: "actions.json" }));
+  const acts = (items) => writeFileSync(".schema-cache/actions.json", JSON.stringify({ source: "Fixture register", items }));
+  const gen = () => spawnSync(process.execPath, ["poam.mjs", ".schema-cache/poam-in.json"], { encoding: "utf8" });
+  acts([{ id: "I-1", title: "Scan every image", requirements: ["DET.5.3"], due: "2026-10-31", status: "in-progress" }]);
+  const a = gen();
+  writeFileSync(".schema-cache/test-poam.json", a.stdout);
+  const v = spawnSync(process.execPath, ["validate.mjs", ".schema-cache/test-poam.json"], { encoding: "utf8" });
+  const po = a.status === 0 ? JSON.parse(a.stdout)["plan-of-action-and-milestones"] : {};
+  const item = (id) => (po["poam-items"] ?? []).find((i) => i.props.some((q) => q.name === "control-id" && q.value === id));
+  const risk = (it) => (po.risks ?? []).find((r) => r.uuid === it?.["related-risks"]?.[0]?.["risk-uuid"]);
+  const det = item("DET.5.3");
+  acts([{ id: "I-1", title: "Scan every image", requirements: ["DET.5.3"], due: "2026-10-31", status: "done" }]);
+  const done = JSON.parse(gen().stdout)["plan-of-action-and-milestones"];
+  const doneRisk = done.risks.find((r) => r.title.startsWith("DET.5.3"));
+  acts([{ id: "I-1", title: "x", requirements: ["DET.5.3"], due: "31.10.2026" }]);
+  const badDate = gen().status;
+  acts([{ id: "I-1", title: "Scan every image", requirements: ["DET.5.3"], due: "2026-10-31", status: "in-progress" }]);
+  const cases = [
+    ["assembles, validates and is deterministic", a.status === 0 && v.status === 0 && a.stdout === gen().stdout],
+    ["a partial or planned claim is an item", Boolean(item("DET.5.3")) && Boolean(item("DEV.4.5"))],
+    ["an unsatisfied finding is an item even where the plan claims implemented", Boolean(item("TEST.3.1.3"))
+      && item("TEST.3.1.3")["related-findings"]?.length === 1],
+    ["an action gives the risk its deadline and remediation", risk(det)?.deadline === "2026-10-31T23:59:59Z"
+      && risk(det)?.status === "remediating" && risk(det)?.remediations?.[0]?.title.startsWith("I-1")],
+    ["no action, no invented date -- and it says so", !risk(item("DEV.4.5"))?.deadline
+      && item("DEV.4.5").props.some((q) => q.name === "no-action") && /No action/.test(item("DEV.4.5").remarks)],
+    ["a done action closes the risk", doneRisk?.status === "closed" && doneRisk.remediations[0].lifecycle === "completed"],
+    ["a due date that is not YYYY-MM-DD is refused", badDate === 1],
+  ];
+  for (const [name, ok] of cases) {
+    failed += !ok;
+    console.log(`${ok ? "ok  " : "FAIL"} poam: ${name}`);
+  }
+}
 process.exit(failed ? 1 : 0);
