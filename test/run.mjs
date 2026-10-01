@@ -136,7 +136,9 @@ for (const [file, want] of cases) {
     const basis = (id) => reqs[id]["by-components"][0].props.find((p) => p.name === "basis").value;
     const cases = [
       ["claimed and not measured is implemented", st("DEV.4.3") === "implemented" && basis("DEV.4.3") === "claimed"],
-      ["a failed measurement makes a claim partial", st("TEST.3.1.3") === "partial" && basis("TEST.3.1.3") === "measured"],
+      ["a failed measurement does not rewrite a claim", st("TEST.3.1.3") === "implemented"
+        && reqs["TEST.3.1.3"].props.some((p) => p.name === "assessment-state" && p.value === "not-satisfied")
+        && /did not find this requirement satisfied/.test(reqs["TEST.3.1.3"].remarks ?? "")],
       ["a review speaks where nothing else does", st("DET.5.3") === "partial" && basis("DET.5.3") === "reviewed"],
       ["nothing at all is planned, and says so", st("DEV.4.5") === "planned" && basis("DEV.4.5") === "none"],
       ["evidence links survive", (reqs["DEV.4.3"]["by-components"][0].links ?? [])[0]?.href === "https://ci.example.org/job/1"],
@@ -173,10 +175,13 @@ for (const [file, want] of cases) {
   const st2 = (id) => reqs2[id]?.props.find((p) => p.name === "implementation-status").value;
   const cases2 = [
     ["a passing measurement does not raise a partial review", st2("DET.5.3") === "partial"],
-    ["a failed measurement lowers an implemented review", st2("DEV.4.5") === "partial"],
-    ["the entry says both", /Reviewed 2026-09-26 as partial/.test(JSON.stringify(reqs2["DET.5.3"] ?? {}))],
+    ["a failed measurement leaves an implemented review standing, and says so", st2("DEV.4.5") === "implemented"
+      && /did not find this requirement satisfied/.test(reqs2["DEV.4.5"]?.remarks ?? "")],
+    ["the review is named as the basis", /Reviewed 2026-09-26 \(Fixture review\)/.test(JSON.stringify(reqs2["DET.5.3"] ?? {}))],
     ["a claim does not raise a partial review", st2("DEV.4.3") === "partial"
-      && /Reviewed 2026-09-26 as partial/.test(JSON.stringify(reqs2["DEV.4.3"] ?? {}))],
+      && reqs2["DEV.4.3"]?.props.find((p) => p.name === "basis")?.value === "reviewed"],
+    ["the claim's statement and evidence stay with a reviewed requirement",
+      reqs2["DEV.4.3"]?.["by-components"].some((b) => (b.links ?? []).length)],
   ];
   for (const [name, ok] of cases2) {
     failed += !ok;
