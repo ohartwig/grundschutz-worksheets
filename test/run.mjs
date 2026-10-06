@@ -204,6 +204,23 @@ for (const [file, want] of cases) {
     failed += !ok;
     console.log(`${ok ? "ok  " : "FAIL"} ssp: ${name}${b.status ? ": " + b.stderr : ""}`);
   }
+  // Two checks on one requirement: a failing one that ended earlier is not
+  // hidden by a passing one that ended later.
+  const run5 = { ...run2, check: "fifth-check", start: "2000-01-01T00:00:00Z", end: "2000-01-01T00:01:00Z",
+    subjects: run2.subjects.map((x) => ({ ...x, satisfied: false })) };
+  writeFileSync(".schema-cache/ssp-run5.json", JSON.stringify(run5));
+  writeFileSync(".schema-cache/ssp-results5.json",
+    spawnSync(process.execPath, ["results.mjs", ".schema-cache/ssp-run5.json", ...cat], { encoding: "utf8" }).stdout);
+  const sys3 = { ...sys2, results: ["ssp-results2.json", "ssp-results5.json"] };
+  writeFileSync(".schema-cache/ssp-system3.json", JSON.stringify(sys3));
+  const c3 = spawnSync(process.execPath, ["ssp.mjs", ".schema-cache/ssp-system3.json"], { encoding: "utf8" });
+  const det = c3.status === 0 ? JSON.parse(c3.stdout)["system-security-plan"]["control-implementation"]["implemented-requirements"]
+    .find((r) => r["control-id"] === "DET.5.3") : null;
+  const pv = (n) => det?.props.find((p) => p.name === n)?.value;
+  const ok3 = pv("assessment-state") === "not-satisfied" && /fifth-check/.test(pv("assessment-check") ?? "")
+    && /second-check/.test(pv("assessment-check") ?? "");
+  failed += !ok3;
+  console.log(`${ok3 ? "ok  " : "FAIL"} ssp: an earlier failing check is not hidden by a later passing one${c3.status ? ": " + c3.stderr : ""}`);
 }
 // assessment-plan.mjs: how the claims are checked, as OSCAL.
 {

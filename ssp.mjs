@@ -142,8 +142,12 @@ for (const f of s.components ?? []) {
   }
 }
 
-// --- What was measured: per requirement, the latest finding. --------------
-const measured = new Map(); // id -> { state, at, title, description, check }
+// --- What was measured: per requirement, the latest finding of EACH check. -
+// Several checks may evidence one requirement. Taking only the newest finding
+// overall would let a later passing check hide an earlier failing one, so the
+// latest finding is kept per check, and the requirement is satisfied only when
+// every check's latest finding is.
+const perCheck = new Map(); // id -> Map(check -> { state, at, title, description })
 for (const f of s.results ?? []) {
   const ar = read(f, "assessment results")["assessment-results"];
   if (!ar) fail(`${f} is not OSCAL assessment results`);
@@ -154,10 +158,24 @@ for (const f of s.results ?? []) {
       const id = fd.target?.["target-id"];
       const state = fd.target?.status?.state;
       if (!id || !state) continue;
-      const prev = measured.get(id);
-      if (!prev || at > prev.at) measured.set(id, { state, at, title: r.title, description: fd.description, check });
+      if (!perCheck.has(id)) perCheck.set(id, new Map());
+      const prev = perCheck.get(id).get(check);
+      if (!prev || at > prev.at) perCheck.get(id).set(check, { state, at, title: r.title, description: fd.description });
     }
   }
+}
+const measured = new Map(); // id -> { state, at, title, description, check }
+for (const [id, checks] of perCheck) {
+  const all = [...checks.entries()].sort(([a], [b]) => a.localeCompare(b));
+  const failing = all.filter(([, m]) => m.state !== "satisfied");
+  const shown = failing.length ? failing : all;
+  measured.set(id, {
+    state: failing.length ? "not-satisfied" : "satisfied",
+    at: all.map(([, m]) => m.at).sort().at(-1),
+    title: shown.map(([, m]) => m.title).join("; "),
+    description: shown[0][1].description,
+    check: all.map(([c]) => c).join(", "),
+  });
 }
 
 // --- What the infrastructure code declares: the inventory. ---------------
