@@ -190,6 +190,13 @@ for (const [file, want] of cases) {
         writeFileSync(".schema-cache/test-ssp2.json", b.stdout);
         const v2 = spawnSync(process.execPath, ["validate.mjs", ".schema-cache/test-ssp2.json"], { encoding: "utf8" });
         return inv.length === 2 && inv[0].props[0].value === "example.org|example.org|MX" && v2.status === 0; })()],
+    ["the summary names the claims a review outranks and the failed assessments",
+      b.stderr.includes("ssp: state from -- 3 reviews, 1 component claims, 0 nothing; 2 requirements carry a component claim (a review")
+      && b.stderr.includes("ssp: assessed -- 3 of 4, 2 not satisfied, 2 of them against a claim of implemented")],
+    ["the summary's numbers are in the plan's metadata", b.status === 0 && (() => {
+      const md = Object.fromEntries(JSON.parse(b.stdout)["system-security-plan"].metadata.props.map((p) => [p.name, p.value]));
+      return Number(md["component-claims"]) >= 2 && Number(md["assessed-not-satisfied"]) >= 1
+        && b.stderr.includes(`carry a component claim`) && b.stderr.includes(`assessed -- ${md.assessed} of`); })()],
     ["the claim's statement and evidence stay with a reviewed requirement",
       reqs2["DEV.4.3"]?.["by-components"].some((b) => (b.links ?? []).length)],
   ];
