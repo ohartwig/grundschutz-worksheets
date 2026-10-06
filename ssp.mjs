@@ -207,6 +207,12 @@ const thisSystem = uuid5(`this-system:${sys.id}`);
 const counts = { implemented: 0, partial: 0, planned: 0 };
 const bases = { reviewed: 0, claimed: 0, none: 0 };
 let disagreements = 0;
+// What the summary must say besides the counts above, so that "0 claimed" or
+// "8 assessed" cannot be misread: how many requirements carry a component's
+// claim although a review decides their state, and how many of the assessed
+// ones were not satisfied. Assessed counts requirements of this plan only;
+// a measurement outside the profile is reported above, not counted here.
+let withClaim = 0, assessedIn = 0, notSatisfied = 0;
 const requirements = [...applicable].sort(byId).map((id) => {
   const m = measured.get(id);
   const rv = reviewed.get(id);
@@ -215,6 +221,8 @@ const requirements = [...applicable].sort(byId).map((id) => {
   const basis = rv ? "reviewed" : claimants.length ? "claimed" : "none";
   counts[state]++;
   bases[basis]++;
+  if (claimants.length) withClaim++;
+  if (m) { assessedIn++; if (m.state !== "satisfied") notSatisfied++; }
   // A claim of "implemented" that the latest assessment did not find
   // satisfied: shown, not resolved. The owner decides (status MR).
   const disagrees = m && m.state === "not-satisfied" && state === "implemented";
@@ -281,7 +289,9 @@ const out = {
       props: [
         ...Object.entries(counts).map(([k, v]) => ({ name: `requirements-${k}`, ns: NS, value: String(v) })),
         ...Object.entries(bases).map(([k, v]) => ({ name: `basis-${k}`, ns: NS, value: String(v) })),
-        { name: "assessed", ns: NS, value: String(measured.size) },
+        { name: "assessed", ns: NS, value: String(assessedIn) },
+        { name: "assessed-not-satisfied", ns: NS, value: String(notSatisfied) },
+        { name: "component-claims", ns: NS, value: String(withClaim) },
         { name: "inventory-items", ns: NS, value: String(inventory.length) },
         { name: "assessment-disagrees", ns: NS, value: String(disagreements) },
       ],
@@ -346,5 +356,8 @@ const out = {
   },
 };
 console.error(`ssp: ${applicable.size} requirements -- ${counts.implemented} implemented, ${counts.partial} partial, ${counts.planned} planned`);
-console.error(`ssp: resting on -- ${bases.reviewed} reviewed, ${bases.claimed} claimed, ${bases.none} nothing; ${measured.size} assessed, ${disagreements} where the assessment disagrees`);
+console.error(`ssp: state from -- ${bases.reviewed} reviews, ${bases.claimed} component claims, ${bases.none} nothing; ` +
+  `${withClaim} requirements carry a component claim${bases.reviewed ? " (a review, where there is one, decides the state)" : ""}`);
+console.error(`ssp: assessed -- ${assessedIn} of ${applicable.size}, ${notSatisfied} not satisfied, ` +
+  `${disagreements} of them against a claim of implemented`);
 process.stdout.write(JSON.stringify(out, null, 2) + "\n");
