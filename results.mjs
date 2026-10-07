@@ -20,6 +20,11 @@
 //     "evidence": [{ "text": "pipeline 1234", "href": "https://ci.example.org/p/1234" }],
 //     "plan": { "href": "assessment-plan.json" },  optional: the assessment plan
 //                                              (assessment-plan.mjs) this run follows
+//     "measured_by": { "repository": "group/checks", "commit": "<40-char sha>",
+//                      "image": "registry/image@sha256:...", "job": "https://...",
+//                      "mapping_sha256": "<64 hex>" },
+//                                              optional: the code that measured,
+//                                              written into the result's props
 //     "subjects": [
 //       { "title": "group/app", "href": "https://git.example.org/group/app",
 //         "satisfied": true, "detail": "main protected, force push off" }
@@ -71,6 +76,14 @@ if (Date.parse(r.end) < Date.parse(r.start)) fail("end is before start");
 if (!/^[0-9a-f]{40}$/.test(r.catalog?.commit ?? "")) fail("catalog.commit must be a 40-character commit");
 if (!Array.isArray(r.requirements) || !r.requirements.length) fail("no requirements");
 if (!Array.isArray(r.subjects) || !r.subjects.length) fail("no subjects: a check that looked at nothing has shown nothing");
+// Who measured: optional, but what is given must be what it claims to be --
+// a commit that is not one, or a hash that is not one, would read as
+// provenance and prove nothing. "local" marks a run outside CI.
+const by = r.measured_by;
+if (by) {
+  if (!/^([0-9a-f]{40}|local)$/.test(by.commit ?? "")) fail("measured_by.commit must be a 40-character commit or \"local\"");
+  if (by.mapping_sha256 !== undefined && !/^[0-9a-f]{64}$/.test(by.mapping_sha256)) fail("measured_by.mapping_sha256 must be 64 hex characters");
+}
 for (const s of r.subjects) {
   if (!s.title) fail("every subject needs a title");
   if (typeof s.satisfied !== "boolean") fail(`${s.title}: satisfied must be true or false`);
@@ -192,6 +205,17 @@ const out = {
         props: [
           { name: "check", ns: NS, value: r.check },
           { name: "catalog-commit", ns: NS, value: r.catalog.commit },
+          ...(by
+            ? [
+                ["measured-by-repository", by.repository],
+                ["measured-by-commit", by.commit],
+                ["measured-by-image", by.image],
+                ["measured-by-job", by.job],
+                ["mapping-sha256", by.mapping_sha256],
+              ]
+                .filter(([, v]) => v)
+                .map(([name, value]) => ({ name, ns: NS, value: String(value) }))
+            : []),
         ],
         "reviewed-controls": {
           "control-selections": [{ "include-controls": [...r.requirements].sort(byId).map((id) => ({ "control-id": id })) }],
