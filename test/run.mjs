@@ -102,6 +102,24 @@ for (const [file, want] of cases) {
   const empty = gen(".schema-cache/results-empty.json");
   failed += empty.status !== 1;
   console.log(`${empty.status === 1 ? "ok  " : "FAIL"} results: a run without subjects is refused (exit ${empty.status})`);
+  // measured_by: the props name the code that measured; a false commit is refused.
+  const prov = JSON.parse(readFileSync("test/fixtures/results-run.json", "utf8"));
+  prov.measured_by = { repository: "g/checks", commit: "c".repeat(40), image: "r/i@sha256:" + "b".repeat(64),
+                       job: "https://ci.example.org/j/1", mapping_sha256: "a".repeat(64) };
+  writeFileSync(".schema-cache/results-prov.json", JSON.stringify(prov));
+  const pr = gen(".schema-cache/results-prov.json");
+  writeFileSync(".schema-cache/results-prov-out.json", pr.stdout);
+  const pv = spawnSync(process.execPath, ["validate.mjs", ".schema-cache/results-prov-out.json"], { encoding: "utf8" });
+  const props = pr.status === 0 ? Object.fromEntries(JSON.parse(pr.stdout)["assessment-results"].results[0].props.map((p) => [p.name, p.value])) : {};
+  const p1 = pv.status === 0 && props["measured-by-commit"] === "c".repeat(40) && props["measured-by-image"].endsWith("b".repeat(64))
+    && props["mapping-sha256"] === "a".repeat(64) && props["measured-by-job"] === "https://ci.example.org/j/1";
+  failed += !p1;
+  console.log(`${p1 ? "ok  " : "FAIL"} results: measured_by becomes props and still validates`);
+  prov.measured_by.commit = "main";
+  writeFileSync(".schema-cache/results-prov-bad.json", JSON.stringify(prov));
+  const pb = gen(".schema-cache/results-prov-bad.json");
+  failed += pb.status !== 1;
+  console.log(`${pb.status === 1 ? "ok  " : "FAIL"} results: a measured_by commit that is not one is refused (exit ${pb.status})`);
 }
 // ssp.mjs: claims, measurements and reviews become one plan, in that order of precedence.
 {
