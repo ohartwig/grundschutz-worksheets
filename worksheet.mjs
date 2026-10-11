@@ -68,7 +68,16 @@ if (sourceFilter.size && !mappingPath) {
   process.exit(2);
 }
 
-const rawUrl = (p) => `${REPO}/${commit}/${p.split("/").map(encodeURIComponent).join("/")}`;
+// A path in the library is plain segments. An empty one, "." or ".." would
+// resolve above the pinned commit and fetch another repository or a branch.
+const rawUrl = (p) => {
+  const segs = p.split("/");
+  if (segs.some((x) => !x || x === "." || x === "..")) {
+    console.error(`not a path in the library: ${p}`);
+    process.exit(2);
+  }
+  return `${REPO}/${commit}/${segs.map(encodeURIComponent).join("/")}`;
+};
 const load = async (p) => {
   const r = await fetch(rawUrl(p));
   if (!r.ok) {
@@ -160,8 +169,9 @@ if (mappingPath) {
 if (profilePath) {
   const { profile } = JSON.parse(readFileSync(profilePath, "utf8"));
   const imp = profile?.imports?.[0];
-  if (!imp || !imp.href.includes(`/${commit}/`)) {
-    console.error(`profile does not import the catalog at commit ${commit}: ${imp?.href}`);
+  // Exactly the URL this run reads -- the form profile.mjs writes.
+  if (!imp || imp.href !== rawUrl(path)) {
+    console.error(`profile does not import ${path} from the library at commit ${commit}: ${imp?.href}`);
     process.exit(2);
   }
   const include = new Set((imp["include-controls"] ?? []).flatMap((x) => x["with-ids"] ?? []));
@@ -191,7 +201,13 @@ if (summary) {
     console.log("");
   }
 } else if (format === "csv") {
-  const q = (v) => `"${String(v).replace(/"/g, '""')}"`;
+  // A cell that starts with = + - @ (or a tab or CR) is a formula to a
+  // spreadsheet; a leading apostrophe makes it text. The prose is the BSI's,
+  // but the sheet is where a reviewer works.
+  const q = (v) => {
+    const s = String(v);
+    return `"${(/^[=+@\t\r-]/.test(s) ? `'${s}` : s).replace(/"/g, '""')}"`;
+  };
   const cols = ["id", "practice", "title", "level", "modal", "action", "subject", "target", "documentation", "effort", "from", "statement"];
   console.log([...cols, "evidence", "status", "note"].join(","));
   for (const r of selected) console.log([...cols.map((c) => q(c === "from" ? r.from.join(" ") : r[c])), "", "", ""].join(","));
