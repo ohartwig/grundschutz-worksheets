@@ -37,6 +37,21 @@ for (const [file, want] of cases) {
   const bad = spawnSync(process.execPath, ["profile.mjs", "test/fixtures/tailoring-unknown-id.json"], { encoding: "utf8" });
   failed += bad.status !== 1;
   console.log(`${bad.status === 1 ? "ok  " : "FAIL"} unknown ID is refused (exit ${bad.status})`);
+  // Parameters: a value becomes set-parameters and fills the worksheet's blank.
+  const sp = same ? JSON.parse(a.stdout).profile.modify?.["set-parameters"] : null;
+  const p1 = sp?.length === 1 && sp[0]["param-id"] === "konf.2.2-prm1" && sp[0].values[0] === "BSI TR-02102-2";
+  failed += !p1;
+  console.log(`${p1 ? "ok  " : "FAIL"} profile: a parameter value becomes set-parameters`);
+  if (same) {
+    const ws = spawnSync(process.execPath, ["worksheet.mjs", "control_layer/Mindeststandard-TLS/Entwurf-Mindeststandard-TLS-catalog.json",
+      "--profile", ".schema-cache/test-profile.json", "--commit", "367d775010abee641b258926bb482fcd05270059"], { encoding: "utf8" });
+    const p2 = ws.status === 0 && ws.stdout.includes("[BSI TR-02102-2]");
+    failed += !p2;
+    console.log(`${p2 ? "ok  " : "FAIL"} worksheet: a profile's parameter value replaces the blank${p2 ? "" : ": " + ws.stderr}`);
+  }
+  const oos = spawnSync(process.execPath, ["profile.mjs", "test/fixtures/tailoring-param-out-of-scope.json"], { encoding: "utf8" });
+  failed += oos.status !== 1;
+  console.log(`${oos.status === 1 ? "ok  " : "FAIL"} profile: a parameter of a requirement out of scope is refused (exit ${oos.status})`);
 }
 // component.mjs: deterministic, validates, unknown ID refused, subject checked.
 {
@@ -344,5 +359,56 @@ for (const [file, want] of cases) {
   const refused = bad.status === 1 && /NOPE\.1 not in the catalog/.test(bad.stderr) && /A\.3: neither mapped/.test(bad.stderr);
   failed += !refused;
   console.log(`${refused ? "ok  " : "FAIL"} unknown target and unmapped source are refused${refused ? "" : ": " + bad.stderr}`);
+}
+// What the inputs may not do: leave the pinned library, or pass a status that
+// is only a property of Object.prototype.
+{
+  const { writeFileSync, readFileSync } = await import("node:fs");
+  const C = "367d775010abee641b258926bb482fcd05270059";
+  const away = "../../../ohartwig/grundschutz-worksheets/main/package.json";
+  // The old code also exited 1 on these inputs -- after fetching the wrong file --
+  // so the refusal must be the stated one, not a crash downstream.
+  const check = (name, r, want, said = /not (a path in|the library)/) => {
+    const ok = r.status === want && (want === 0 || said.test(r.stderr));
+    failed += !ok;
+    console.log(`${ok ? "ok  " : "FAIL"} ${name} (exit ${r.status}, want ${want})`);
+    if (!ok) console.log(r.stdout + r.stderr);
+  };
+  // Every tool that builds a library URL from a path refuses ".." before it fetches.
+  check("worksheet: a catalog path with .. is refused", spawnSync(process.execPath, ["worksheet.mjs", away, "--commit", C], { encoding: "utf8" }), 2);
+  check("validate --bsi: a path with .. is refused", spawnSync(process.execPath, ["validate.mjs", "--bsi", away, "--commit", C], { encoding: "utf8" }), 2);
+  const withPath = (src, dst) => {
+    const j = JSON.parse(readFileSync(src, "utf8"));
+    j.catalog.path = away;
+    writeFileSync(dst, JSON.stringify(j));
+    return dst;
+  };
+  check("profile: a catalog path with .. is refused", spawnSync(process.execPath, ["profile.mjs", withPath("test/fixtures/tailoring.json", ".schema-cache/away-tailoring.json")], { encoding: "utf8" }), 1);
+  check("component: a catalog path with .. is refused", spawnSync(process.execPath, ["component.mjs", withPath("test/fixtures/component-source.json", ".schema-cache/away-component.json")], { encoding: "utf8" }), 1);
+  check("results: a catalog path with .. is refused", spawnSync(process.execPath, ["results.mjs", withPath("test/fixtures/results-run.json", ".schema-cache/away-run.json")], { encoding: "utf8" }), 1);
+  check("assessment-plan: a catalog path with .. is refused", spawnSync(process.execPath, ["assessment-plan.mjs", withPath("test/fixtures/checks.json", ".schema-cache/away-checks.json")], { encoding: "utf8" }), 1);
+  // recheck --commit follows the definition's source, so the source must be the library.
+  const cd = JSON.parse(readFileSync("test/fixtures/recheck-component.json", "utf8"));
+  cd["component-definition"].components[0]["control-implementations"][0].source = `https://mirror.example.org/catalogs/${C}/catalog.json`;
+  writeFileSync(".schema-cache/recheck-foreign.json", JSON.stringify(cd));
+  check("recheck: a source outside the library is refused", spawnSync(process.execPath, ["recheck.mjs", ".schema-cache/recheck-foreign.json", "--commit", C], { encoding: "utf8" }), 2);
+  // A library prefix followed by ".." (plain or percent-encoded) leaves it again once fetched.
+  for (const [label, dots] of [["..", ".."], ["%2e%2e", "%2e%2e"]]) {
+    cd["component-definition"].components[0]["control-implementations"][0].source = `https://raw.githubusercontent.com/BSI-Bund/Stand-der-Technik-Bibliothek/${C}/${dots}/${dots}/${dots}/ohartwig/grundschutz-worksheets/main/package.json`;
+    writeFileSync(".schema-cache/recheck-dots.json", JSON.stringify(cd));
+    check(`recheck: a library source with ${label} behind the commit is refused`, spawnSync(process.execPath, ["recheck.mjs", ".schema-cache/recheck-dots.json", "--commit", C], { encoding: "utf8" }), 2);
+  }
+  // worksheet --profile: the import must be this run's catalog URL, as profile.mjs writes it.
+  const CAT = "control_layer/Grundschutz++/Grundschutz++-resolved_catalog.json";
+  writeFileSync(".schema-cache/away-profile.json", JSON.stringify({ profile: { imports: [{ href: `https://mirror.example.org/${C}/catalog.json`, "include-controls": [{ "with-ids": ["DET.5.3"] }] }] } }));
+  check("worksheet: a profile importing from outside the library is refused", spawnSync(process.execPath, ["worksheet.mjs", CAT, "--commit", C, "--profile", ".schema-cache/away-profile.json"], { encoding: "utf8" }), 2, /does not import/);
+  const tailoring = JSON.parse(readFileSync("test/fixtures/tailoring.json", "utf8"));
+  const made = spawnSync(process.execPath, ["worksheet.mjs", tailoring.catalog.path, "--commit", tailoring.catalog.commit, "--profile", ".schema-cache/test-profile.json"], { encoding: "utf8" });
+  check("worksheet: a profile written by profile.mjs is accepted", made, 0);
+  // poam: an action status that is a prototype property is not a status.
+  const pin = JSON.parse(readFileSync(".schema-cache/poam-in.json", "utf8"));
+  writeFileSync(".schema-cache/actions-proto.json", JSON.stringify({ source: "register", items: [{ id: "I-1", title: "x", requirements: ["DET.5.3"], status: "constructor" }] }));
+  writeFileSync(".schema-cache/poam-proto.json", JSON.stringify({ ...pin, actions: "actions-proto.json" }));
+  check("poam: a status named after a prototype property is refused", spawnSync(process.execPath, ["poam.mjs", ".schema-cache/poam-proto.json"], { encoding: "utf8" }), 1, /status must be/);
 }
 process.exit(failed ? 1 : 0);
