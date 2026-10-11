@@ -24,11 +24,11 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import Ajv from "ajv";
 import addFormats from "ajv-formats";
+import { libraryUrl } from "./lib/oscal.mjs";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const pins = JSON.parse(readFileSync(join(here, "schemas.json"), "utf8"));
 const cacheDir = join(here, ".schema-cache");
-const BSI = "https://raw.githubusercontent.com/BSI-Bund/Stand-der-Technik-Bibliothek";
 
 const args = process.argv.slice(2);
 const opt = (name) => {
@@ -83,12 +83,11 @@ async function loadInputs() {
       process.exit(2);
     }
     // Plain segments only: "" or ".." would resolve above the pinned commit.
-    const segs = bsiPath.split("/");
-    if (segs.some((x) => !x || x === "." || x === "..")) {
+    const url = libraryUrl(commit, bsiPath);
+    if (!url) {
       console.error(`not a path in the library: ${bsiPath}`);
       process.exit(2);
     }
-    const url = `${BSI}/${commit}/${segs.map(encodeURIComponent).join("/")}`;
     const r = await fetch(url);
     if (!r.ok) {
       console.error(`${r.status} for ${url}`);

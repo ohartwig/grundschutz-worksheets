@@ -56,11 +56,9 @@
 //
 // No dependencies. Node 24 (LTS) or later.
 
-import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
+import { NS, byId, everyControl, libraryUrl, uuid5 as uuid5From } from "./lib/oscal.mjs";
 
-const REPO = "https://raw.githubusercontent.com/BSI-Bund/Stand-der-Technik-Bibliothek";
-const NS = "https://github.com/ohartwig/grundschutz-worksheets/ns";
 const UUID_NS = "b1f0c6a2-5d3e-4f7a-9c8b-2e6d1a4f0b37";
 const RELATIONSHIPS = ["equivalent-to", "equal-to", "subset-of", "superset-of", "intersects-with"];
 const FULL = ["equivalent-to", "equal-to", "subset-of"];
@@ -82,42 +80,19 @@ if (!["draft", "not-complete", "complete"].includes(m.status)) fail('status must
 if (!["human", "automation", "hybrid"].includes(m.method)) fail("method must be human, automation or hybrid");
 if (!m.source?.title || !m.source?.href || !m.source?.ids?.length) fail("source needs title, href and ids");
 
-const uuid5 = (name) => {
-  const ns = Buffer.from(UUID_NS.replace(/-/g, ""), "hex");
-  const h = createHash("sha1").update(Buffer.concat([ns, Buffer.from(name, "utf8")])).digest();
-  h[6] = (h[6] & 0x0f) | 0x50;
-  h[8] = (h[8] & 0x3f) | 0x80;
-  const x = h.subarray(0, 16).toString("hex");
-  return `${x.slice(0, 8)}-${x.slice(8, 12)}-${x.slice(12, 16)}-${x.slice(16, 20)}-${x.slice(20)}`;
-};
+const uuid5 = uuid5From(UUID_NS);
 
-// A path in the library is plain segments. An empty one, "." or ".." would
-// resolve above the pinned commit and fetch another repository or a branch.
-const libraryUrl = (p, what) => {
-  const segs = String(p ?? "").split("/");
-  if (segs.some((x) => !x || x === "." || x === "..")) fail(`${what} is not a path in the library: ${p}`);
-  return `${REPO}/${m.catalog.commit}/${segs.map(encodeURIComponent).join("/")}`;
-};
-const href = libraryUrl(m.catalog.path, "catalog.path");
+// A path in the library is plain segments; anything else has no URL.
+const pinned = (p, what) => libraryUrl(m.catalog.commit, p) ?? fail(`${what} is not a path in the library: ${p}`);
+const href = pinned(m.catalog.path, "catalog.path");
 const r = await fetch(href);
 if (!r.ok) fail(`${r.status} for ${href}`);
 const { catalog } = await r.json();
 if (!catalog) fail("not an OSCAL catalog");
 const known = new Set();
-const walk = (controls) => {
-  for (const c of controls ?? []) {
-    known.add(c.id);
-    walk(c.controls);
-  }
-};
-const groups = (gs) => {
-  for (const g of gs ?? []) {
-    walk(g.controls);
-    groups(g.groups);
-  }
-};
-walk(catalog.controls);
-groups(catalog.groups);
+for (const c of everyControl(catalog)) {
+  known.add(c.id);
+}
 
 const errors = [];
 const ids = new Set(m.source.ids);
@@ -127,7 +102,7 @@ const unmapped = m.unmapped ?? [];
 // The BSI mappings a source can go through: control -> Grundschutz++ targets.
 const via = new Map();
 for (const [name, v] of Object.entries(m.via ?? {})) {
-  const u = libraryUrl(v.path, `via.${name}.path`);
+  const u = pinned(v.path, `via.${name}.path`);
   const res = await fetch(u);
   if (!res.ok) fail(`${res.status} for ${u}`);
   const { "mapping-collection": mc } = await res.json();
@@ -141,7 +116,6 @@ for (const [name, v] of Object.entries(m.via ?? {})) {
       }
   via.set(name, { ...v, href: u, targets });
 }
-const byId = (a, b) => a.localeCompare(b, "en", { numeric: true });
 const lagging = new Set();
 for (const [i, x] of maps.entries()) {
   const at = `maps[${i}] (${x.source})`;

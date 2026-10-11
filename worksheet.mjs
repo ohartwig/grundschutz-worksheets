@@ -50,8 +50,7 @@
 
 import { createHash } from "node:crypto";
 import { readFileSync, readdirSync } from "node:fs";
-
-const REPO = "https://raw.githubusercontent.com/BSI-Bund/Stand-der-Technik-Bibliothek";
+import { libraryUrl } from "./lib/oscal.mjs";
 
 const args = process.argv.slice(2);
 const valued = ["--commit", "--mapping", "--sources", "--profile", "--practices", "--levels", "--modal", "--format", "--preset", "--catalog-file", "--mapping-file"];
@@ -73,87 +72,95 @@ if (args.includes("--presets")) {
   }
   process.exit(0);
 }
-const presetId = opt("--preset");
-let preset = {};
-if (presetId) {
-  if (!presetIds().includes(presetId)) {
-    console.error(`unknown preset "${presetId}"; known: ${presetIds().join(", ")}`);
-    process.exit(2);
-  }
-  preset = readPreset(presetId);
-}
-
-// A catalog the library does not have is read from disk and pinned by its
-// SHA-256. The file is not part of this repository (A5 states no licence), so
-// the preset names it and its hash, and the user supplies it.
-const catalogFile = opt("--catalog-file");
-const fileSha = catalogFile ? createHash("sha256").update(readFileSync(catalogFile)).digest("hex") : "";
-if (preset["catalog-file"]) {
-  const want = preset["catalog-file"];
-  if (!catalogFile) {
-    console.error(`preset ${presetId} needs --catalog-file ${want.name} (${want.source})`);
-    process.exit(2);
-  }
-  if (fileSha !== want.sha256) {
-    console.error(`${catalogFile} is not the ${want.name} the preset is tested with: sha256 ${fileSha}, want ${want.sha256}`);
-    process.exit(2);
-  }
-}
-const path = catalogFile ? "" : args.find((a, i) => !a.startsWith("--") && !valueAt.has(i)) ?? preset.catalog;
-const commit = opt("--commit") || preset.commit || "";
-// A mapping is the library's (--mapping, a path at the commit) or a file on
-// disk (--mapping-file, e.g. this repository's mappings/). Which one is said,
-// not guessed from what happens to exist in the working directory. A preset's
-// mapping file lives in this repository; one on the command line is relative
-// to where you are.
-const cliMapping = opt("--mapping") || opt("--mapping-file");
-const mappingPath = opt("--mapping") || (cliMapping || opt("--profile") ? "" : preset.mapping ?? "");
-const mappingFile = opt("--mapping-file") || (cliMapping || opt("--profile") || !preset["mapping-file"] ? "" : new URL(preset["mapping-file"], import.meta.url));
-const mappingName = mappingPath || (mappingFile ? String(opt("--mapping-file") || preset["mapping-file"]) : "");
-const profilePath = opt("--profile");
+// Every option, from the command line or a preset, resolved in one place:
+// where the catalog comes from and how it is pinned, which mapping or profile
+// narrows it, and which filters apply. A conflict is a usage error (exit 2),
+// thrown here and reported once below.
+class UsageError extends Error {}
 const list = (s) => s.split(/[,\n]/).map((x) => x.trim()).filter(Boolean);
-const sourcesArg = opt("--sources");
-const sourceFilter = new Set(sourcesArg.startsWith("@") ? list(readFileSync(sourcesArg.slice(1), "utf8")) : list(sourcesArg));
+const settings = () => {
+  const presetId = opt("--preset");
+  let preset = {};
+  if (presetId) {
+    if (!presetIds().includes(presetId)) throw new UsageError(`unknown preset "${presetId}"; known: ${presetIds().join(", ")}`);
+    preset = readPreset(presetId);
+  }
+
+  // A catalog the library does not have is read from disk and pinned by its
+  // SHA-256. The file is not part of this repository (A5 states no licence), so
+  // the preset names it and its hash, and the user supplies it.
+  const catalogFile = opt("--catalog-file");
+  const fileSha = catalogFile ? createHash("sha256").update(readFileSync(catalogFile)).digest("hex") : "";
+  if (preset["catalog-file"]) {
+    const want = preset["catalog-file"];
+    if (!catalogFile) throw new UsageError(`preset ${presetId} needs --catalog-file ${want.name} (${want.source})`);
+    if (fileSha !== want.sha256) throw new UsageError(`${catalogFile} is not the ${want.name} the preset is tested with: sha256 ${fileSha}, want ${want.sha256}`);
+  }
+  const path = catalogFile ? "" : args.find((a, i) => !a.startsWith("--") && !valueAt.has(i)) ?? preset.catalog;
+  const commit = opt("--commit") || preset.commit || "";
+
+  // A mapping is the library's (--mapping, a path at the commit) or a file on
+  // disk (--mapping-file, e.g. this repository's mappings/). Which one is said,
+  // not guessed from what happens to exist in the working directory. A preset's
+  // mapping file lives in this repository; one on the command line is relative
+  // to where you are. Anything named on the command line replaces the preset's.
+  const profilePath = opt("--profile");
+  const own = opt("--mapping") || opt("--mapping-file") || profilePath;
+  const mappingPath = opt("--mapping") || (own ? "" : preset.mapping ?? "");
+  const mappingFile = opt("--mapping-file") || (own || !preset["mapping-file"] ? "" : new URL(preset["mapping-file"], import.meta.url));
+  const mappingName = mappingPath || (mappingFile ? String(opt("--mapping-file") || preset["mapping-file"]) : "");
+
+  const sourcesArg = opt("--sources");
+  const sourceFilter = new Set(sourcesArg.startsWith("@") ? list(readFileSync(sourcesArg.slice(1), "utf8")) : list(sourcesArg));
+  const format = opt("--format") || "md";
+
+  if (catalogFile && (mappingPath || mappingFile || profilePath)) throw new UsageError("--catalog-file takes no --mapping or --profile: both refer to a library catalog");
+  if ((!catalogFile && (!path || !/^[0-9a-f]{40}$/.test(commit))) || !["md", "csv"].includes(format)) {
+    throw new UsageError([
+      "usage: worksheet.mjs <catalog path> --commit <40-char sha> [--mapping <path> | --mapping-file <file>] [--sources <list|@file>] [--profile <file>] [--practices A,B] [--levels L] [--modal M] [--format md|csv] [--summary]",
+      "       worksheet.mjs --preset <id> [options]   ·   worksheet.mjs --presets",
+      "A branch name is refused on purpose: the library republishes continuously.",
+    ].join("\n"));
+  }
+  if (opt("--mapping") && opt("--mapping-file")) throw new UsageError("--mapping and --mapping-file exclude each other");
+  if (profilePath && (mappingPath || mappingFile)) throw new UsageError("--profile and --mapping exclude each other");
+  if (sourceFilter.size && !mappingPath && !mappingFile) throw new UsageError("--sources needs --mapping");
+
+  return {
+    presetId, preset, catalogFile, fileSha, path, commit,
+    mappingPath, mappingFile, mappingName, profilePath, sourceFilter,
+    practices: list(opt("--practices")),
+    levels: list(opt("--levels")),
+    modals: list(opt("--modal")),
+    format,
+    summary: args.includes("--summary"),
+  };
+};
+let config;
+try {
+  config = settings();
+} catch (e) {
+  if (!(e instanceof UsageError)) throw e;
+  console.error(e.message);
+  process.exit(2);
+}
+const {
+  presetId, preset, catalogFile, fileSha, path, commit,
+  mappingPath, mappingFile, mappingName, profilePath, sourceFilter,
+  practices, levels, modals, format, summary,
+} = config;
 const sourcePrefixes = [...sourceFilter].filter((s) => s.endsWith("*")).map((s) => s.slice(0, -1));
 const sourceWanted = (id) => !sourceFilter.size || sourceFilter.has(id) || sourcePrefixes.some((p) => id.startsWith(p));
-const practices = list(opt("--practices"));
-const levels = list(opt("--levels"));
-const modals = list(opt("--modal"));
-const format = opt("--format") || "md";
-const summary = args.includes("--summary");
-
-if (catalogFile && (mappingPath || mappingFile || profilePath)) {
-  console.error("--catalog-file takes no --mapping or --profile: both refer to a library catalog");
-  process.exit(2);
-}
-if ((!catalogFile && (!path || !/^[0-9a-f]{40}$/.test(commit))) || !["md", "csv"].includes(format)) {
-  console.error("usage: worksheet.mjs <catalog path> --commit <40-char sha> [--mapping <path>] [--sources <list|@file>] [--profile <file>] [--practices A,B] [--levels L] [--modal M] [--format md|csv] [--summary]");
-  console.error("       worksheet.mjs --preset <id> [options]   ·   worksheet.mjs --presets");
-  console.error("A branch name is refused on purpose: the library republishes continuously.");
-  process.exit(2);
-}
-if (opt("--mapping") && opt("--mapping-file")) {
-  console.error("--mapping and --mapping-file exclude each other");
-  process.exit(2);
-}
-if (profilePath && (mappingPath || mappingFile)) {
-  console.error("--profile and --mapping exclude each other");
-  process.exit(2);
-}
-if (sourceFilter.size && !mappingPath && !mappingFile) {
-  console.error("--sources needs --mapping");
-  process.exit(2);
-}
 
 // A path in the library is plain segments. An empty one, "." or ".." would
 // resolve above the pinned commit and fetch another repository or a branch.
 const rawUrl = (p) => {
-  const segs = p.split("/");
-  if (segs.some((x) => !x || x === "." || x === "..")) {
+  const url = libraryUrl(commit, p);
+  if (!url) {
     console.error(`not a path in the library: ${p}`);
     process.exit(2);
   }
-  return `${REPO}/${commit}/${segs.map(encodeURIComponent).join("/")}`;
+  return url;
 };
 const load = async (p) => {
   const r = await fetch(rawUrl(p));
