@@ -66,11 +66,10 @@
 //
 // No dependencies. Node 24 (LTS) or later.
 
-import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
+import { NS, byId, uuid5 as uuid5From } from "./lib/oscal.mjs";
 
-const NS = "https://github.com/ohartwig/grundschutz-worksheets/ns";
 const UUID_NS = "8e3f1a52-6c0d-4b7e-9a21-f4c5d7e6b039";
 
 const file = process.argv[2];
@@ -98,15 +97,7 @@ for (const k of ["id", "name", "description", "boundary"]) if (!sys[k]) fail(`mi
 if (!sys["information-type"]?.title) fail('missing "system.information-type.title"');
 if (!s.profile?.file || !s.profile?.href) fail('"profile" needs "file" and "href"');
 
-const uuid5 = (name) => {
-  const ns = Buffer.from(UUID_NS.replace(/-/g, ""), "hex");
-  const h = createHash("sha1").update(Buffer.concat([ns, Buffer.from(name, "utf8")])).digest();
-  h[6] = (h[6] & 0x0f) | 0x50;
-  h[8] = (h[8] & 0x3f) | 0x80;
-  const x = h.subarray(0, 16).toString("hex");
-  return `${x.slice(0, 8)}-${x.slice(8, 12)}-${x.slice(12, 16)}-${x.slice(16, 20)}-${x.slice(20)}`;
-};
-const byId = (a, b) => a.localeCompare(b, "en", { numeric: true });
+const uuid5 = uuid5From(UUID_NS);
 
 // --- What applies: the profile's selection. -------------------------------
 const profile = read(s.profile.file, "profile").profile;

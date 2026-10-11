@@ -43,11 +43,9 @@
 //
 // No dependencies. Node 24 (LTS) or later.
 
-import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
+import { NS, byId, everyControl, libraryUrl, uuid5 as uuid5From } from "./lib/oscal.mjs";
 
-const REPO = "https://raw.githubusercontent.com/BSI-Bund/Stand-der-Technik-Bibliothek";
-const NS = "https://github.com/ohartwig/grundschutz-worksheets/ns";
 const UUID_NS = "3d9a7c15-2e4b-4f86-a1c0-7b5e9d2f8a64";
 const METHODS = ["TEST", "EXAMINE", "INTERVIEW"];
 const UNITS = ["seconds", "minutes", "hours", "days", "months", "years"];
@@ -80,22 +78,11 @@ for (const c of p.checks) {
   if (!(c.every?.period > 0) || !UNITS.includes(c.every?.unit)) fail(`${c.check}: "every" needs a period > 0 and a unit (${UNITS.join(", ")})`);
 }
 
-const uuid5 = (name) => {
-  const ns = Buffer.from(UUID_NS.replace(/-/g, ""), "hex");
-  const h = createHash("sha1").update(Buffer.concat([ns, Buffer.from(name, "utf8")])).digest();
-  h[6] = (h[6] & 0x0f) | 0x50;
-  h[8] = (h[8] & 0x3f) | 0x80;
-  const x = h.subarray(0, 16).toString("hex");
-  return `${x.slice(0, 8)}-${x.slice(8, 12)}-${x.slice(12, 16)}-${x.slice(16, 20)}-${x.slice(20)}`;
-};
-const byId = (a, b) => a.localeCompare(b, "en", { numeric: true });
+const uuid5 = uuid5From(UUID_NS);
 
 // Every requirement must exist in the catalog at the pinned commit.
-// A path in the library is plain segments. An empty one, "." or ".." would
-// resolve above the pinned commit and fetch another repository or a branch.
-const segs = String(p.catalog.path ?? "").split("/");
-if (segs.some((x) => !x || x === "." || x === "..")) fail(`catalog.path is not a path in the library: ${p.catalog.path}`);
-const href = `${REPO}/${p.catalog.commit}/${segs.map(encodeURIComponent).join("/")}`;
+// A path in the library is plain segments; anything else has no URL.
+const href = libraryUrl(p.catalog.commit, p.catalog.path) ?? fail(`catalog.path is not a path in the library: ${p.catalog.path}`);
 let catalog;
 if (local) catalog = JSON.parse(readFileSync(local, "utf8")).catalog;
 else {
@@ -105,20 +92,9 @@ else {
 }
 if (!catalog) fail("not an OSCAL catalog");
 const known = new Set();
-const walk = (controls) => {
-  for (const c of controls ?? []) {
-    known.add(c.id);
-    walk(c.controls);
-  }
-};
-const groups = (gs) => {
-  for (const g of gs ?? []) {
-    walk(g.controls);
-    groups(g.groups);
-  }
-};
-walk(catalog.controls);
-groups(catalog.groups);
+for (const c of everyControl(catalog)) {
+  known.add(c.id);
+}
 for (const c of p.checks) {
   const unknown = c.requirements.filter((id) => !known.has(id));
   if (unknown.length) fail(`${c.check}: not in the catalog at ${p.catalog.commit.slice(0, 7)}: ${unknown.join(", ")}`);
