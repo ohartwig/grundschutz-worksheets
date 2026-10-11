@@ -1,10 +1,19 @@
 # Changelog
 
-What changed for someone who uses the scripts, newest first. There are no
-releases yet; `main` is what you get. Entries marked **breaking** can change
-what an existing call or a spreadsheet built on the output does.
+What changed for someone who uses the scripts, newest first. Releases are
+tagged `vX.Y.Z`; `main` may be ahead of the latest one. Entries marked
+**breaking** can change what an existing call or a spreadsheet built on the
+output does.
 
-## Unreleased (since 2026-10-07)
+## Unreleased
+
+Nothing yet.
+
+## 0.1.0 (2026-10-11)
+
+The first release: everything up to the review sheets for the draft
+mappings. Below is what changed since 2026-10-07; before that, the scripts
+had no version.
 
 ### Breaking
 
@@ -40,3 +49,5 @@ what an existing call or a spreadsheet built on the output does.
   (A5). `--levels`, `--modal`, and `*` prefixes in `--sources`. (#6)
 - **Parameters** in a tailoring file become the profile's `set-parameters`,
   and the worksheet prints your value in place of the catalog's blank. (#7)
+- **Review sheets** for the draft mappings: `mapping.mjs --review`, committed
+  in `mappings/review/`. (#9)
