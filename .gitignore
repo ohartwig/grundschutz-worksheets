@@ -3,3 +3,4 @@ worksheet.csv
 .DS_Store
 .schema-cache/
 node_modules/
+catalogs/

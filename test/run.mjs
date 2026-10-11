@@ -333,6 +333,68 @@ for (const [file, want] of cases) {
     console.log(`${ok ? "ok  " : "FAIL"} poam: ${name}`);
   }
 }
+// mapping.mjs: deterministic, validates; an unknown target or a source left
+// out is refused, and worksheet.mjs reads the result from disk.
+{
+  const gen = (src) => spawnSync(process.execPath, ["mapping.mjs", src], { encoding: "utf8" });
+  const a = gen("test/fixtures/mapping-source.json");
+  const same = a.status === 0 && a.stdout === gen("test/fixtures/mapping-source.json").stdout;
+  failed += !same;
+  console.log(`${same ? "ok  " : "FAIL"} mapping.mjs is deterministic${same ? "" : ": " + a.stderr}`);
+  if (same) {
+    const { writeFileSync, mkdirSync } = await import("node:fs");
+    mkdirSync(".schema-cache", { recursive: true });
+    writeFileSync(".schema-cache/test-mapping.json", a.stdout);
+    const v = spawnSync(process.execPath, ["validate.mjs", ".schema-cache/test-mapping.json"], { encoding: "utf8" });
+    failed += v.status !== 0;
+    console.log(`${v.status === 0 ? "ok  " : "FAIL"} generated mapping validates${v.status === 0 ? "" : ": " + v.stdout}`);
+    const w = spawnSync(process.execPath, ["worksheet.mjs", "control_layer/Mindeststandard-TLS/Entwurf-Mindeststandard-TLS-catalog.json",
+      "--mapping-file", ".schema-cache/test-mapping.json", "--commit", "367d775010abee641b258926bb482fcd05270059"], { encoding: "utf8" });
+    const ok = w.status === 0 && /status draft/.test(w.stdout) && /from A\.1 \(intersects-with\)/.test(w.stdout) && /3 requirements\./.test(w.stdout)
+      && /^> .*not reviewed/m.test(w.stdout)
+      && /a proposal to review/.test(w.stderr);
+    failed += !ok;
+    console.log(`${ok ? "ok  " : "FAIL"} worksheet reads an own mapping from disk and says it is a draft, in the file too${ok ? "" : ": " + w.stdout + w.stderr}`);
+    // The mapping was made at 367d775; another commit is another catalog.
+    const other = spawnSync(process.execPath, ["worksheet.mjs", "control_layer/Mindeststandard-TLS/Entwurf-Mindeststandard-TLS-catalog.json",
+      "--mapping-file", ".schema-cache/test-mapping.json", "--commit", "a12831136f4122a4c43854622180a24f2576a41e"], { encoding: "utf8" });
+    const pinned = other.status === 2 && /is not made for/.test(other.stderr);
+    failed += !pinned;
+    console.log(`${pinned ? "ok  " : "FAIL"} worksheet refuses an own mapping made at another commit (exit ${other.status})`);
+  }
+  {
+    const { writeFileSync, readFileSync, mkdirSync } = await import("node:fs");
+    mkdirSync(".schema-cache", { recursive: true });
+    const src = JSON.parse(readFileSync("test/fixtures/mapping-source.json", "utf8"));
+    src.catalog.path = "../../../ohartwig/grundschutz-worksheets/main/package.json";
+    writeFileSync(".schema-cache/mapping-away.json", JSON.stringify(src));
+    const away = gen(".schema-cache/mapping-away.json");
+    const ok = away.status === 1 && /not a path in the library/.test(away.stderr);
+    failed += !ok;
+    console.log(`${ok ? "ok  " : "FAIL"} mapping.mjs: a catalog path with .. is refused (exit ${away.status})`);
+  }
+  const bad = gen("test/fixtures/mapping-source-broken.json");
+  const refused = bad.status === 1 && /NOPE\.1 not in the catalog/.test(bad.stderr) && /A\.3: neither mapped/.test(bad.stderr);
+  failed += !refused;
+  console.log(`${refused ? "ok  " : "FAIL"} unknown target and unmapped source are refused${refused ? "" : ": " + bad.stderr}`);
+  const full = /subset-of claims full coverage, which a draft mapping cannot/.test(bad.stderr);
+  failed += !full;
+  console.log(`${full ? "ok  " : "FAIL"} a draft mapping may not claim subset-of${full ? "" : ": " + bad.stderr}`);
+}
+// --catalog-file: a catalog from disk, pinned by its hash; a preset that names
+// a file refuses another one, and refuses to run without it.
+{
+  const run = (...a) => spawnSync(process.execPath, ["worksheet.mjs", ...a], { encoding: "utf8" });
+  const w = run("--catalog-file", "test/fixtures/valid-catalog.json", "--summary");
+  const ok = w.status === 0 && /sha256 [0-9a-f]{12}/.test(w.stdout) && /^\d+ requirements$/m.test(w.stdout);
+  failed += !ok;
+  console.log(`${ok ? "ok  " : "FAIL"} worksheet reads a catalog file and names its hash${ok ? "" : ": " + w.stdout + w.stderr}`);
+  const other = run("--preset", "a5", "--catalog-file", "test/fixtures/valid-catalog.json");
+  const none = run("--preset", "a5");
+  const refused = other.status === 2 && /is not the A5-Basismodul/.test(other.stderr) && none.status === 2 && /needs --catalog-file/.test(none.stderr);
+  failed += !refused;
+  console.log(`${refused ? "ok  " : "FAIL"} a preset's catalog file is checked by its hash and required${refused ? "" : ": " + other.stderr + none.stderr}`);
+}
 // What the inputs may not do: leave the pinned library, or pass a status that
 // is only a property of Object.prototype.
 {

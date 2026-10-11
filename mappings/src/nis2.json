@@ -1,0 +1,89 @@
+{
+  "title": "NIS2 Art. 21(2) (§ 30 Abs. 2 BSIG) to Grundschutz++",
+  "version": "0.1.0",
+  "last-modified": "2026-10-11T00:00:00Z",
+  "status": "draft",
+  "method": "hybrid",
+  "description": "The ten risk-management measures of Directive (EU) 2022/2555 Art. 21(2) (a) to (j), which § 30 Abs. 2 Nr. 1 to 10 BSIG (NIS2UmsuCG) transposes one to one. Each measure names the ISO/IEC 27001:2022 Annex A controls it corresponds to; the Grundschutz++ targets of those controls come from the BSI's own mapping. Direct targets cover what Annex A lacks. The step from each measure to ISO is a draft written with AI assistance and not yet reviewed by a person. Not covered at this granularity: the Implementing Regulation (EU) 2024/2690 for digital infrastructure providers, and the reporting obligations of Art. 23 / § 32 BSIG.",
+  "source": {
+    "title": "Directive (EU) 2022/2555 (NIS2), Art. 21(2); § 30 Abs. 2 BSIG",
+    "href": "https://eur-lex.europa.eu/eli/dir/2022/2555/oj",
+    "ids": ["21.2.a", "21.2.b", "21.2.c", "21.2.d", "21.2.e", "21.2.f", "21.2.g", "21.2.h", "21.2.i", "21.2.j"]
+  },
+  "catalog": {
+    "path": "control_layer/Grundschutz++/Grundschutz++-resolved_catalog.json",
+    "commit": "a12831136f4122a4c43854622180a24f2576a41e"
+  },
+  "via": {
+    "iso27001": {
+      "title": "ISO/IEC 27001:2022 Annex A",
+      "path": "control_layer/Mappings/ISO-27001-zu-GSpp/ISO27001-AnnexA-to-GS++-mapping_collection.json"
+    }
+  },
+  "maps": [
+    {
+      "source": "21.2.a",
+      "remarks": "Policies on risk analysis and information system security (§ 30 Abs. 2 Nr. 1). Annex A has the policies; risk analysis itself is ISO clause 6.1, not Annex A, so the risk-management requirements are direct targets.",
+      "via": { "iso27001": ["5.1", "5.2", "5.4"] },
+      "relationship": "intersects-with",
+      "targets": ["GC.12.1", "RISK.1.1", "RISK.1.3", "RISK.1.5", "STM.4.1"]
+    },
+    {
+      "source": "21.2.b",
+      "remarks": "Incident handling (Nr. 2).",
+      "via": { "iso27001": ["5.24", "5.25", "5.26", "5.27", "5.28", "6.8"] },
+      "relationship": "intersects-with",
+      "targets": ["DET.2.1", "REA.2.1"]
+    },
+    {
+      "source": "21.2.c",
+      "remarks": "Business continuity, backup management, disaster recovery and crisis management (Nr. 3).",
+      "via": { "iso27001": ["5.29", "5.30", "8.13", "8.14"] },
+      "relationship": "intersects-with",
+      "targets": ["NOT.2.1"]
+    },
+    {
+      "source": "21.2.d",
+      "remarks": "Supply chain security, including the relationship with direct suppliers and service providers (Nr. 4).",
+      "via": { "iso27001": ["5.19", "5.20", "5.21", "5.22", "5.23"] }
+    },
+    {
+      "source": "21.2.e",
+      "remarks": "Security in acquisition, development and maintenance, including vulnerability handling and disclosure (Nr. 5). Disclosure is the intake of external reports, which Annex A does not name.",
+      "via": { "iso27001": ["8.8", "8.25", "8.26", "8.27", "8.28", "8.29", "8.30", "8.31", "8.32"] },
+      "relationship": "intersects-with",
+      "targets": ["DET.5.1", "DET.5.9", "BES.5.10.3"]
+    },
+    {
+      "source": "21.2.f",
+      "remarks": "Policies and procedures to assess the effectiveness of the measures (Nr. 6). Annex A has the independent and compliance reviews; ISO clause 9 is the rest.",
+      "via": { "iso27001": ["5.35", "5.36"] },
+      "relationship": "intersects-with",
+      "targets": ["PERF.4.1", "VRB.6.1"]
+    },
+    {
+      "source": "21.2.g",
+      "remarks": "Basic cyber hygiene practices and cybersecurity training (Nr. 7). Hygiene is not defined in the directive; taken here as awareness, malware protection, configuration and patching.",
+      "via": { "iso27001": ["6.3", "8.7", "8.8", "8.9", "8.19"] },
+      "relationship": "intersects-with",
+      "targets": ["SENS.1.1"]
+    },
+    {
+      "source": "21.2.h",
+      "remarks": "Policies and procedures regarding the use of cryptography and, where appropriate, encryption (Nr. 8).",
+      "via": { "iso27001": ["8.24"] }
+    },
+    {
+      "source": "21.2.i",
+      "remarks": "Human resources security, access control policies and asset management (Nr. 9).",
+      "via": { "iso27001": ["6.1", "6.2", "6.4", "6.5", "6.6", "5.9", "5.10", "5.11", "5.12", "5.15", "5.16", "5.17", "5.18", "8.2", "8.3"] }
+    },
+    {
+      "source": "21.2.j",
+      "remarks": "Multi-factor or continuous authentication, secured voice, video and text communications, and secured emergency communication systems (Nr. 10). Annex A has authentication and information transfer; MFA itself is a direct target.",
+      "via": { "iso27001": ["8.5", "5.14", "8.20", "8.21"] },
+      "relationship": "intersects-with",
+      "targets": ["BER.5.8", "BER.5.9"]
+    }
+  ]
+}

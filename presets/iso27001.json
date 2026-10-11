@@ -1,0 +1,10 @@
+{
+  "id": "iso27001",
+  "title": "ISO/IEC 27001:2022 Annex A to Grundschutz++",
+  "commit": "a12831136f4122a4c43854622180a24f2576a41e",
+  "catalog": "control_layer/Grundschutz++/Grundschutz++-resolved_catalog.json",
+  "mapping": "control_layer/Mappings/ISO-27001-zu-GSpp/ISO27001-AnnexA-to-GS++-mapping_collection.json",
+  "sources-hint": "Annex A control IDs from your Statement of Applicability, e.g. 5.15,8.9",
+  "expect": { "requirements": 280, "orphans": 19 },
+  "notes": "Mapping version 1.0.1-qa. Control IDs only; the ISO text is not in the library."
+}
