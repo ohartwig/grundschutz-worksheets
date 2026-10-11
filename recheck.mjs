@@ -71,9 +71,13 @@ if (local) {
   // The definition's own source decides what is fetched, and the definition
   // may be someone else's. Only the library at a pinned commit is a catalog to
   // compare against: anything else could be a mirror made to say "unchanged".
+  // Checked after normalisation: a ".." or "%2e%2e" behind the commit would
+  // pass a prefix test and still leave the library when fetched.
   const pinned = new RegExp(`^${REPO.replace(/[.+]/g, "\\$&")}/[0-9a-f]{40}/`);
-  if (!pinned.test(source ?? "")) fail(`source is not the library at a pinned commit: ${source}`);
-  from = source.replace(pinned, `${REPO}/${commit}/`);
+  let url = "";
+  try { url = new URL(source).href; } catch {}
+  if (!pinned.test(url)) fail(`source is not the library at a pinned commit: ${source}`);
+  from = url.replace(pinned, `${REPO}/${commit}/`);
   const r = await fetch(from);
   if (!r.ok) fail(`${r.status} for ${from}`);
   catalog = (await r.json()).catalog;

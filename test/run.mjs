@@ -324,8 +324,10 @@ for (const [file, want] of cases) {
   const { writeFileSync, readFileSync } = await import("node:fs");
   const C = "367d775010abee641b258926bb482fcd05270059";
   const away = "../../../ohartwig/grundschutz-worksheets/main/package.json";
-  const check = (name, r, want) => {
-    const ok = r.status === want;
+  // The old code also exited 1 on these inputs -- after fetching the wrong file --
+  // so the refusal must be the stated one, not a crash downstream.
+  const check = (name, r, want, said = /not (a path in|the library)/) => {
+    const ok = r.status === want && (want === 0 || said.test(r.stderr));
     failed += !ok;
     console.log(`${ok ? "ok  " : "FAIL"} ${name} (exit ${r.status}, want ${want})`);
     if (!ok) console.log(r.stdout + r.stderr);
@@ -348,13 +350,23 @@ for (const [file, want] of cases) {
   cd["component-definition"].components[0]["control-implementations"][0].source = `https://mirror.example.org/catalogs/${C}/catalog.json`;
   writeFileSync(".schema-cache/recheck-foreign.json", JSON.stringify(cd));
   check("recheck: a source outside the library is refused", spawnSync(process.execPath, ["recheck.mjs", ".schema-cache/recheck-foreign.json", "--commit", C], { encoding: "utf8" }), 2);
-  // worksheet --profile: the import must be the library at the commit, not any URL containing it.
+  // A library prefix followed by ".." (plain or percent-encoded) leaves it again once fetched.
+  for (const [label, dots] of [["..", ".."], ["%2e%2e", "%2e%2e"]]) {
+    cd["component-definition"].components[0]["control-implementations"][0].source = `https://raw.githubusercontent.com/BSI-Bund/Stand-der-Technik-Bibliothek/${C}/${dots}/${dots}/${dots}/ohartwig/grundschutz-worksheets/main/package.json`;
+    writeFileSync(".schema-cache/recheck-dots.json", JSON.stringify(cd));
+    check(`recheck: a library source with ${label} behind the commit is refused`, spawnSync(process.execPath, ["recheck.mjs", ".schema-cache/recheck-dots.json", "--commit", C], { encoding: "utf8" }), 2);
+  }
+  // worksheet --profile: the import must be this run's catalog URL, as profile.mjs writes it.
+  const CAT = "control_layer/Grundschutz++/Grundschutz++-resolved_catalog.json";
   writeFileSync(".schema-cache/away-profile.json", JSON.stringify({ profile: { imports: [{ href: `https://mirror.example.org/${C}/catalog.json`, "include-controls": [{ "with-ids": ["DET.5.3"] }] }] } }));
-  check("worksheet: a profile importing from outside the library is refused", spawnSync(process.execPath, ["worksheet.mjs", "control_layer/Grundschutz++/Grundschutz++-resolved_catalog.json", "--commit", C, "--profile", ".schema-cache/away-profile.json"], { encoding: "utf8" }), 2);
+  check("worksheet: a profile importing from outside the library is refused", spawnSync(process.execPath, ["worksheet.mjs", CAT, "--commit", C, "--profile", ".schema-cache/away-profile.json"], { encoding: "utf8" }), 2, /does not import/);
+  const tailoring = JSON.parse(readFileSync("test/fixtures/tailoring.json", "utf8"));
+  const made = spawnSync(process.execPath, ["worksheet.mjs", tailoring.catalog.path, "--commit", tailoring.catalog.commit, "--profile", ".schema-cache/test-profile.json"], { encoding: "utf8" });
+  check("worksheet: a profile written by profile.mjs is accepted", made, 0);
   // poam: an action status that is a prototype property is not a status.
   const pin = JSON.parse(readFileSync(".schema-cache/poam-in.json", "utf8"));
   writeFileSync(".schema-cache/actions-proto.json", JSON.stringify({ source: "register", items: [{ id: "I-1", title: "x", requirements: ["DET.5.3"], status: "constructor" }] }));
   writeFileSync(".schema-cache/poam-proto.json", JSON.stringify({ ...pin, actions: "actions-proto.json" }));
-  check("poam: a status named after a prototype property is refused", spawnSync(process.execPath, ["poam.mjs", ".schema-cache/poam-proto.json"], { encoding: "utf8" }), 1);
+  check("poam: a status named after a prototype property is refused", spawnSync(process.execPath, ["poam.mjs", ".schema-cache/poam-proto.json"], { encoding: "utf8" }), 1, /status must be/);
 }
 process.exit(failed ? 1 : 0);
