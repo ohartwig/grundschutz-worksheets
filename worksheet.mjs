@@ -169,8 +169,9 @@ if (mappingPath) {
 if (profilePath) {
   const { profile } = JSON.parse(readFileSync(profilePath, "utf8"));
   const imp = profile?.imports?.[0];
-  if (!imp || !imp.href?.startsWith(`${REPO}/${commit}/`)) {
-    console.error(`profile does not import the library catalog at commit ${commit}: ${imp?.href}`);
+  // Exactly the URL this run reads -- the form profile.mjs writes.
+  if (!imp || imp.href !== rawUrl(path)) {
+    console.error(`profile does not import ${path} from the library at commit ${commit}: ${imp?.href}`);
     process.exit(2);
   }
   const include = new Set((imp["include-controls"] ?? []).flatMap((x) => x["with-ids"] ?? []));
