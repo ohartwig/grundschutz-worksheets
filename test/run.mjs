@@ -354,6 +354,23 @@ for (const [file, want] of cases) {
       && /a proposal to review/.test(w.stderr);
     failed += !ok;
     console.log(`${ok ? "ok  " : "FAIL"} worksheet reads an own mapping from disk and says it is a draft${ok ? "" : ": " + w.stdout + w.stderr}`);
+    // The mapping was made at 367d775; another commit is another catalog.
+    const other = spawnSync(process.execPath, ["worksheet.mjs", "control_layer/Mindeststandard-TLS/Entwurf-Mindeststandard-TLS-catalog.json",
+      "--mapping", ".schema-cache/test-mapping.json", "--commit", "a12831136f4122a4c43854622180a24f2576a41e"], { encoding: "utf8" });
+    const pinned = other.status === 2 && /is not made for/.test(other.stderr);
+    failed += !pinned;
+    console.log(`${pinned ? "ok  " : "FAIL"} worksheet refuses an own mapping made at another commit (exit ${other.status})`);
+  }
+  {
+    const { writeFileSync, readFileSync, mkdirSync } = await import("node:fs");
+    mkdirSync(".schema-cache", { recursive: true });
+    const src = JSON.parse(readFileSync("test/fixtures/mapping-source.json", "utf8"));
+    src.catalog.path = "../../../ohartwig/grundschutz-worksheets/main/package.json";
+    writeFileSync(".schema-cache/mapping-away.json", JSON.stringify(src));
+    const away = gen(".schema-cache/mapping-away.json");
+    const ok = away.status === 1 && /not a path in the library/.test(away.stderr);
+    failed += !ok;
+    console.log(`${ok ? "ok  " : "FAIL"} mapping.mjs: a catalog path with .. is refused (exit ${away.status})`);
   }
   const bad = gen("test/fixtures/mapping-source-broken.json");
   const refused = bad.status === 1 && /NOPE\.1 not in the catalog/.test(bad.stderr) && /A\.3: neither mapped/.test(bad.stderr);
