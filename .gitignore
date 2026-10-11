@@ -4,3 +4,4 @@ worksheet.csv
 .schema-cache/
 node_modules/
 catalogs/
+out/
