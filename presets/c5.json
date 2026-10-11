@@ -1,7 +1,6 @@
 {
   "id": "c5",
   "title": "BSI C5:2026 to Grundschutz++ (draft mapping of this repository)",
-  "commit": "a12831136f4122a4c43854622180a24f2576a41e",
   "catalog": "control_layer/Grundschutz++/Grundschutz++-resolved_catalog.json",
   "mapping-file": "mappings/c5-to-gspp.json",
   "sources-hint": "Criteria or whole areas, e.g. OPS-*,CRY-01",

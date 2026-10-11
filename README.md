@@ -22,7 +22,7 @@ Node 24 (the current LTS) or later. `worksheet.mjs` has no dependencies and need
 library at the commit you name.
 
 ```bash
-C=a12831136f4122a4c43854622180a24f2576a41e   # a commit of the BSI library
+C=$(node tools/bsi-library.mjs)   # the commit this repository is tested at; any 40-character commit works
 CAT=control_layer/Grundschutz++/Grundschutz++-resolved_catalog.json
 MAP=control_layer/Mappings/ISO-27001-zu-GSpp/ISO27001-AnnexA-to-GS++-mapping_collection.json
 
@@ -81,10 +81,11 @@ A Markdown row looks like this:
 > person has reviewed it. Every worksheet made from a preset repeats this in a
 > note under its header.
 
-A preset names the catalog, the mapping if there is one, and the library commit
-it is tested at, so `--preset iso27001` replaces three arguments. Options on
-the command line win, `--commit` included; the header then says the preset was
-tested at another commit. An own mapping (`nis2`, `dora`, `c5`) is the
+A preset names the catalog and the mapping if there is one, and runs at the
+library commit this repository is tested at (`tools/bsi-library.mjs`), so
+`--preset iso27001` replaces three arguments. Options on the command line win,
+`--commit` included; the header then says the preset was tested at another
+commit. An own mapping (`nis2`, `dora`, `c5`) is the
 exception: it is derived from the catalog at one commit and refuses any other
 until it is regenerated there.
 
@@ -117,8 +118,9 @@ per `from` entry. `intersects-with` means the requirement covers only part of
 the source control.
 
 Each preset file states the counts it yields (`expect`), and CI checks them
-(`npm run test:presets`). Raising a preset's commit means raising those counts
-in the same change, so the diff shows what the new catalog moved.
+(`npm run test:presets`) at the pinned commit. Raising the commit means raising
+those counts in the same change, so the diff shows what the new catalog moved
+(see [Raising the library commit](#raising-the-library-commit)).
 
 ### A5: a catalog from outside the library
 
@@ -408,6 +410,23 @@ Exit 1 when anything needs review, so it can run as a scheduled job against the
 library's main branch. Checking by UUID as well as by ID is why every
 requirement carries both.
 
+### Raising the library commit
+
+The commit this repository is tested at is in one place, `tools/bsi-library.mjs`.
+A dependency bot watches the library and proposes a newer commit as a merge
+request; it never merges one. In that merge request CI is red wherever the new
+catalog moved something, and the change is completed by hand:
+
+1. `npm run test:presets` names the presets whose counts moved; read why, then
+   update `expect` in `presets/<id>.json`.
+2. Set `catalog.commit` in each `mappings/src/*.json` to the new commit and
+   regenerate the mappings and their review sheets (`node mapping.mjs …`,
+   `node mapping.mjs … --review`); a target the catalog dropped is an error
+   there, not a silent loss.
+3. Run `recheck.mjs` against your own component definitions.
+
+The pin moves together with those changes, never on its own.
+
 ## Validating OSCAL files
 
 `validate.mjs` checks OSCAL JSON against the official NIST schema for the
@@ -480,6 +499,14 @@ find what no repository knows about.
 It does not assess anything. It makes sure no requirement is missed; answering
 them is your work. It is not affiliated with the BSI, and Grundschutz++ is still
 evolving — nothing here claims conformance.
+
+## Development
+
+Development happens in a GitLab project; this GitHub repository is its public
+mirror, rewritten and pushed on every change to `main` together with the
+release tags (`vX.Y.Z`, see [CHANGELOG.md](CHANGELOG.md)). Issues are welcome
+here; a pull request cannot be merged on GitHub, but a change in it will be
+carried over by hand.
 
 ## Licence
 

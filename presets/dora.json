@@ -1,7 +1,6 @@
 {
   "id": "dora",
   "title": "DORA Art. 5 to 30 to Grundschutz++ (draft mapping of this repository)",
-  "commit": "a12831136f4122a4c43854622180a24f2576a41e",
   "catalog": "control_layer/Grundschutz++/Grundschutz++-resolved_catalog.json",
   "mapping-file": "mappings/dora-to-gspp.json",
   "sources-hint": "Articles, e.g. Art.9,Art.17 or Art.2* for 24 to 30",

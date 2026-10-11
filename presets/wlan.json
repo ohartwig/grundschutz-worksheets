@@ -1,7 +1,6 @@
 {
   "id": "wlan",
   "title": "Stand der Technik WLAN (profile, resolved)",
-  "commit": "a12831136f4122a4c43854622180a24f2576a41e",
   "catalog": "control_layer/WLAN/WLAN-resolved_catalog.json",
   "expect": { "requirements": 48, "orphans": 0 },
   "notes": "The profile regroups requirements into WLAN.1 to WLAN.n and sets parameters such as WPA3."

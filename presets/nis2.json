@@ -1,7 +1,6 @@
 {
   "id": "nis2",
   "title": "NIS2 Art. 21(2) / § 30 Abs. 2 BSIG to Grundschutz++ (draft mapping of this repository)",
-  "commit": "a12831136f4122a4c43854622180a24f2576a41e",
   "catalog": "control_layer/Grundschutz++/Grundschutz++-resolved_catalog.json",
   "mapping-file": "mappings/nis2-to-gspp.json",
   "sources-hint": "Measures 21.2.a to 21.2.j, e.g. 21.2.b,21.2.i",
