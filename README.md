@@ -72,7 +72,8 @@ commit. It is the Statement of Applicability as data.
   "catalog": { "path": "control_layer/Grundschutz++/Grundschutz++-resolved_catalog.json",
                "commit": "367d775010abee641b258926bb482fcd05270059" },
   "applicable": ["DET.2.1", "KONF.3.2"],
-  "not-applicable": [{ "id": "ARCH.6.1", "reason": "no own WAN links" }]
+  "not-applicable": [{ "id": "ARCH.6.1", "reason": "no own WAN links" }],
+  "parameters": { "rea.1.2-prm1": "jährlich", "rea.1.1.2-prm1": ["CISO", "SOC"] }
 }
 ```
 
@@ -91,6 +92,12 @@ node worksheet.mjs $CAT --profile profile.json --commit $C   # the worksheet for
   The not-applicable requirements are listed as back-matter resources with the
   reason, under this repository's namespace. A system security plan is where
   OSCAL expects that statement; until you have one, it lives here.
+- **Your values for the blanks:** the catalog leaves some words to you, such as
+  how often (*regelmäßig*) and who (*zuständigen Personen oder Rollen*).
+  `parameters` sets them by parameter ID; they become the profile's
+  `set-parameters`, and the worksheet prints `[jährlich]` instead of
+  `[regelmäßig]`. A parameter of a requirement that is not applicable, or one
+  the catalog does not have, is an error.
 
 ## Self-describing images: a component definition per build
 

@@ -37,6 +37,21 @@ for (const [file, want] of cases) {
   const bad = spawnSync(process.execPath, ["profile.mjs", "test/fixtures/tailoring-unknown-id.json"], { encoding: "utf8" });
   failed += bad.status !== 1;
   console.log(`${bad.status === 1 ? "ok  " : "FAIL"} unknown ID is refused (exit ${bad.status})`);
+  // Parameters: a value becomes set-parameters and fills the worksheet's blank.
+  const sp = same ? JSON.parse(a.stdout).profile.modify?.["set-parameters"] : null;
+  const p1 = sp?.length === 1 && sp[0]["param-id"] === "konf.2.2-prm1" && sp[0].values[0] === "BSI TR-02102-2";
+  failed += !p1;
+  console.log(`${p1 ? "ok  " : "FAIL"} profile: a parameter value becomes set-parameters`);
+  if (same) {
+    const ws = spawnSync(process.execPath, ["worksheet.mjs", "control_layer/Mindeststandard-TLS/Entwurf-Mindeststandard-TLS-catalog.json",
+      "--profile", ".schema-cache/test-profile.json", "--commit", "367d775010abee641b258926bb482fcd05270059"], { encoding: "utf8" });
+    const p2 = ws.status === 0 && ws.stdout.includes("[BSI TR-02102-2]");
+    failed += !p2;
+    console.log(`${p2 ? "ok  " : "FAIL"} worksheet: a profile's parameter value replaces the blank${p2 ? "" : ": " + ws.stderr}`);
+  }
+  const oos = spawnSync(process.execPath, ["profile.mjs", "test/fixtures/tailoring-param-out-of-scope.json"], { encoding: "utf8" });
+  failed += oos.status !== 1;
+  console.log(`${oos.status === 1 ? "ok  " : "FAIL"} profile: a parameter of a requirement out of scope is refused (exit ${oos.status})`);
 }
 // component.mjs: deterministic, validates, unknown ID refused, subject checked.
 {
