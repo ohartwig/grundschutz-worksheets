@@ -114,7 +114,8 @@ if (p.actions) {
   for (const it of a.items ?? []) {
     if (!it.id || !it.title || !Array.isArray(it.requirements) || !it.requirements.length) fail(`action ${it.id ?? "?"}: needs id, title and requirements`);
     if (it.due && !/^\d{4}-\d\d-\d\d$/.test(it.due)) fail(`action ${it.id}: due must be YYYY-MM-DD`);
-    if (!STATUS[it.status ?? "open"]) fail(`action ${it.id}: status must be open, in-progress or done`);
+    // Own keys only: "constructor" or "toString" would pass a plain lookup.
+    if (!Object.hasOwn(STATUS, it.status ?? "open")) fail(`action ${it.id}: status must be open, in-progress or done`);
     for (const id of it.requirements) actions.set(id, [...(actions.get(id) ?? []), it]);
   }
 }

@@ -26,6 +26,8 @@
 
 import { readFileSync } from "node:fs";
 
+const REPO = "https://raw.githubusercontent.com/BSI-Bund/Stand-der-Technik-Bibliothek";
+
 const args = process.argv.slice(2);
 const opt = (name) => (args.includes(name) ? args[args.indexOf(name) + 1] : "");
 const file = args.find((a, i) => !a.startsWith("--") && !["--commit", "--catalog"].includes(args[i - 1]));
@@ -66,8 +68,12 @@ if (local) {
 } else {
   if (sources.size !== 1) fail(`expected one catalog source, found ${sources.size}`);
   const [source] = sources;
-  if (!/\/[0-9a-f]{40}\//.test(source ?? "")) fail(`source has no commit to replace: ${source}`);
-  from = source.replace(/\/[0-9a-f]{40}\//, `/${commit}/`);
+  // The definition's own source decides what is fetched, and the definition
+  // may be someone else's. Only the library at a pinned commit is a catalog to
+  // compare against: anything else could be a mirror made to say "unchanged".
+  const pinned = new RegExp(`^${REPO.replace(/[.+]/g, "\\$&")}/[0-9a-f]{40}/`);
+  if (!pinned.test(source ?? "")) fail(`source is not the library at a pinned commit: ${source}`);
+  from = source.replace(pinned, `${REPO}/${commit}/`);
   const r = await fetch(from);
   if (!r.ok) fail(`${r.status} for ${from}`);
   catalog = (await r.json()).catalog;

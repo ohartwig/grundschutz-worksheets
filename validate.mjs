@@ -39,7 +39,8 @@ const opt = (name) => {
 const sha256 = (buf) => createHash("sha256").update(buf).digest("hex");
 
 async function schemaFor(version) {
-  const pin = pins[version];
+  // Own keys only: "constructor" or "__proto__" would find a function, not a pin.
+  const pin = Object.hasOwn(pins, version) ? pins[version] : undefined;
   if (!pin) throw new Error(`no pinned schema for OSCAL ${version} (schemas.json knows ${Object.keys(pins).join(", ")})`);
   // The copy shipped in schemas/ first, then the download cache.
   const shipped = join(here, "schemas", `oscal_complete_schema-${version}.json`);
@@ -81,7 +82,13 @@ async function loadInputs() {
       console.error("--bsi needs --commit <40-char sha>");
       process.exit(2);
     }
-    const url = `${BSI}/${commit}/${bsiPath.split("/").map(encodeURIComponent).join("/")}`;
+    // Plain segments only: "" or ".." would resolve above the pinned commit.
+    const segs = bsiPath.split("/");
+    if (segs.some((x) => !x || x === "." || x === "..")) {
+      console.error(`not a path in the library: ${bsiPath}`);
+      process.exit(2);
+    }
+    const url = `${BSI}/${commit}/${segs.map(encodeURIComponent).join("/")}`;
     const r = await fetch(url);
     if (!r.ok) {
       console.error(`${r.status} for ${url}`);

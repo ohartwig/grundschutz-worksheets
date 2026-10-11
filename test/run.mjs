@@ -318,4 +318,43 @@ for (const [file, want] of cases) {
     console.log(`${ok ? "ok  " : "FAIL"} poam: ${name}`);
   }
 }
+// What the inputs may not do: leave the pinned library, or pass a status that
+// is only a property of Object.prototype.
+{
+  const { writeFileSync, readFileSync } = await import("node:fs");
+  const C = "367d775010abee641b258926bb482fcd05270059";
+  const away = "../../../ohartwig/grundschutz-worksheets/main/package.json";
+  const check = (name, r, want) => {
+    const ok = r.status === want;
+    failed += !ok;
+    console.log(`${ok ? "ok  " : "FAIL"} ${name} (exit ${r.status}, want ${want})`);
+    if (!ok) console.log(r.stdout + r.stderr);
+  };
+  // Every tool that builds a library URL from a path refuses ".." before it fetches.
+  check("worksheet: a catalog path with .. is refused", spawnSync(process.execPath, ["worksheet.mjs", away, "--commit", C], { encoding: "utf8" }), 2);
+  check("validate --bsi: a path with .. is refused", spawnSync(process.execPath, ["validate.mjs", "--bsi", away, "--commit", C], { encoding: "utf8" }), 2);
+  const withPath = (src, dst) => {
+    const j = JSON.parse(readFileSync(src, "utf8"));
+    j.catalog.path = away;
+    writeFileSync(dst, JSON.stringify(j));
+    return dst;
+  };
+  check("profile: a catalog path with .. is refused", spawnSync(process.execPath, ["profile.mjs", withPath("test/fixtures/tailoring.json", ".schema-cache/away-tailoring.json")], { encoding: "utf8" }), 1);
+  check("component: a catalog path with .. is refused", spawnSync(process.execPath, ["component.mjs", withPath("test/fixtures/component-source.json", ".schema-cache/away-component.json")], { encoding: "utf8" }), 1);
+  check("results: a catalog path with .. is refused", spawnSync(process.execPath, ["results.mjs", withPath("test/fixtures/results-run.json", ".schema-cache/away-run.json")], { encoding: "utf8" }), 1);
+  check("assessment-plan: a catalog path with .. is refused", spawnSync(process.execPath, ["assessment-plan.mjs", withPath("test/fixtures/checks.json", ".schema-cache/away-checks.json")], { encoding: "utf8" }), 1);
+  // recheck --commit follows the definition's source, so the source must be the library.
+  const cd = JSON.parse(readFileSync("test/fixtures/recheck-component.json", "utf8"));
+  cd["component-definition"].components[0]["control-implementations"][0].source = `https://mirror.example.org/catalogs/${C}/catalog.json`;
+  writeFileSync(".schema-cache/recheck-foreign.json", JSON.stringify(cd));
+  check("recheck: a source outside the library is refused", spawnSync(process.execPath, ["recheck.mjs", ".schema-cache/recheck-foreign.json", "--commit", C], { encoding: "utf8" }), 2);
+  // worksheet --profile: the import must be the library at the commit, not any URL containing it.
+  writeFileSync(".schema-cache/away-profile.json", JSON.stringify({ profile: { imports: [{ href: `https://mirror.example.org/${C}/catalog.json`, "include-controls": [{ "with-ids": ["DET.5.3"] }] }] } }));
+  check("worksheet: a profile importing from outside the library is refused", spawnSync(process.execPath, ["worksheet.mjs", "control_layer/Grundschutz++/Grundschutz++-resolved_catalog.json", "--commit", C, "--profile", ".schema-cache/away-profile.json"], { encoding: "utf8" }), 2);
+  // poam: an action status that is a prototype property is not a status.
+  const pin = JSON.parse(readFileSync(".schema-cache/poam-in.json", "utf8"));
+  writeFileSync(".schema-cache/actions-proto.json", JSON.stringify({ source: "register", items: [{ id: "I-1", title: "x", requirements: ["DET.5.3"], status: "constructor" }] }));
+  writeFileSync(".schema-cache/poam-proto.json", JSON.stringify({ ...pin, actions: "actions-proto.json" }));
+  check("poam: a status named after a prototype property is refused", spawnSync(process.execPath, ["poam.mjs", ".schema-cache/poam-proto.json"], { encoding: "utf8" }), 1);
+}
 process.exit(failed ? 1 : 0);
