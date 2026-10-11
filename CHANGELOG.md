@@ -6,6 +6,17 @@ tagged `vX.Y.Z` and written here by the release tool from the commit messages;
 **breaking**: what can change an existing call or a spreadsheet built on the
 output.
 
+## [0.2.1](https://github.com/ohartwig/grundschutz-worksheets/compare/v0.2.0...v0.2.1) (2026-10-11)
+
+### :repeat: Continuous Integrations
+
+* **mirror:** leave the CI configuration out of the mirror
+* **mirror:** the changelog on GitHub links to GitHub
+
+### :repeat: Chores
+
+* drop test output committed by accident
+
 ## [0.2.0](https://github.com/ohartwig/grundschutz-worksheets/compare/v0.1.0...v0.2.0) (2026-10-11)
 
 ### :sparkles: Features
