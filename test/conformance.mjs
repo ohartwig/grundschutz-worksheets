@@ -6,7 +6,7 @@
 // then checks the whole chain, not each file on its own.
 //
 // Run after `npm test`, which writes the component and results inputs into
-// .schema-cache. CI runs oscal-cli over the directory (.gitlab-ci.yml).
+// .schema-cache. CI runs oscal-cli over the directory.
 import { mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { spawnSync } from "node:child_process";
 import { resolve } from "node:path";
