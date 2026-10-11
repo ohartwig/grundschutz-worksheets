@@ -87,6 +87,7 @@ node worksheet.mjs --preset itgs2023 --sources 'APP.1.1*,OPS.1.1.3*'
 | `wlan` | WLAN profile, resolved | 48 |
 | `nis2` | NIS2 Art. 21(2), own draft mapping (below) | 187 |
 | `dora` | DORA Art. 5 to 30, own draft mapping (below) | 176 |
+| `c5` | BSI C5:2026, own draft mapping (below) | 384 |
 
 The profile presets read the resolved catalog the BSI publishes next to each
 profile: the profiles themselves import several catalogs through back-matter,
@@ -101,9 +102,9 @@ Each preset file states the counts it yields (`expect`), and CI checks them
 (`npm run test:presets`). Raising a preset's commit means raising those counts
 in the same change, so the diff shows what the new catalog moved.
 
-### Own mappings: NIS2 and DORA, as drafts
+### Own mappings: NIS2, DORA and C5, as drafts
 
-The library has no mappings for NIS2, DORA or C5. `mapping.mjs` writes one
+The library has no mappings for NIS2, DORA or C5:2026. `mapping.mjs` writes one
 from a small source file in `mappings/src/` into an OSCAL mapping collection
 in `mappings/`, which `--mapping` and the presets read from disk:
 
@@ -111,6 +112,7 @@ in `mappings/`, which `--mapping` and the presets read from disk:
 |---|---|---|
 | `nis2` | Art. 21(2) (a) to (j) NIS2 = § 30 Abs. 2 Nr. 1 to 10 BSIG | 187 |
 | `dora` | DORA article, Art. 5 to 30 | 176 |
+| `c5` | C5:2026 criterion (168; the 6 report conditions GC are left out) | 384 |
 
 Most targets are **derived**: each source names the ISO/IEC 27001:2022 Annex A
 controls it corresponds to, and the Grundschutz++ targets come from the BSI's
@@ -121,7 +123,12 @@ MFA, vulnerability disclosure, exit strategies) and carry their own
 relationship. Sources without any target are listed with a reason, for example
 reports to the supervisor (DORA Art. 19), which Grundschutz++ does not ask for.
 
-Both are **drafts**, written with AI assistance and not yet reviewed by a
+C5:2026 has no references to ISO 27001, and its machine-readable release is
+licensed CC BY-ND 4.0: the mapping uses criterion IDs only, every remark is our
+own wording. INQ-01 to INQ-04 (requests from authorities for customer data)
+have no target.
+
+All three are **drafts**, written with AI assistance and not yet reviewed by a
 person. The worksheet says so in its header (`mapping draft`) and on stderr.
 A reviewed mapping changes `status` to `complete` in its source file.
 
