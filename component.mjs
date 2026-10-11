@@ -28,7 +28,7 @@
 //   --prop <name=value>            further props on the component (repeatable),
 //                                  e.g. pipeline URL or commit
 //
-// Output: an OSCAL 1.2.2 component definition on stdout - the version the BSI
+// Output: an OSCAL 1.2.2 component definition on stdout - still the version the BSI
 // library's own component definitions use. Every requirement carries both
 // identifiers: the Grundschutz++ ID as control-id and the catalog's
 // alt-identifier UUID as a prop, because the library's own components refer

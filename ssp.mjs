@@ -303,7 +303,7 @@ const out = {
       title: s.title,
       "last-modified": s["last-modified"],
       version: s.version,
-      "oscal-version": "1.2.2",
+      "oscal-version": "1.2.3",
       props: [
         ...Object.entries(counts).map(([k, v]) => ({ name: `requirements-${k}`, ns: NS, value: String(v) })),
         ...Object.entries(bases).map(([k, v]) => ({ name: `basis-${k}`, ns: NS, value: String(v) })),
