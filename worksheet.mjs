@@ -21,12 +21,16 @@
 //   node worksheet.mjs <catalog path> --commit <sha> [options]
 //   node worksheet.mjs --preset <id> [options]
 //   node worksheet.mjs --presets
+//   node worksheet.mjs --catalog-file <file.json> [options]
 //
 // Options:
 //   --preset <id>         a named audit scope from presets/<id>.json: catalog,
 //                         mapping and the commit it is tested at; options given
 //                         on the command line win
 //   --presets             list the presets
+//   --catalog-file <file> a catalog on disk that is not in the library (A5);
+//                         pinned by its SHA-256 instead of a commit, and a
+//                         preset that names one refuses any other file
 //   --mapping <path>      only requirements a mapping collection points at,
 //                         each with the source controls that lead to it
 //   --sources <list|@file> with --mapping: only these source controls
@@ -41,12 +45,13 @@
 //   --format md|csv       Markdown checklist (default) or CSV for a spreadsheet
 //   --summary             counts by practice, level, modal verb and action word
 
+import { createHash } from "node:crypto";
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 
 const REPO = "https://raw.githubusercontent.com/BSI-Bund/Stand-der-Technik-Bibliothek";
 
 const args = process.argv.slice(2);
-const valued = ["--commit", "--mapping", "--sources", "--profile", "--practices", "--levels", "--modal", "--format", "--preset"];
+const valued = ["--commit", "--mapping", "--sources", "--profile", "--practices", "--levels", "--modal", "--format", "--preset", "--catalog-file"];
 const opt = (name) => {
   const i = args.indexOf(name);
   return i >= 0 ? args[i + 1] ?? "" : "";
@@ -60,7 +65,8 @@ const presetIds = () => readdirSync(presetDir).filter((f) => f.endsWith(".json")
 if (args.includes("--presets")) {
   for (const id of presetIds()) {
     const p = readPreset(id);
-    console.log(`${id.padEnd(12)} ${p.title} · commit ${p.commit.slice(0, 7)}${p["sources-hint"] ? `\n${"".padEnd(13)}--sources: ${p["sources-hint"]}` : ""}`);
+    const pin = p["catalog-file"] ? `--catalog-file ${p["catalog-file"].name}` : `commit ${p.commit.slice(0, 7)}`;
+    console.log(`${id.padEnd(12)} ${p.title} · ${pin}${p["sources-hint"] ? `\n${"".padEnd(13)}--sources: ${p["sources-hint"]}` : ""}`);
   }
   process.exit(0);
 }
@@ -74,7 +80,23 @@ if (presetId) {
   preset = readPreset(presetId);
 }
 
-const path = args.find((a, i) => !a.startsWith("--") && !valueAt.has(i)) ?? preset.catalog;
+// A catalog the library does not have is read from disk and pinned by its
+// SHA-256. The file is not part of this repository (A5 states no licence), so
+// the preset names it and its hash, and the user supplies it.
+const catalogFile = opt("--catalog-file");
+const fileSha = catalogFile ? createHash("sha256").update(readFileSync(catalogFile)).digest("hex") : "";
+if (preset["catalog-file"]) {
+  const want = preset["catalog-file"];
+  if (!catalogFile) {
+    console.error(`preset ${presetId} needs --catalog-file ${want.name} (${want.source})`);
+    process.exit(2);
+  }
+  if (fileSha !== want.sha256) {
+    console.error(`${catalogFile} is not the ${want.name} the preset is tested with: sha256 ${fileSha}, want ${want.sha256}`);
+    process.exit(2);
+  }
+}
+const path = catalogFile ? "" : args.find((a, i) => !a.startsWith("--") && !valueAt.has(i)) ?? preset.catalog;
 const commit = opt("--commit") || preset.commit || "";
 const mappingPath = opt("--mapping") || (opt("--profile") ? "" : preset.mapping ?? "");
 const profilePath = opt("--profile");
@@ -89,7 +111,11 @@ const modals = list(opt("--modal"));
 const format = opt("--format") || "md";
 const summary = args.includes("--summary");
 
-if (!path || !/^[0-9a-f]{40}$/.test(commit) || !["md", "csv"].includes(format)) {
+if (catalogFile && (opt("--mapping") || preset.mapping || profilePath)) {
+  console.error("--catalog-file takes no --mapping or --profile: both refer to a library catalog");
+  process.exit(2);
+}
+if ((!catalogFile && (!path || !/^[0-9a-f]{40}$/.test(commit))) || !["md", "csv"].includes(format)) {
   console.error("usage: worksheet.mjs <catalog path> --commit <40-char sha> [--mapping <path>] [--sources <list|@file>] [--profile <file>] [--practices A,B] [--levels L] [--modal M] [--format md|csv] [--summary]");
   console.error("       worksheet.mjs --preset <id> [options]   ·   worksheet.mjs --presets");
   console.error("A branch name is refused on purpose: the library republishes continuously.");
@@ -123,7 +149,7 @@ const load = async (p) => {
   return r.json();
 };
 
-const { catalog } = await load(path);
+const { catalog } = catalogFile ? JSON.parse(readFileSync(catalogFile, "utf8")) : await load(path);
 if (!catalog) {
   console.error("not an OSCAL catalog (no top-level `catalog`)");
   process.exit(1);
@@ -149,7 +175,10 @@ const index = (controls, practice, params, depth) => {
     for (const p of c.params ?? []) own.set(p.id, setValues.has(p.id) ? { ...p, values: setValues.get(p.id) } : p);
     const stm = (c.parts ?? []).find((p) => p.name === "statement");
     const statement = insertParams(stm?.prose ?? "", own).replace(/\s+/g, " ").trim();
-    const modal = propOf(stm?.props, "modal_verb") || (statement.match(/\b(MUSS|MÜSSEN|SOLLTE|SOLLTEN|KANN|KÖNNEN|DARF)\b/) ?? [""])[0];
+    // The library puts these on the statement; A5 puts them on the requirement,
+    // under German names.
+    const fact = (name, a5) => propOf(stm?.props, name) || propOf(c.props, a5);
+    const modal = fact("modal_verb", "modalverb") || (statement.match(/\b(MUSS|MÜSSEN|SOLLTE|SOLLTEN|KANN|KÖNNEN|DARF)\b/) ?? [""])[0];
     rows.set(c.id, {
       id: c.id,
       practice,
@@ -158,12 +187,12 @@ const index = (controls, practice, params, depth) => {
       level: propOf(c.props, "sec_level"),
       effort: propOf(c.props, "effort_level"),
       modal,
-      action: propOf(stm?.props, "action_word"),
+      action: fact("action_word", "handlungsworte"),
       // The sentence subject ("Konfiguration für IT-Systeme") names where to look;
       // the explicit target field is missing on some requirements.
       subject: modal ? statement.slice(0, statement.indexOf(modal)).trim() : "",
-      target: propOf(stm?.props, "target_object_categories"),
-      documentation: propOf(stm?.props, "documentation"),
+      target: fact("target_object_categories", "target_objects"),
+      documentation: fact("documentation", "documentation"),
       statement,
       from: [],
     });
@@ -237,7 +266,7 @@ if (practices.length) selected = selected.filter((r) => practices.includes(r.pra
 if (levels.length) selected = selected.filter((r) => levels.includes(r.level));
 if (modals.length) selected = selected.filter((r) => modals.includes(r.modal));
 
-const meta = `${catalog.metadata?.title} · catalog version ${catalog.metadata?.version} · commit ${commit}${presetId ? ` · preset ${presetId}` : ""}${mappingStatus && mappingStatus !== "complete" ? ` · mapping ${mappingStatus}` : ""}`;
+const meta = `${catalog.metadata?.title} · catalog version ${catalog.metadata?.version} · ${catalogFile ? `file ${catalogFile.split("/").pop()} sha256 ${fileSha.slice(0, 12)}` : `commit ${commit}`}${presetId ? ` · preset ${presetId}` : ""}${mappingStatus && mappingStatus !== "complete" ? ` · mapping ${mappingStatus}` : ""}`;
 
 if (summary) {
   const count = (key) => {
@@ -265,7 +294,7 @@ if (summary) {
   for (const r of selected) console.log([...cols.map((c) => q(c === "from" ? r.from.join(" ") : c === "relationship" ? (r.relationship ?? []).join(" ") : r[c])), "", "", ""].join(","));
 } else {
   console.log(`# Worksheet: ${meta}`);
-  if (presetId) console.log(`Preset: ${presetId} · ${preset.title}${commit !== preset.commit ? ` · tested at ${preset.commit}, run at another commit` : ""}`);
+  if (presetId) console.log(`Preset: ${presetId} · ${preset.title}${preset.commit && commit !== preset.commit ? ` · tested at ${preset.commit}, run at another commit` : ""}`);
   if (mappingPath) console.log(`Mapping: ${mappingPath.split("/").pop()}${mappingStatus ? ` · status ${mappingStatus}` : ""}${sourceFilter.size ? ` · ${sourceFilter.size} source controls` : ""}`);
   const narrowed = [levels.length && `levels ${levels.join(", ")}`, modals.length && `modal ${modals.join(", ")}`, practices.length && `practices ${practices.join(", ")}`].filter(Boolean);
   if (narrowed.length) console.log(`Only: ${narrowed.join(" · ")}`);

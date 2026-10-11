@@ -360,6 +360,20 @@ for (const [file, want] of cases) {
   failed += !refused;
   console.log(`${refused ? "ok  " : "FAIL"} unknown target and unmapped source are refused${refused ? "" : ": " + bad.stderr}`);
 }
+// --catalog-file: a catalog from disk, pinned by its hash; a preset that names
+// a file refuses another one, and refuses to run without it.
+{
+  const run = (...a) => spawnSync(process.execPath, ["worksheet.mjs", ...a], { encoding: "utf8" });
+  const w = run("--catalog-file", "test/fixtures/valid-catalog.json", "--summary");
+  const ok = w.status === 0 && /sha256 [0-9a-f]{12}/.test(w.stdout) && /^\d+ requirements$/m.test(w.stdout);
+  failed += !ok;
+  console.log(`${ok ? "ok  " : "FAIL"} worksheet reads a catalog file and names its hash${ok ? "" : ": " + w.stdout + w.stderr}`);
+  const other = run("--preset", "a5", "--catalog-file", "test/fixtures/valid-catalog.json");
+  const none = run("--preset", "a5");
+  const refused = other.status === 2 && /is not the A5-Basismodul/.test(other.stderr) && none.status === 2 && /needs --catalog-file/.test(none.stderr);
+  failed += !refused;
+  console.log(`${refused ? "ok  " : "FAIL"} a preset's catalog file is checked by its hash and required${refused ? "" : ": " + other.stderr + none.stderr}`);
+}
 // What the inputs may not do: leave the pinned library, or pass a status that
 // is only a property of Object.prototype.
 {
