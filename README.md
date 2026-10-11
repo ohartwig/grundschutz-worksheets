@@ -168,11 +168,17 @@ have no target.
 All three are **drafts**, written with AI assistance and not yet reviewed by a
 person. The worksheet says so in its header (`mapping draft`) and in a note
 above the rows; the CSV, which has no room for one, says it on stderr.
-A reviewed mapping changes `status` to `complete` in its source file.
+
+The review has a sheet: `mapping.mjs --review` writes, per source, its remark,
+the step to ISO, every target with its title and the boxes a reviewer ticks.
+The sheets for the three drafts are in `mappings/review/` and regenerated
+with the mappings. A mapping whose sheet is ticked through changes `status` to
+`complete` in its source file -- and only then may it say `subset-of`.
 
 ```bash
 node mapping.mjs mappings/src/nis2.json > mappings/nis2-to-gspp.json
 node validate.mjs mappings/nis2-to-gspp.json
+node mapping.mjs mappings/src/nis2.json --review > mappings/review/nis2.md
 ```
 
 CI regenerates every mapping and fails if the committed file differs.

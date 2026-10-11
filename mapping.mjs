@@ -24,7 +24,7 @@
 //                            "path": "control_layer/Mappings/.../...mapping_collection.json" } },
 //     "maps": [{ "source": "21.2.a", "remarks": "why",
 //                "via": { "iso27001": ["5.1", "5.2"] },             // derived
-//                "relationship": "subset-of", "targets": ["RISK.1.1"] }, // direct
+//                "relationship": "intersects-with", "targets": ["RISK.1.1"] }, // direct
 //              ...],
 //     "unmapped": [{ "source": "21.2.x", "reason": "why no target fits" }]
 //   }
@@ -52,7 +52,14 @@
 //
 // Deterministic like profile.mjs: same input, same bytes.
 //
-//   node mapping.mjs mappings/src/nis2-art21.json > mappings/nis2-art21-to-gspp.json
+//   node mapping.mjs mappings/src/nis2.json > mappings/nis2-to-gspp.json
+//
+// With --review it writes, instead of the OSCAL, a Markdown sheet for the
+// person who reviews the draft: per source its remark, the step to ISO, every
+// target with its title, and boxes to tick. Ticking them is the review; a
+// mapping whose sheet is ticked through can change its status to "complete".
+//
+//   node mapping.mjs mappings/src/nis2.json --review > nis2-review.md
 //
 // No dependencies. Node 24 (LTS) or later.
 
@@ -63,9 +70,10 @@ const UUID_NS = "b1f0c6a2-5d3e-4f7a-9c8b-2e6d1a4f0b37";
 const RELATIONSHIPS = ["equivalent-to", "equal-to", "subset-of", "superset-of", "intersects-with"];
 const FULL = ["equivalent-to", "equal-to", "subset-of"];
 
-const file = process.argv[2];
+const review = process.argv.includes("--review");
+const file = process.argv.slice(2).find((a) => !a.startsWith("--"));
 if (!file) {
-  console.error("usage: mapping.mjs <mapping source.json>");
+  console.error("usage: mapping.mjs <mapping source.json> [--review]");
   process.exit(2);
 }
 const m = JSON.parse(readFileSync(file, "utf8"));
@@ -90,8 +98,10 @@ if (!r.ok) fail(`${r.status} for ${href}`);
 const { catalog } = await r.json();
 if (!catalog) fail("not an OSCAL catalog");
 const known = new Set();
+const titles = new Map();
 for (const c of everyControl(catalog)) {
   known.add(c.id);
+  titles.set(c.id, c.title ?? "");
 }
 
 const errors = [];
@@ -164,6 +174,43 @@ for (const u of unmapped) {
 for (const id of ids) if (!covered.has(id)) errors.push(`${id}: neither mapped nor listed as unmapped`);
 if (errors.length) fail(`${errors.length} error(s):\n  ${errors.join("\n  ")}`);
 
+// --review: one section per source, in the order of source.ids. The boxes are
+// the questions a reviewer answers; the remarks are this repository's words.
+const reviewSheet = () => {
+  const t = (id) => `${id} ${titles.get(id) ?? ""}`.trim();
+  const lines = [
+    `# Review: ${m.title}`,
+    "",
+    `Version ${m.version} · status ${m.status} · catalog ${m.catalog.path.split("/").pop()} at ${m.catalog.commit.slice(0, 7)}`,
+    "",
+    `Source: ${m.source.title} (${m.source.href}). Check every section against the original text, not against the remark.`,
+    "Derived targets come from the BSI's own mapping and are only as right as the step to it; a direct target is this repository's judgement.",
+    "",
+  ];
+  const bySource = new Map(maps.map((x) => [x.source, x]));
+  const why = new Map(unmapped.map((u) => [u.source, u.reason]));
+  for (const id of ids) {
+    lines.push(`## ${id}`, "");
+    if (why.has(id)) {
+      lines.push(`Not mapped: ${why.get(id)}`, "", "- [ ] No requirement of the catalog fits; the reason holds", "");
+      continue;
+    }
+    const x = bySource.get(id);
+    lines.push(`> ${x.remarks}`, "");
+    for (const [name, cs] of Object.entries(x.via ?? {})) {
+      lines.push(`- [ ] Step to ${via.get(name).title}: ${cs.join(", ")} -- these and no others`);
+    }
+    if (x.derived.length) lines.push(`  - derived, intersects-with: ${x.derived.map(t).join("; ")}`);
+    if (x.targets?.length) {
+      lines.push(`- [ ] Direct targets, ${x.relationship}: ${x.targets.map(t).join("; ")}`);
+      lines.push(`- [ ] Relationship: ${x.relationship} holds${FULL.includes(x.relationship) ? "" : " (or the targets cover all of the source: then subset-of)"}`);
+    }
+    lines.push("- [ ] The remark is our own wording, not the source's text", "");
+  }
+  if (laggingNote) lines.push("## Left out", "", laggingNote, "");
+  return lines.join("\n");
+};
+
 const mappingUuid = uuid5(`mapping:${m.title}:${m.catalog.path}`);
 const out = {
   "mapping-collection": {
@@ -228,4 +275,5 @@ const out = {
   },
 };
 
-process.stdout.write(JSON.stringify(out, null, 2) + "\n");
+// No process.exit() after this: on a pipe it would cut a long output short.
+process.stdout.write(review ? reviewSheet() : JSON.stringify(out, null, 2) + "\n");

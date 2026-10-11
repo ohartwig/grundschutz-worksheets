@@ -377,6 +377,11 @@ for (const [file, want] of cases) {
   const refused = bad.status === 1 && /NOPE\.1 not in the catalog/.test(bad.stderr) && /A\.3: neither mapped/.test(bad.stderr);
   failed += !refused;
   console.log(`${refused ? "ok  " : "FAIL"} unknown target and unmapped source are refused${refused ? "" : ": " + bad.stderr}`);
+  const rv = spawnSync(process.execPath, ["mapping.mjs", "test/fixtures/mapping-source.json", "--review"], { encoding: "utf8" });
+  const sheetOk = rv.status === 0 && /^## A\.1$/m.test(rv.stdout) && /- \[ \] Direct targets, intersects-with: KONF\.2\.2 /.test(rv.stdout)
+    && /^## A\.3$\n\nNot mapped: no TLS requirement fits/m.test(rv.stdout);
+  failed += !sheetOk;
+  console.log(`${sheetOk ? "ok  " : "FAIL"} mapping.mjs --review writes a sheet with every source and its targets${sheetOk ? "" : ": " + rv.stdout + rv.stderr}`);
   const full = /subset-of claims full coverage, which a draft mapping cannot/.test(bad.stderr);
   failed += !full;
   console.log(`${full ? "ok  " : "FAIL"} a draft mapping may not claim subset-of${full ? "" : ": " + bad.stderr}`);
