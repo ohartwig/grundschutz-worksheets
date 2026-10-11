@@ -98,7 +98,11 @@ const uuid5 = (name) => {
   return `${x.slice(0, 8)}-${x.slice(8, 12)}-${x.slice(12, 16)}-${x.slice(16, 20)}-${x.slice(20)}`;
 };
 
-const href = `${REPO}/${r.catalog.commit}/${r.catalog.path.split("/").map(encodeURIComponent).join("/")}`;
+// A path in the library is plain segments. An empty one, "." or ".." would
+// resolve above the pinned commit and fetch another repository or a branch.
+const segs = String(r.catalog.path ?? "").split("/");
+if (segs.some((x) => !x || x === "." || x === "..")) fail(`catalog.path is not a path in the library: ${r.catalog.path}`);
+const href = `${REPO}/${r.catalog.commit}/${segs.map(encodeURIComponent).join("/")}`;
 let catalog;
 if (local) catalog = JSON.parse(readFileSync(local, "utf8")).catalog;
 else {

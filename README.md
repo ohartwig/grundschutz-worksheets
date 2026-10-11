@@ -316,7 +316,11 @@ declaring 1.2.x are checked against the older model.
 **Pinned.** The library republishes continuously. A check against "the current
 version" cannot be repeated, so the script only accepts a commit and prints it
 in the header. Re-running against a newer commit and diffing the output shows
-exactly which requirements are new or changed.
+exactly which requirements are new or changed. The pin holds for every path
+too: a catalog path is plain segments (no `..`, no leading or trailing `/`),
+`recheck` follows a component's source only into the library at a commit, and
+`--profile` accepts a profile whose import is exactly this run's catalog URL —
+the form `profile.mjs` writes. Anything else is refused, not quietly fetched.
 
 **Nothing is dropped silently.** Nested requirements are resolved to any depth.
 Mapping targets that the catalog does not contain — the mapping lags the catalog —
