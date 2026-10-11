@@ -1,0 +1,18 @@
+{
+  "title": "Test mapping",
+  "version": "1",
+  "last-modified": "2026-10-11T00:00:00Z",
+  "status": "draft",
+  "method": "hybrid",
+  "description": "Fixture for the mapping.mjs tests.",
+  "source": { "title": "An example framework", "href": "https://example.org/framework", "ids": ["A.1", "A.2", "A.3"] },
+  "catalog": {
+    "path": "control_layer/Mindeststandard-TLS/Entwurf-Mindeststandard-TLS-catalog.json",
+    "commit": "367d775010abee641b258926bb482fcd05270059"
+  },
+  "maps": [
+    { "source": "A.1", "relationship": "subset-of", "targets": ["KONF.2.2", "KONF.14.1"], "remarks": "TLS configuration" },
+    { "source": "A.2", "relationship": "intersects-with", "targets": ["BES.4.3"], "remarks": "only the procurement part" }
+  ],
+  "unmapped": [{ "source": "A.3", "reason": "no TLS requirement fits" }]
+}

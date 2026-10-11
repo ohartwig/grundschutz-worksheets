@@ -41,7 +41,7 @@
 //   --format md|csv       Markdown checklist (default) or CSV for a spreadsheet
 //   --summary             counts by practice, level, modal verb and action word
 
-import { readFileSync, readdirSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync } from "node:fs";
 
 const REPO = "https://raw.githubusercontent.com/BSI-Bund/Stand-der-Technik-Bibliothek";
 
@@ -168,9 +168,15 @@ walkGroups(catalog.groups, null, 0);
 
 // Select: the whole catalog, or the targets of a mapping collection.
 let selected = [...rows.values()];
+let mappingStatus = "";
 const orphans = [];
 if (mappingPath) {
-  const { "mapping-collection": mc } = await load(mappingPath);
+  // A mapping of this repository (mappings/, see mapping.mjs) is read from
+  // disk; any other path is one of the library's, at the commit.
+  const own = [mappingPath, new URL(mappingPath, import.meta.url)].find((p) => existsSync(p));
+  const { "mapping-collection": mc } = own ? JSON.parse(readFileSync(own, "utf8")) : await load(mappingPath);
+  mappingStatus = mc?.provenance?.status ?? "";
+  if (own && mappingStatus !== "complete") console.error(`Mapping ${mappingPath} is ${mappingStatus || "of unknown status"}: a proposal to review, not an established mapping.`);
   // target -> source -> relationships. The relationship says how much of the
   // source control the requirement covers: intersects-with is only a part.
   const sources = new Map();
@@ -217,7 +223,7 @@ if (practices.length) selected = selected.filter((r) => practices.includes(r.pra
 if (levels.length) selected = selected.filter((r) => levels.includes(r.level));
 if (modals.length) selected = selected.filter((r) => modals.includes(r.modal));
 
-const meta = `${catalog.metadata?.title} · catalog version ${catalog.metadata?.version} · commit ${commit}${presetId ? ` · preset ${presetId}` : ""}`;
+const meta = `${catalog.metadata?.title} · catalog version ${catalog.metadata?.version} · commit ${commit}${presetId ? ` · preset ${presetId}` : ""}${mappingStatus && mappingStatus !== "complete" ? ` · mapping ${mappingStatus}` : ""}`;
 
 if (summary) {
   const count = (key) => {
@@ -240,7 +246,7 @@ if (summary) {
 } else {
   console.log(`# Worksheet: ${meta}`);
   if (presetId) console.log(`Preset: ${presetId} · ${preset.title}${commit !== preset.commit ? ` · tested at ${preset.commit}, run at another commit` : ""}`);
-  if (mappingPath) console.log(`Mapping: ${mappingPath.split("/").pop()}${sourceFilter.size ? ` · ${sourceFilter.size} source controls` : ""}`);
+  if (mappingPath) console.log(`Mapping: ${mappingPath.split("/").pop()}${mappingStatus ? ` · status ${mappingStatus}` : ""}${sourceFilter.size ? ` · ${sourceFilter.size} source controls` : ""}`);
   const narrowed = [levels.length && `levels ${levels.join(", ")}`, modals.length && `modal ${modals.join(", ")}`, practices.length && `practices ${practices.join(", ")}`].filter(Boolean);
   if (narrowed.length) console.log(`Only: ${narrowed.join(" · ")}`);
   if (profilePath) console.log(`Profile: ${profilePath.split("/").pop()}`);

@@ -318,4 +318,31 @@ for (const [file, want] of cases) {
     console.log(`${ok ? "ok  " : "FAIL"} poam: ${name}`);
   }
 }
+// mapping.mjs: deterministic, validates; an unknown target or a source left
+// out is refused, and worksheet.mjs reads the result from disk.
+{
+  const gen = (src) => spawnSync(process.execPath, ["mapping.mjs", src], { encoding: "utf8" });
+  const a = gen("test/fixtures/mapping-source.json");
+  const same = a.status === 0 && a.stdout === gen("test/fixtures/mapping-source.json").stdout;
+  failed += !same;
+  console.log(`${same ? "ok  " : "FAIL"} mapping.mjs is deterministic${same ? "" : ": " + a.stderr}`);
+  if (same) {
+    const { writeFileSync, mkdirSync } = await import("node:fs");
+    mkdirSync(".schema-cache", { recursive: true });
+    writeFileSync(".schema-cache/test-mapping.json", a.stdout);
+    const v = spawnSync(process.execPath, ["validate.mjs", ".schema-cache/test-mapping.json"], { encoding: "utf8" });
+    failed += v.status !== 0;
+    console.log(`${v.status === 0 ? "ok  " : "FAIL"} generated mapping validates${v.status === 0 ? "" : ": " + v.stdout}`);
+    const w = spawnSync(process.execPath, ["worksheet.mjs", "control_layer/Mindeststandard-TLS/Entwurf-Mindeststandard-TLS-catalog.json",
+      "--mapping", ".schema-cache/test-mapping.json", "--commit", "367d775010abee641b258926bb482fcd05270059"], { encoding: "utf8" });
+    const ok = w.status === 0 && /status draft/.test(w.stdout) && /from A\.1 \(subset-of\)/.test(w.stdout) && /3 requirements\./.test(w.stdout)
+      && /a proposal to review/.test(w.stderr);
+    failed += !ok;
+    console.log(`${ok ? "ok  " : "FAIL"} worksheet reads an own mapping from disk and says it is a draft${ok ? "" : ": " + w.stdout + w.stderr}`);
+  }
+  const bad = gen("test/fixtures/mapping-source-broken.json");
+  const refused = bad.status === 1 && /NOPE\.1 not in the catalog/.test(bad.stderr) && /A\.3: neither mapped/.test(bad.stderr);
+  failed += !refused;
+  console.log(`${refused ? "ok  " : "FAIL"} unknown target and unmapped source are refused${refused ? "" : ": " + bad.stderr}`);
+}
 process.exit(failed ? 1 : 0);
