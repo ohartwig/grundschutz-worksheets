@@ -118,6 +118,12 @@ for (const [file, want] of cases) {
   const empty = gen(".schema-cache/results-empty.json");
   failed += empty.status !== 1;
   console.log(`${empty.status === 1 ? "ok  " : "FAIL"} results: a run without subjects is refused (exit ${empty.status})`);
+  const noPlan = JSON.parse(readFileSync("test/fixtures/results-run.json", "utf8"));
+  delete noPlan.plan;
+  writeFileSync(".schema-cache/results-noplan.json", JSON.stringify(noPlan));
+  const np = gen(".schema-cache/results-noplan.json");
+  failed += np.status !== 1;
+  console.log(`${np.status === 1 ? "ok  " : "FAIL"} results: a run without a plan is refused (exit ${np.status})`);
   // measured_by: the props name the code that measured; a false commit is refused.
   const prov = JSON.parse(readFileSync("test/fixtures/results-run.json", "utf8"));
   prov.measured_by = { repository: "g/checks", commit: "c".repeat(40), image: "r/i@sha256:" + "b".repeat(64),

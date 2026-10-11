@@ -18,9 +18,10 @@
 //                  "commit": "<40-char sha of the BSI library>" },
 //     "requirements": ["TEST.1.3", "TEST.4.1"],
 //     "evidence": [{ "text": "pipeline 1234", "href": "https://ci.example.org/p/1234" }],
-//     "plan": { "href": "assessment-plan.json",    optional: the assessment plan
+//     "plan": { "href": "assessment-plan.json",    the assessment plan
 //               "file": "assessment-plan.json" }, (assessment-plan.mjs) this run
-//                                              follows; with "file", its SHA-256
+//                                              follows; "file" is optional and
+//                                              adds its SHA-256
 //     "measured_by": { "repository": "group/checks", "commit": "<40-char sha>",
 //                      "image": "registry/image@sha256:...", "job": "https://...",
 //                      "mapping_sha256": "<64 hex>" },
@@ -35,7 +36,9 @@
 // Every requirement is satisfied in this run when every subject is; a
 // requirement is not-satisfied as soon as one subject is not, and its
 // finding names the observations that failed. A run without subjects is an
-// error, not a pass: a check that looked at nothing has shown nothing.
+// error, not a pass: a check that looked at nothing has shown nothing. So is a
+// run without a plan: OSCAL's results import the assessment plan they
+// follow, and a result that names none is not valid OSCAL.
 //
 // Options:
 //   --catalog <file>   check the IDs against a local catalog instead of
@@ -76,6 +79,7 @@ if (Date.parse(r.end) < Date.parse(r.start)) fail("end is before start");
 if (!/^[0-9a-f]{40}$/.test(r.catalog?.commit ?? "")) fail("catalog.commit must be a 40-character commit");
 if (!Array.isArray(r.requirements) || !r.requirements.length) fail("no requirements");
 if (!Array.isArray(r.subjects) || !r.subjects.length) fail("no subjects: a check that looked at nothing has shown nothing");
+if (typeof r.plan?.href !== "string" || !r.plan.href) fail('missing "plan": { "href": ... } -- the assessment plan this run follows (assessment-plan.mjs)');
 // Who measured: optional, but what is given must be what it claims to be --
 // a commit that is not one, or a hash that is not one, would read as
 // provenance and prove nothing. "local" marks a run outside CI.
@@ -111,18 +115,9 @@ if (new Set(r.requirements).size !== r.requirements.length) fail("a requirement 
 
 const run = `${r.check}:${r.start}`;
 const b64 = (s) => Buffer.from(s, "utf8").toString("base64");
-const planUuid = uuid5(`plan:${r.check}`);
 const evidence = (r.evidence ?? []).map((e) => ({ href: e.href, description: e.text || e.href }));
 const subjects = [...r.subjects].sort((a, b) => a.title.localeCompare(b.title));
-const resources = [
-  {
-    uuid: planUuid,
-    title: `Assessment plan: ${r.title}`,
-    description: r.description,
-    // A resource must carry its content (rlink or base64): here, the plan text.
-    base64: { filename: `${r.check}-plan.txt`, "media-type": "text/plain", value: b64(r.description) },
-  },
-];
+const resources = [];
 const observations = subjects.map((s) => {
   const res = uuid5(`subject:${r.check}:${s.title}`);
   resources.push({
@@ -162,15 +157,13 @@ const findings = [...r.requirements].sort(byId).map((id) => ({
 for (const f of findings) if (!f.props) delete f.props;
 for (const o of observations) delete o._satisfied;
 
-const apResource = r.plan?.href
-  ? importResource(
-      uuid5(`import:ap:${r.plan.href}`),
-      "Assessment plan",
-      r.plan.href,
-      r.plan.file ? readFileSync(resolve(dirname(resolve(file)), r.plan.file)) : undefined,
-    )
-  : null;
-if (apResource) resources.push(apResource);
+const apResource = importResource(
+  uuid5(`import:ap:${r.plan.href}`),
+  "Assessment plan",
+  r.plan.href,
+  r.plan.file ? readFileSync(resolve(dirname(resolve(file)), r.plan.file)) : undefined,
+);
+resources.push(apResource);
 
 const out = {
   "assessment-results": {
@@ -185,9 +178,8 @@ const out = {
         "It states what this run observed, not that a system is compliant.",
     },
     // The assessment plan this run follows, through a back-matter resource
-    // (hashed where the input names the local copy). Without one, the plan
-    // text of the check stands in as a back-matter resource, as before.
-    "import-ap": { href: `#${apResource?.uuid ?? planUuid}` },
+    // (hashed where the input names the local copy).
+    "import-ap": { href: `#${apResource.uuid}` },
     results: [
       {
         uuid: uuid5(`result:${run}`),

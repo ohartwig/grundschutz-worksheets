@@ -348,8 +348,8 @@ node validate.mjs assessment-plan.json
 
 One activity and one recurring task per check, every requirement ID checked
 against the catalog at the pinned commit. The check name is the join: the same
-name is the `check` prop of every result `results.mjs` writes, and a run file
-can name the plan it follows (`"plan": { "href": ..., "file": ... }`), which
+name is the `check` prop of every result `results.mjs` writes, and every run
+file names the plan it follows (`"plan": { "href": ..., "file": ... }`), which
 becomes the result's `import-ap`.
 
 ## Imports name what they were made from
@@ -381,6 +381,10 @@ node validate.mjs results.json
   observations that were not as required.
 - **Nothing examined is an error, not a pass.** A check that looked at no
   subject has shown nothing.
+- **No plan, no results.** A run file names the assessment plan it follows
+  (`"plan": { "href": ... }`, with `"file"` for its SHA-256); OSCAL's results
+  import it, so without one the run is refused. Up to 0.2 the check's own
+  description stood in for the plan, which no OSCAL tool accepts.
 - **IDs checked** against the catalog at the pinned commit, as in the other
   generators.
 - **Not a verdict on the system.** It states what this run observed. Whether a
