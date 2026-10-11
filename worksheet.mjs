@@ -31,8 +31,11 @@
 //   --catalog-file <file> a catalog on disk that is not in the library (A5);
 //                         pinned by its SHA-256 instead of a commit, and a
 //                         preset that names one refuses any other file
-//   --mapping <path>      only requirements a mapping collection points at,
-//                         each with the source controls that lead to it
+//   --mapping <path>      only requirements a mapping collection of the
+//                         library points at, each with the source controls
+//                         that lead to it
+//   --mapping-file <file> the same with a mapping collection on disk (see
+//                         mapping.mjs); it must target the catalog at --commit
 //   --sources <list|@file> with --mapping: only these source controls
 //                         (e.g. your applicable Annex A controls), comma-separated
 //                         or one per line in a file; a trailing * matches a prefix
@@ -46,12 +49,12 @@
 //   --summary             counts by practice, level, modal verb and action word
 
 import { createHash } from "node:crypto";
-import { existsSync, readFileSync, readdirSync } from "node:fs";
+import { readFileSync, readdirSync } from "node:fs";
 
 const REPO = "https://raw.githubusercontent.com/BSI-Bund/Stand-der-Technik-Bibliothek";
 
 const args = process.argv.slice(2);
-const valued = ["--commit", "--mapping", "--sources", "--profile", "--practices", "--levels", "--modal", "--format", "--preset", "--catalog-file"];
+const valued = ["--commit", "--mapping", "--sources", "--profile", "--practices", "--levels", "--modal", "--format", "--preset", "--catalog-file", "--mapping-file"];
 const opt = (name) => {
   const i = args.indexOf(name);
   return i >= 0 ? args[i + 1] ?? "" : "";
@@ -98,7 +101,15 @@ if (preset["catalog-file"]) {
 }
 const path = catalogFile ? "" : args.find((a, i) => !a.startsWith("--") && !valueAt.has(i)) ?? preset.catalog;
 const commit = opt("--commit") || preset.commit || "";
-const mappingPath = opt("--mapping") || (opt("--profile") ? "" : preset.mapping ?? "");
+// A mapping is the library's (--mapping, a path at the commit) or a file on
+// disk (--mapping-file, e.g. this repository's mappings/). Which one is said,
+// not guessed from what happens to exist in the working directory. A preset's
+// mapping file lives in this repository; one on the command line is relative
+// to where you are.
+const cliMapping = opt("--mapping") || opt("--mapping-file");
+const mappingPath = opt("--mapping") || (cliMapping || opt("--profile") ? "" : preset.mapping ?? "");
+const mappingFile = opt("--mapping-file") || (cliMapping || opt("--profile") || !preset["mapping-file"] ? "" : new URL(preset["mapping-file"], import.meta.url));
+const mappingName = mappingPath || (mappingFile ? String(opt("--mapping-file") || preset["mapping-file"]) : "");
 const profilePath = opt("--profile");
 const list = (s) => s.split(/[,\n]/).map((x) => x.trim()).filter(Boolean);
 const sourcesArg = opt("--sources");
@@ -111,7 +122,7 @@ const modals = list(opt("--modal"));
 const format = opt("--format") || "md";
 const summary = args.includes("--summary");
 
-if (catalogFile && (opt("--mapping") || preset.mapping || profilePath)) {
+if (catalogFile && (mappingPath || mappingFile || profilePath)) {
   console.error("--catalog-file takes no --mapping or --profile: both refer to a library catalog");
   process.exit(2);
 }
@@ -121,11 +132,15 @@ if ((!catalogFile && (!path || !/^[0-9a-f]{40}$/.test(commit))) || !["md", "csv"
   console.error("A branch name is refused on purpose: the library republishes continuously.");
   process.exit(2);
 }
-if (profilePath && mappingPath) {
+if (opt("--mapping") && opt("--mapping-file")) {
+  console.error("--mapping and --mapping-file exclude each other");
+  process.exit(2);
+}
+if (profilePath && (mappingPath || mappingFile)) {
   console.error("--profile and --mapping exclude each other");
   process.exit(2);
 }
-if (sourceFilter.size && !mappingPath) {
+if (sourceFilter.size && !mappingPath && !mappingFile) {
   console.error("--sources needs --mapping");
   process.exit(2);
 }
@@ -213,23 +228,21 @@ walkGroups(catalog.groups, null, 0);
 let selected = [...rows.values()];
 let mappingStatus = "";
 const orphans = [];
-if (mappingPath) {
-  // A mapping of this repository (mappings/, see mapping.mjs) is read from
-  // disk; any other path is one of the library's, at the commit.
-  const own = [mappingPath, new URL(mappingPath, import.meta.url)].find((p) => existsSync(p));
-  const { "mapping-collection": mc } = own ? JSON.parse(readFileSync(own, "utf8")) : await load(mappingPath);
+if (mappingPath || mappingFile) {
+  const own = Boolean(mappingFile);
+  const { "mapping-collection": mc } = own ? JSON.parse(readFileSync(mappingFile, "utf8")) : await load(mappingPath);
   // An own mapping is derived from one catalog at one commit; applied to
   // another, its targets may not exist or may mean something else. So it must
   // name exactly the catalog this run reads -- the form mapping.mjs writes.
   if (own) {
     const targets = [...new Set((mc?.mappings ?? []).map((x) => x["target-resource"]?.href))];
     if (!targets.length || targets.some((h) => h !== rawUrl(path))) {
-      console.error(`mapping ${mappingPath} is not made for ${path} at commit ${commit}: it targets ${targets.join(", ") || "nothing"}. Regenerate it with mapping.mjs at that commit.`);
+      console.error(`mapping ${mappingName} is not made for ${path} at commit ${commit}: it targets ${targets.join(", ") || "nothing"}. Regenerate it with mapping.mjs at that commit.`);
       process.exit(2);
     }
   }
   mappingStatus = mc?.provenance?.status ?? "";
-  if (own && mappingStatus !== "complete") console.error(`Mapping ${mappingPath} is ${mappingStatus || "of unknown status"}: a proposal to review, not an established mapping.`);
+  if (own && mappingStatus !== "complete") console.error(`Mapping ${mappingName} is ${mappingStatus || "of unknown status"}: a proposal to review, not an established mapping.`);
   // target -> source -> relationships. The relationship says how much of the
   // source control the requirement covers: intersects-with is only a part.
   const sources = new Map();
@@ -278,19 +291,28 @@ if (modals.length) selected = selected.filter((r) => modals.includes(r.modal));
 
 const meta = `${catalog.metadata?.title} · catalog version ${catalog.metadata?.version} · ${catalogFile ? `file ${catalogFile.split("/").pop()} sha256 ${fileSha.slice(0, 12)}` : `commit ${commit}`}${presetId ? ` · preset ${presetId}` : ""}${mappingStatus && mappingStatus !== "complete" ? ` · mapping ${mappingStatus}` : ""}`;
 
+// What travels with the output: a worksheet is read by people who never saw
+// the README, so the caveat goes into the file, not only onto stderr.
+const notice = [
+  presetId && "The preset is a starting point, not an approved audit scope: check the selection against the original texts.",
+  mappingStatus && mappingStatus !== "complete" && `The mapping is a ${mappingStatus}, not reviewed: every "from" is a proposal.`,
+].filter(Boolean).join(" ");
+
 if (summary) {
   const count = (key) => {
     const m = new Map();
     for (const r of selected) m.set(r[key] || "-", (m.get(r[key] || "-") ?? 0) + 1);
     return [...m].sort((a, b) => b[1] - a[1]);
   };
-  console.log(`# Summary: ${meta}\n\n${selected.length} requirements\n`);
+  console.log(`# Summary: ${meta}\n${notice ? `\n> ${notice}\n` : ""}\n${selected.length} requirements\n`);
   for (const [key, label] of [["practice", "Practice"], ["level", "Security level"], ["modal", "Modal verb"], ["action", "Action word"], ["subject", "Subject"], ["documentation", "Documentation"]]) {
     console.log(`## ${label}\n`);
     for (const [k, n] of count(key)) console.log(`- ${k}: ${n}`);
     console.log("");
   }
 } else if (format === "csv") {
+  // A CSV has no place for prose above the header; the caveat goes to stderr.
+  if (notice) console.error(notice);
   // A cell that starts with = + - @ (or a tab or CR) is a formula to a
   // spreadsheet; a leading apostrophe makes it text. The prose is the BSI's,
   // but the sheet is where a reviewer works.
@@ -305,10 +327,11 @@ if (summary) {
 } else {
   console.log(`# Worksheet: ${meta}`);
   if (presetId) console.log(`Preset: ${presetId} · ${preset.title}${preset.commit && commit !== preset.commit ? ` · tested at ${preset.commit}, run at another commit` : ""}`);
-  if (mappingPath) console.log(`Mapping: ${mappingPath.split("/").pop()}${mappingStatus ? ` · status ${mappingStatus}` : ""}${sourceFilter.size ? ` · ${sourceFilter.size} source controls` : ""}`);
+  if (mappingName) console.log(`Mapping: ${mappingName.split("/").pop()}${mappingStatus ? ` · status ${mappingStatus}` : ""}${sourceFilter.size ? ` · ${sourceFilter.size} source controls` : ""}`);
   const narrowed = [levels.length && `levels ${levels.join(", ")}`, modals.length && `modal ${modals.join(", ")}`, practices.length && `practices ${practices.join(", ")}`].filter(Boolean);
   if (narrowed.length) console.log(`Only: ${narrowed.join(" · ")}`);
   if (profilePath) console.log(`Profile: ${profilePath.split("/").pop()}`);
+  if (notice) console.log(`\n> ${notice}`);
   console.log("");
   let practice;
   for (const r of selected) {

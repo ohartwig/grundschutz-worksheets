@@ -52,7 +52,7 @@
         "maps": [
           {
             "uuid": "50972356-ef35-5e00-910e-122491e4e4d1",
-            "relationship": "subset-of",
+            "relationship": "intersects-with",
             "sources": [
               {
                 "type": "control",
@@ -123,7 +123,7 @@
           },
           {
             "uuid": "012c6018-050c-5675-8262-d774cf66af63",
-            "relationship": "subset-of",
+            "relationship": "intersects-with",
             "sources": [
               {
                 "type": "control",
@@ -202,7 +202,7 @@
           },
           {
             "uuid": "0d459975-3de7-53c4-b795-9001731d5acc",
-            "relationship": "subset-of",
+            "relationship": "intersects-with",
             "sources": [
               {
                 "type": "control",
@@ -317,7 +317,7 @@
           },
           {
             "uuid": "2f6e67ee-6419-5f94-bc91-2552bfc06aa9",
-            "relationship": "subset-of",
+            "relationship": "intersects-with",
             "sources": [
               {
                 "type": "control",
@@ -765,7 +765,7 @@
           },
           {
             "uuid": "0f4fd4e0-01ee-5e92-b0fc-e9f8b7845dd2",
-            "relationship": "subset-of",
+            "relationship": "intersects-with",
             "sources": [
               {
                 "type": "control",
@@ -873,7 +873,7 @@
           },
           {
             "uuid": "3a1b502a-6ea8-507c-85a5-dac577abba3d",
-            "relationship": "subset-of",
+            "relationship": "intersects-with",
             "sources": [
               {
                 "type": "control",
@@ -975,7 +975,7 @@
           },
           {
             "uuid": "bd9bba35-3afd-5fa1-a169-7f22aefcda54",
-            "relationship": "subset-of",
+            "relationship": "intersects-with",
             "sources": [
               {
                 "type": "control",
@@ -1070,7 +1070,7 @@
           },
           {
             "uuid": "3e04a6ca-a235-5fe7-a6a0-191053f95dad",
-            "relationship": "subset-of",
+            "relationship": "intersects-with",
             "sources": [
               {
                 "type": "control",
@@ -1269,7 +1269,7 @@
           },
           {
             "uuid": "7b7827fc-f27a-5a57-99ed-066dbd72d8fa",
-            "relationship": "subset-of",
+            "relationship": "intersects-with",
             "sources": [
               {
                 "type": "control",
@@ -1380,7 +1380,7 @@
           },
           {
             "uuid": "7fd41ecf-1ffc-5bf4-a6f9-757d025676c7",
-            "relationship": "subset-of",
+            "relationship": "intersects-with",
             "sources": [
               {
                 "type": "control",

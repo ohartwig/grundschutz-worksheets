@@ -26,28 +26,28 @@
       "source": "Art.5",
       "remarks": "Governance and organisation: the management body defines, approves and is accountable for the ICT risk management framework.",
       "via": { "iso27001": ["5.1", "5.2", "5.4"] },
-      "relationship": "subset-of",
+      "relationship": "intersects-with",
       "targets": ["GC.1.2", "GC.5.1.2", "PERF.4.2", "RISK.1.5"]
     },
     {
       "source": "Art.6",
       "remarks": "ICT risk management framework: strategies, policies, procedures, its yearly review and the digital operational resilience strategy.",
       "via": { "iso27001": ["5.1", "5.31", "5.35"] },
-      "relationship": "subset-of",
+      "relationship": "intersects-with",
       "targets": ["GC.5.1.1", "GC.12.1", "RISK.1.1", "RISK.1.3"]
     },
     {
       "source": "Art.7",
       "remarks": "ICT systems, protocols and tools: appropriate, reliable, with sufficient capacity and technologically resilient.",
       "via": { "iso27001": ["8.6", "8.9", "8.14"] },
-      "relationship": "subset-of",
+      "relationship": "intersects-with",
       "targets": ["DET.4.17"]
     },
     {
       "source": "Art.8",
       "remarks": "Identification: ICT-supported business functions, information assets, their dependencies, risks and a yearly risk assessment of legacy systems.",
       "via": { "iso27001": ["5.9", "5.12"] },
-      "relationship": "subset-of",
+      "relationship": "intersects-with",
       "targets": ["GC.7.1.2", "STM.4.1"]
     },
     {
@@ -64,21 +64,21 @@
       "source": "Art.11",
       "remarks": "Response and recovery: ICT business continuity policy, response and recovery plans, their testing, and crisis management.",
       "via": { "iso27001": ["5.24", "5.26", "5.29", "5.30"] },
-      "relationship": "subset-of",
+      "relationship": "intersects-with",
       "targets": ["NOT.2.1", "NOT.3.1"]
     },
     {
       "source": "Art.12",
       "remarks": "Backup policies, restoration and recovery procedures, and their testing.",
       "via": { "iso27001": ["8.13", "8.14"] },
-      "relationship": "subset-of",
+      "relationship": "intersects-with",
       "targets": ["NOT.4.15", "NOT.4.16.1"]
     },
     {
       "source": "Art.13",
       "remarks": "Learning and evolving: post-incident reviews, lessons learned, and training for staff and the management body.",
       "via": { "iso27001": ["5.27", "6.3"] },
-      "relationship": "subset-of",
+      "relationship": "intersects-with",
       "targets": ["REA.3.1", "VRB.6.1"]
     },
     {
@@ -90,7 +90,7 @@
       "source": "Art.17",
       "remarks": "ICT-related incident management process: detect, manage, record and notify incidents.",
       "via": { "iso27001": ["5.24", "5.25", "5.26", "6.8"] },
-      "relationship": "subset-of",
+      "relationship": "intersects-with",
       "targets": ["DET.2.1", "REA.2.1"]
     },
     {
@@ -111,7 +111,7 @@
       "source": "Art.25",
       "remarks": "Testing of ICT tools and systems: vulnerability assessments and scans, network security assessments, scenario-based tests, penetration tests.",
       "via": { "iso27001": ["8.8", "8.29"] },
-      "relationship": "subset-of",
+      "relationship": "intersects-with",
       "targets": ["DET.5.3", "DET.5.4", "TEST.3.1.11"]
     },
     {
@@ -124,7 +124,7 @@
       "source": "Art.28",
       "remarks": "ICT third-party risk: strategy, register of information, due diligence, exit strategies.",
       "via": { "iso27001": ["5.19", "5.20", "5.21", "5.22", "5.23"] },
-      "relationship": "subset-of",
+      "relationship": "intersects-with",
       "targets": ["BES.8.2", "BES.8.3", "DLS.1.1"]
     },
     {

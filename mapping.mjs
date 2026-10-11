@@ -36,6 +36,8 @@
 // derived target gets "intersects-with": two set relationships in a row do
 // not give a sharper one. Direct targets cover what ISO does not have; they
 // carry their own relationship. A source needs at least one of the two.
+// Until the mapping is "complete", no relationship may claim that the targets
+// cover the whole source (subset-of, equal-to, equivalent-to).
 //
 // Output: an OSCAL 1.2.2 mapping collection on stdout, the version of the
 // library's own mappings. Source texts are not copied, only their IDs: the
@@ -45,7 +47,8 @@
 //   - every target is in the catalog at the pinned commit
 //   - every source ID in "source.ids" is either mapped or listed as unmapped
 //     with a reason, and nothing outside "source.ids" appears
-//   - relationships are the set-theory ones of NIST IR 8477
+//   - relationships are the set-theory ones of NIST IR 8477, and a mapping
+//     that is not "complete" claims no full coverage
 //
 // Deterministic like profile.mjs: same input, same bytes.
 //
@@ -60,6 +63,7 @@ const REPO = "https://raw.githubusercontent.com/BSI-Bund/Stand-der-Technik-Bibli
 const NS = "https://github.com/ohartwig/grundschutz-worksheets/ns";
 const UUID_NS = "b1f0c6a2-5d3e-4f7a-9c8b-2e6d1a4f0b37";
 const RELATIONSHIPS = ["equivalent-to", "equal-to", "subset-of", "superset-of", "intersects-with"];
+const FULL = ["equivalent-to", "equal-to", "subset-of"];
 
 const file = process.argv[2];
 if (!file) {
@@ -144,6 +148,9 @@ for (const [i, x] of maps.entries()) {
   if (!ids.has(x.source)) errors.push(`${at}: source not in source.ids`);
   if (!x.targets?.length && !Object.keys(x.via ?? {}).length) errors.push(`${at}: no targets and nothing via`);
   if (x.targets?.length && !RELATIONSHIPS.includes(x.relationship)) errors.push(`${at}: relationship must be one of ${RELATIONSHIPS.join(", ")}`);
+  // subset-of, equal-to and equivalent-to say the targets cover all of the
+  // source. Only a person who has checked that may say it.
+  if (x.targets?.length && m.status !== "complete" && FULL.includes(x.relationship)) errors.push(`${at}: ${x.relationship} claims full coverage, which a ${m.status} mapping cannot -- use intersects-with or superset-of until it is reviewed`);
   if (!x.remarks) errors.push(`${at}: no remarks -- say why these targets`);
   // Derived targets, minus the direct ones; a BSI target the catalog no longer
   // has is reported, not kept (the BSI mapping lags the catalog).

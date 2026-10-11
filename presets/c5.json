@@ -3,7 +3,7 @@
   "title": "BSI C5:2026 to Grundschutz++ (draft mapping of this repository)",
   "commit": "a12831136f4122a4c43854622180a24f2576a41e",
   "catalog": "control_layer/Grundschutz++/Grundschutz++-resolved_catalog.json",
-  "mapping": "mappings/c5-to-gspp.json",
+  "mapping-file": "mappings/c5-to-gspp.json",
   "sources-hint": "Criteria or whole areas, e.g. OPS-*,CRY-01",
   "expect": { "requirements": 384, "orphans": 0 },
   "notes": "Own mapping, status draft: derived through ISO 27001 and the BSI mapping, the step to ISO is not yet reviewed. C5 is CC BY-ND 4.0; only criterion IDs are used."
