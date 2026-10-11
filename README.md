@@ -22,7 +22,7 @@ Node 24 (the current LTS) or later. `worksheet.mjs` has no dependencies and need
 library at the commit you name.
 
 ```bash
-C=367d775010abee641b258926bb482fcd05270059   # a commit of the BSI library
+C=a12831136f4122a4c43854622180a24f2576a41e   # a commit of the BSI library
 CAT=control_layer/Grundschutz++/Grundschutz++-resolved_catalog.json
 MAP=control_layer/Mappings/ISO-27001-zu-GSpp/ISO27001-AnnexA-to-GS++-mapping_collection.json
 

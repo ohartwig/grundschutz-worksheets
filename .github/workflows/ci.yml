@@ -14,7 +14,7 @@ permissions:
 
 env:
   # The BSI library commit every check here is pinned to. Raise it deliberately.
-  BSI_COMMIT: 367d775010abee641b258926bb482fcd05270059
+  BSI_COMMIT: a12831136f4122a4c43854622180a24f2576a41e
   CATALOG: control_layer/Grundschutz++/Grundschutz++-resolved_catalog.json
   MAPPING: control_layer/Mappings/ISO-27001-zu-GSpp/ISO27001-AnnexA-to-GS++-mapping_collection.json
 
