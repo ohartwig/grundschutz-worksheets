@@ -39,7 +39,9 @@ jobs:
           n=$(node worksheet.mjs "$CATALOG" --mapping "$MAPPING" --summary --commit "$BSI_COMMIT" 2>/dev/null | sed -n 's/^\([0-9]*\) requirements$/\1/p')
           echo "requirements: $n"
           test "$n" = "280"
-      - name: Every preset yields its expected counts at its own commit
+      - name: Own mappings validate against the NIST schema
+        run: node validate.mjs mappings/*.json
+      - name: Every preset yields its expected counts at its own commit; own mappings are regenerated unchanged
         run: npm run test:presets
       - name: A branch name instead of a commit is refused
         run: |

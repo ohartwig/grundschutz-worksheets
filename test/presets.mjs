@@ -16,4 +16,13 @@ for (const f of readdirSync("presets").filter((f) => f.endsWith(".json")).sort()
   console.log(`${ok ? "ok  " : "FAIL"} ${p.id}: ${requirements} requirements, ${orphans} orphans; want ${p.expect.requirements}, ${p.expect.orphans}`);
   if (!ok && r.status !== 0) console.log(r.stderr);
 }
+// The mappings of this repository are generated: the committed file must be
+// what mapping.mjs makes of its source today.
+for (const f of readdirSync("mappings/src").filter((f) => f.endsWith(".json")).sort()) {
+  const out = `mappings/${f.slice(0, -5)}-to-gspp.json`;
+  const r = spawnSync(process.execPath, ["mapping.mjs", `mappings/src/${f}`], { encoding: "utf8" });
+  const ok = r.status === 0 && r.stdout === readFileSync(out, "utf8");
+  failed += !ok;
+  console.log(`${ok ? "ok  " : "FAIL"} ${out} is generated from mappings/src/${f}${ok ? "" : ": run node mapping.mjs and commit the result. " + r.stderr}`);
+}
 process.exit(failed ? 1 : 0);

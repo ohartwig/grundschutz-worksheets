@@ -85,6 +85,8 @@ node worksheet.mjs --preset itgs2023 --sources 'APP.1.1*,OPS.1.1.3*'
 | `itgs2023` | IT-Grundschutz-Kompendium 2023 through the BSI mapping | 322, 17 targets not in the catalog |
 | `lieferkette` | Lieferkettensicherheit profile, resolved | 146 |
 | `wlan` | WLAN profile, resolved | 48 |
+| `nis2` | NIS2 Art. 21(2), own draft mapping (below) | 187 |
+| `dora` | DORA Art. 5 to 30, own draft mapping (below) | 176 |
 
 The profile presets read the resolved catalog the BSI publishes next to each
 profile: the profiles themselves import several catalogs through back-matter,
@@ -97,9 +99,38 @@ the source control.
 
 Each preset file states the counts it yields (`expect`), and CI checks them
 (`npm run test:presets`). Raising a preset's commit means raising those counts
-in the same change, so the diff shows what the new catalog moved. The library
-has no mappings for C5, NIS2 or DORA; presets for those would need a mapping
-maintained in this repository.
+in the same change, so the diff shows what the new catalog moved.
+
+### Own mappings: NIS2 and DORA, as drafts
+
+The library has no mappings for NIS2, DORA or C5. `mapping.mjs` writes one
+from a small source file in `mappings/src/` into an OSCAL mapping collection
+in `mappings/`, which `--mapping` and the presets read from disk:
+
+| Preset | Source, one entry per | Requirements at `a128311` |
+|---|---|---|
+| `nis2` | Art. 21(2) (a) to (j) NIS2 = § 30 Abs. 2 Nr. 1 to 10 BSIG | 187 |
+| `dora` | DORA article, Art. 5 to 30 | 176 |
+
+Most targets are **derived**: each source names the ISO/IEC 27001:2022 Annex A
+controls it corresponds to, and the Grundschutz++ targets come from the BSI's
+own ISO mapping at the same commit. The only judgement made here is the step
+to ISO, which a reviewer can check against a list they know. Derived targets
+are `intersects-with`; direct targets cover what Annex A lacks (risk analysis,
+MFA, vulnerability disclosure, exit strategies) and carry their own
+relationship. Sources without any target are listed with a reason, for example
+reports to the supervisor (DORA Art. 19), which Grundschutz++ does not ask for.
+
+Both are **drafts**, written with AI assistance and not yet reviewed by a
+person. The worksheet says so in its header (`mapping draft`) and on stderr.
+A reviewed mapping changes `status` to `complete` in its source file.
+
+```bash
+node mapping.mjs mappings/src/nis2.json > mappings/nis2-to-gspp.json
+node validate.mjs mappings/nis2-to-gspp.json
+```
+
+CI regenerates every mapping and fails if the committed file differs.
 
 ## Your tailoring as an OSCAL profile
 
