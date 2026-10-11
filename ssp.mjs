@@ -68,7 +68,7 @@
 
 import { readFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
-import { NS, byId, uuid5 as uuid5From } from "./lib/oscal.mjs";
+import { NS, byId, importResource, uuid5 as uuid5From } from "./lib/oscal.mjs";
 
 const UUID_NS = "8e3f1a52-6c0d-4b7e-9a21-f4c5d7e6b039";
 
@@ -106,6 +106,24 @@ const applicable = new Set();
 for (const imp of profile.imports ?? [])
   for (const sel of imp["include-controls"] ?? []) for (const id of sel["with-ids"] ?? []) applicable.add(id);
 if (!applicable.size) fail("the profile includes no requirement by ID");
+// The profile is imported through a back-matter resource that carries the
+// SHA-256 of the local copy read here: the plan names what it was made from.
+const profileResource = importResource(
+  uuid5(`import:profile:${s.profile.href}`),
+  `Profile: ${profile.metadata?.title ?? s.profile.href}`,
+  s.profile.href,
+  readFileSync(resolve(base, s.profile.file)),
+);
+// What the profile left out, with the reason (profile.mjs writes them as
+// back-matter resources). The plan repeats them so that it states the whole
+// applicability, not only what applies: a Statement of Applicability in one
+// document. They are not implemented-requirements -- the imported profile does
+// not include them, and a plan speaks only about what its baseline includes.
+const notApplicable = (profile["back-matter"]?.resources ?? [])
+  .filter((x) => (x.props ?? []).some((p) => p.name === "tailoring" && p.value === "not-applicable"))
+  .map((x) => ({ id: x.props.find((p) => p.name === "control-id")?.value, reason: x.description ?? "" }))
+  .filter((x) => x.id)
+  .sort((a, b) => byId(a.id, b.id));
 
 // --- What the components claim. -------------------------------------------
 const components = []; // { uuid, type, title, description, claims: Map(id -> {description, links, alt}) }
@@ -298,6 +316,7 @@ const out = {
       props: [
         ...Object.entries(counts).map(([k, v]) => ({ name: `requirements-${k}`, ns: NS, value: String(v) })),
         ...Object.entries(bases).map(([k, v]) => ({ name: `basis-${k}`, ns: NS, value: String(v) })),
+        { name: "requirements-not-applicable", ns: NS, value: String(notApplicable.length) },
         { name: "assessed", ns: NS, value: String(assessedIn) },
         { name: "assessed-not-satisfied", ns: NS, value: String(notSatisfied) },
         { name: "component-claims", ns: NS, value: String(withClaim) },
@@ -309,7 +328,7 @@ const out = {
         "It states how the system implements each requirement, as claimed; assessment results are referenced, not merged. " +
         "It is not a statement that the system is compliant.",
     },
-    "import-profile": { href: s.profile.href },
+    "import-profile": { href: `#${profileResource.uuid}` },
     "system-characteristics": {
       "system-ids": [{ "identifier-type": NS, id: sys.id }],
       "system-name": sys.name,
@@ -359,8 +378,29 @@ const out = {
       }),
     },
     "control-implementation": {
-      description: `${applicable.size} requirements from the imported profile: ${counts.implemented} implemented, ${counts.partial} partial, ${counts.planned} planned.`,
+      description:
+        `${applicable.size} requirements from the imported profile: ${counts.implemented} implemented, ${counts.partial} partial, ${counts.planned} planned.` +
+        (notApplicable.length ? ` ${notApplicable.length} more are not applicable; each is in back-matter with its reason.` : ""),
       "implemented-requirements": requirements,
+    },
+    "back-matter": {
+      resources: [
+        profileResource,
+        ...notApplicable.map((e) => ({
+          uuid: uuid5(`not-applicable:${sys.id}:${e.id}`),
+          title: `Not applicable: ${e.id}`,
+          description: e.reason,
+          props: [
+            { name: "control-id", ns: NS, value: e.id },
+            { name: "tailoring", ns: NS, value: "not-applicable" },
+          ],
+          base64: {
+            filename: `not-applicable-${e.id}.txt`,
+            "media-type": "text/plain",
+            value: Buffer.from(e.reason, "utf8").toString("base64"),
+          },
+        })),
+      ],
     },
   },
 };

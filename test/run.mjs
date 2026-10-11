@@ -1,6 +1,7 @@
 // Tests for validate.mjs: valid fixtures pass, broken ones fail, an unknown
 // OSCAL version is a setup error rather than a pass. Run with `npm test`.
 import { spawnSync } from "node:child_process";
+import { resolveImport, sha256 } from "../lib/oscal.mjs";
 
 const cases = [
   ["test/fixtures/valid-catalog.json", 0],
@@ -282,12 +283,12 @@ for (const [file, want] of cases) {
       && ap.tasks?.every((t) => t.timing["at-frequency"]?.period > 0)],
     ["the activity carries the check name the results use", ap["local-definitions"]?.activities?.some((x) =>
       x.props.some((p) => p.name === "check" && p.value === "protected-tags"))],
-    ["it points to the security plan it verifies", ap["import-ssp"]?.href === "security-plan.json"],
+    ["it points to the security plan it verifies", resolveImport(ap, ap["import-ssp"]?.href).href === "security-plan.json"],
     ["an ID outside the catalog is refused", bad((c) => c.checks[0].requirements.push("XYZ.9.9")) === 1],
     ["a check listed twice is refused", bad((c) => c.checks.push(c.checks[0])) === 1],
     ["a check without subjects is refused", bad((c) => delete c.checks[0].subjects) === 1],
     ["results point to the plan they follow", r.status === 0
-      && JSON.parse(r.stdout)["assessment-results"]["import-ap"].href === "assessment-plan.json"],
+      && ((ar) => resolveImport(ar, ar["import-ap"].href).href === "assessment-plan.json")(JSON.parse(r.stdout)["assessment-results"])],
   ];
   for (const [name, ok] of cases) {
     failed += !ok;
@@ -450,5 +451,49 @@ for (const [file, want] of cases) {
   writeFileSync(".schema-cache/actions-proto.json", JSON.stringify({ source: "register", items: [{ id: "I-1", title: "x", requirements: ["DET.5.3"], status: "constructor" }] }));
   writeFileSync(".schema-cache/poam-proto.json", JSON.stringify({ ...pin, actions: "actions-proto.json" }));
   check("poam: a status named after a prototype property is refused", spawnSync(process.execPath, ["poam.mjs", ".schema-cache/poam-proto.json"], { encoding: "utf8" }), 1, /status must be/);
+}
+// Imports go through back-matter resources that carry the SHA-256 of what the
+// document was made from; the plan states what does not apply, with the reason.
+{
+  const { writeFileSync, readFileSync } = await import("node:fs");
+  const report = (name, ok, detail = "") => {
+    failed += !ok;
+    console.log(`${ok ? "ok  " : "FAIL"} ${name}${ok ? "" : ": " + detail}`);
+  };
+  const prof = JSON.parse(readFileSync(".schema-cache/test-profile.json", "utf8")).profile;
+  const target = resolveImport(prof, prof.imports[0].href);
+  report("profile: the catalog is imported through back-matter, with its SHA-256",
+    prof.imports[0].href.startsWith("#") && /\/[0-9a-f]{40}\//.test(target.href ?? "") && /^[0-9a-f]{64}$/.test(target.sha256), JSON.stringify(target));
+  // Same URL, other bytes: the worksheet refuses the profile.
+  const forged = JSON.parse(readFileSync(".schema-cache/test-profile.json", "utf8"));
+  forged.profile["back-matter"].resources[0].rlinks[0].hashes[0].value = "0".repeat(64);
+  writeFileSync(".schema-cache/profile-other-bytes.json", JSON.stringify(forged));
+  const tailoring = JSON.parse(readFileSync("test/fixtures/tailoring.json", "utf8"));
+  const w = spawnSync(process.execPath, ["worksheet.mjs", tailoring.catalog.path, "--commit", tailoring.catalog.commit, "--profile", ".schema-cache/profile-other-bytes.json"], { encoding: "utf8" });
+  report("worksheet: a profile made against other bytes of the catalog is refused", w.status === 2 && /other bytes/.test(w.stderr), w.stderr);
+  // The plan: its profile, hashed, and what the profile leaves out.
+  const sys = JSON.parse(readFileSync("test/fixtures/ssp/system.json", "utf8"));
+  const pf = JSON.parse(readFileSync("test/fixtures/ssp/profile.json", "utf8"));
+  pf.profile["back-matter"] = { resources: [{ uuid: "6f1c2a9e-0b7d-5c3e-8a41-2d9e7f6b5a10", title: "Not applicable: ARCH.6.1", description: "no own WAN links",
+    props: [{ name: "control-id", ns: "https://github.com/ohartwig/grundschutz-worksheets/ns", value: "ARCH.6.1" }, { name: "tailoring", ns: "https://github.com/ohartwig/grundschutz-worksheets/ns", value: "not-applicable" }],
+    base64: { filename: "not-applicable-ARCH.6.1.txt", "media-type": "text/plain", value: Buffer.from("no own WAN links").toString("base64") } }] };
+  writeFileSync("test/fixtures/ssp/.profile-na.json", JSON.stringify(pf));
+  writeFileSync("test/fixtures/ssp/.system-na.json", JSON.stringify({ ...sys, profile: { file: ".profile-na.json", href: sys.profile.href } }));
+  const sr = spawnSync(process.execPath, ["ssp.mjs", "test/fixtures/ssp/.system-na.json"], { encoding: "utf8" });
+  const { rmSync } = await import("node:fs");
+  rmSync("test/fixtures/ssp/.profile-na.json"); rmSync("test/fixtures/ssp/.system-na.json");
+  const plan = sr.status === 0 ? JSON.parse(sr.stdout)["system-security-plan"] : {};
+  const pt = resolveImport(plan, plan["import-profile"]?.href);
+  report("ssp: the profile is imported through back-matter with the SHA-256 of the local copy",
+    pt.href === sys.profile.href && pt.sha256 === sha256(Buffer.from(JSON.stringify(pf))), sr.stderr);
+  const na = (plan["back-matter"]?.resources ?? []).find((x) => x.props?.some((p) => p.value === "not-applicable"));
+  report("ssp: a requirement the profile leaves out is stated as not applicable, with its reason",
+    na?.description === "no own WAN links" && plan.metadata?.props?.some((p) => p.name === "requirements-not-applicable" && p.value === "1")
+      && !plan["control-implementation"]["implemented-requirements"].some((x) => x["control-id"] === "ARCH.6.1"), sr.stderr);
+  writeFileSync(".schema-cache/ssp-na.json", sr.stdout);
+  const v = spawnSync(process.execPath, ["validate.mjs", ".schema-cache/ssp-na.json"], { encoding: "utf8" });
+  report("ssp: with back-matter it still validates", v.status === 0, v.stdout + v.stderr);
+  const poam = JSON.parse(readFileSync(".schema-cache/test-poam.json", "utf8"))["plan-of-action-and-milestones"];
+  report("poam: the plan is imported through back-matter with its SHA-256", /^[0-9a-f]{64}$/.test(resolveImport(poam, poam["import-ssp"].href).sha256));
 }
 process.exit(failed ? 1 : 0);

@@ -217,8 +217,12 @@ node worksheet.mjs $CAT --profile profile.json --commit $C   # the worksheet for
   shows up as a small diff.
 - **Why not applicable:** OSCAL profiles have no field for an exclusion reason.
   The not-applicable requirements are listed as back-matter resources with the
-  reason, under this repository's namespace. A system security plan is where
-  OSCAL expects that statement; until you have one, it lives here.
+  reason, under this repository's namespace. `ssp.mjs` carries them into the
+  security plan, so the plan states the whole applicability.
+- **Which catalog, exactly:** the profile imports the catalog through a
+  back-matter resource whose link carries the SHA-256 of the catalog at the
+  pinned commit. `worksheet.mjs --profile` refuses a profile whose catalog
+  bytes differ from what it reads, not only one with another address.
 - **Your values for the blanks:** the catalog leaves some words to you, such as
   how often (*regelmäßig*) and who (*zuständigen Personen oder Rollen*).
   `parameters` sets them by parameter ID; they become the profile's
@@ -345,8 +349,19 @@ node validate.mjs assessment-plan.json
 One activity and one recurring task per check, every requirement ID checked
 against the catalog at the pinned commit. The check name is the join: the same
 name is the `check` prop of every result `results.mjs` writes, and a run file
-can name the plan it follows (`"plan": { "href": ... }`), which becomes the
-result's `import-ap`.
+can name the plan it follows (`"plan": { "href": ..., "file": ... }`), which
+becomes the result's `import-ap`.
+
+## Imports name what they were made from
+
+Every document here imports its predecessor the way OSCAL provides for: the
+`import-*` names `#<uuid>` of a back-matter resource, and the resource's link
+carries the SHA-256 of the file the generator read -- the catalog in the
+profile, the profile in the security plan, the plan in the assessment plan
+and the POA&M, the assessment plan in the results. Where an input gives only
+an `href` and no local `file`, the link has no hash. A reader can check that
+what it fetches is what the document was made against, not merely something
+at the same address.
 
 ## Measurements as assessment results
 
@@ -452,16 +467,22 @@ and in `provenance`). The catalogs, the Grundschutz++ profile and the other
 component definitions validate.
 
 CI runs the self-test, validates BSI files at the pinned commit and checks that
-the ISO 27001 mapping still yields the expected number of requirements.
+every preset still yields its expected counts.
 
+Two independent implementations read what the generators write, from one
+document per model chained so that every import resolves -- catalog, profile,
+security plan, assessment plan, results, POA&M (`test/conformance.mjs`):
 
-The CI runs a second, independent validator as well: NIST's
-[oscal-cli](https://github.com/usnistgov/oscal-cli). It checks the Metaschema
-constraints, which the JSON schema cannot express. A back-matter resource
-without content, for example, passes the JSON schema and fails here. It is
-advisory: its job reports every warning but does not fail the build, and
-`validate.mjs` stays the gate. oscal-cli 1.0.3 bundles OSCAL 1.1.2, so files
-declaring 1.2.x are checked against the older model.
+- NIST's [oscal-cli](https://github.com/metaschema-framework/oscal-cli) 3.2
+  checks the Metaschema constraints the JSON schema cannot express and follows
+  every import to its target, through the back-matter resources to the BSI
+  catalog. Any warning fails the build. Its model is OSCAL 1.2.1 without
+  mapping collections; those are checked by `validate.mjs` alone.
+- [compliance-trestle](https://github.com/oscal-compass/compliance-trestle)
+  5.1 imports and validates every document, advisory: it cannot follow a
+  plan's `#uuid` import of a profile, so it reads a copy of the plan that
+  names the profile directly (`.gitlab-ci.yml` says why).
+
 ## Two rules built in
 
 **Pinned.** The library republishes continuously. A check against "the current
