@@ -22,7 +22,7 @@ Node 24 (the current LTS) or later. `worksheet.mjs` has no dependencies and need
 library at the commit you name.
 
 ```bash
-C=367d775010abee641b258926bb482fcd05270059   # a commit of the BSI library
+C=a12831136f4122a4c43854622180a24f2576a41e   # a commit of the BSI library
 CAT=control_layer/Grundschutz++/Grundschutz++-resolved_catalog.json
 MAP=control_layer/Mappings/ISO-27001-zu-GSpp/ISO27001-AnnexA-to-GS++-mapping_collection.json
 
@@ -44,19 +44,138 @@ node worksheet.mjs control_layer/Mindeststandard-TLS/Entwurf-Mindeststandard-TLS
 
 | Option | Meaning |
 |---|---|
-| `--commit <sha>` | Required. A full 40-character commit of the library. Branch names are refused. |
-| `--mapping <path>` | Only requirements a mapping collection points at, each with the source controls that lead to it. |
+| `--commit <sha>` | Required unless a preset names it. A full 40-character commit of the library. Branch names are refused. |
+| `--mapping <path>` | Only requirements a mapping collection of the library points at, each with the source controls that lead to it. |
+| `--mapping-file <file>` | The same with a mapping collection on disk, such as one written by `mapping.mjs`. It must target the catalog at `--commit`. |
 | `--sources <list\|@file>` | With `--mapping`: only these source controls, comma-separated or one per line in a file. |
 | `--practices <list>` | Only these practices, e.g. `DET,KONF`. |
 | `--format md\|csv` | Markdown checklist (default) or CSV with empty `evidence`, `status` and `note` columns. |
 | `--summary` | Counts instead of rows. |
+| `--levels <list>` | Only these security levels, e.g. `normal-SdT` or `erhöht`. |
+| `--modal <list>` | Only these modal verbs, e.g. `MUSS`. |
+| `--preset <id>` | A named audit scope, see below. |
+| `--catalog-file <file>` | A catalog that is not in the library, read from disk and pinned by its SHA-256 instead of a commit. |
+
+With `--sources`, an entry ending in `*` matches a prefix: `APP.1.1*` is every
+source control that starts with it.
 
 A Markdown row looks like this:
 
 ```text
-- [ ] **KONF.2.1** Grundkonfiguration für Systeme · normal-SdT · SOLLTE · dokumentieren · subject Konfiguration für IT-Systeme · doc Konfigurationshistorie · effort 3 · from 8.9
+- [ ] **KONF.2.1** Grundkonfiguration für Systeme · normal-SdT · SOLLTE · dokumentieren · subject Konfiguration für IT-Systeme · doc Konfigurationshistorie · effort 3 · from 8.9 (subset-of)
       Konfiguration für IT-Systeme SOLLTE eine Grundkonfiguration dokumentieren.
 ```
+
+## Presets: one name per audit scope
+
+> **Check the scope yourself.** A preset is a starting point, not an audit
+> scope anyone has approved for you. It only selects requirements: which
+> catalog, which mapping, which commit. Whether that selection fits your
+> audit, and whether the mapping behind it says what your auditor will accept,
+> is for you to check against the original texts -- the regulation, the
+> standard, your Statement of Applicability. The BSI mappings (`iso27001`,
+> `itgs2023`) are the BSI's and carry their own status; the mappings of this
+> repository (`nis2`, `dora`, `c5`) are unreviewed drafts, and `a5` reads a
+> catalog that is itself a Community Draft. None of it is legal
+> advice, and a worksheet that comes out of a preset proves nothing until a
+> person has reviewed it. Every worksheet made from a preset repeats this in a
+> note under its header.
+
+A preset names the catalog, the mapping if there is one, and the library commit
+it is tested at, so `--preset iso27001` replaces three arguments. Options on
+the command line win, `--commit` included; the header then says the preset was
+tested at another commit. An own mapping (`nis2`, `dora`, `c5`) is the
+exception: it is derived from the catalog at one commit and refuses any other
+until it is regenerated there.
+
+```bash
+node worksheet.mjs --presets                                   # what there is
+node worksheet.mjs --preset iso27001 --sources @soa.txt --format csv
+node worksheet.mjs --preset gspp --levels normal-SdT --summary
+node worksheet.mjs --preset itgs2023 --sources 'APP.1.1*,OPS.1.1.3*'
+```
+
+| Preset | Scope | Requirements at `a128311` |
+|---|---|---|
+| `gspp` | Grundschutz++, the whole catalog | 1000 (773 normal-SdT) |
+| `iso27001` | ISO/IEC 27001:2022 Annex A through the BSI mapping | 280, 19 targets not in the catalog |
+| `itgs2023` | IT-Grundschutz-Kompendium 2023 through the BSI mapping | 322, 17 targets not in the catalog |
+| `lieferkette` | Lieferkettensicherheit profile, resolved | 146 |
+| `wlan` | WLAN profile, resolved | 48 |
+| `nis2` | NIS2 Art. 21(2), own draft mapping (below) | 187 |
+| `dora` | DORA Art. 5 to 30, own draft mapping (below) | 176 |
+| `c5` | BSI C5:2026, own draft mapping (below) | 384 |
+| `a5` | BSI A5 KI-Prüfkatalog, Basismodul, file supplied by you (below) | 57 |
+
+The profile presets read the resolved catalog the BSI publishes next to each
+profile: the profiles themselves import several catalogs through back-matter,
+which `--profile` does not follow.
+
+With a mapping, every source control carries its relationship, for example
+`from 5.15 (subset-of)`; in the CSV it is the `relationship` column, one entry
+per `from` entry. `intersects-with` means the requirement covers only part of
+the source control.
+
+Each preset file states the counts it yields (`expect`), and CI checks them
+(`npm run test:presets`). Raising a preset's commit means raising those counts
+in the same change, so the diff shows what the new catalog moved.
+
+### A5: a catalog from outside the library
+
+The BSI's A5 catalog for AI systems (Community Draft, Basismodul of
+2026-06-30) is OSCAL in the Grundschutz++ schema, but not in the library, and
+its files state no licence. So it is not in this repository: download the
+"Basismodul – JSON (zip)" from the BSI's A5 page, unpack it and pass the file.
+The preset knows its SHA-256 and refuses any other file.
+
+```bash
+node worksheet.mjs --preset a5 --catalog-file A5-Basismodul-2026-06-30.json
+PRESET_FILES=path/to/dir npm run test:presets   # checks a5 too, where the file is
+```
+
+Without the file, `test:presets` reports a5 as skipped; CI does not have it.
+The Cloudmodul of the same date only repeats GCS.2.5 and has no preset.
+
+### Own mappings: NIS2, DORA and C5, as drafts
+
+The library has no mappings for NIS2, DORA or C5:2026. `mapping.mjs` writes one
+from a small source file in `mappings/src/` into an OSCAL mapping collection
+in `mappings/`, which the presets name as `mapping-file` and `--mapping-file`
+reads from disk:
+
+| Preset | Source, one entry per | Requirements at `a128311` |
+|---|---|---|
+| `nis2` | Art. 21(2) (a) to (j) NIS2 = § 30 Abs. 2 Nr. 1 to 10 BSIG | 187 |
+| `dora` | DORA article, Art. 5 to 30 | 176 |
+| `c5` | C5:2026 criterion (168; the 6 report conditions GC are left out) | 384 |
+
+Most targets are **derived**: each source names the ISO/IEC 27001:2022 Annex A
+controls it corresponds to, and the Grundschutz++ targets come from the BSI's
+own ISO mapping at the same commit. The only judgement made here is the step
+to ISO, which a reviewer can check against a list they know. Derived targets
+are `intersects-with`; direct targets cover what Annex A lacks (risk analysis,
+MFA, vulnerability disclosure, exit strategies) and carry their own
+relationship -- but while a mapping is a draft, `mapping.mjs` refuses the ones
+that claim full coverage (`subset-of`, `equal-to`, `equivalent-to`). That the
+targets cover all of a source is exactly what a reviewer has to confirm. Sources without any target are listed with a reason, for example
+reports to the supervisor (DORA Art. 19), which Grundschutz++ does not ask for.
+
+C5:2026 has no references to ISO 27001, and its machine-readable release is
+licensed CC BY-ND 4.0: the mapping uses criterion IDs only, every remark is our
+own wording. INQ-01 to INQ-04 (requests from authorities for customer data)
+have no target.
+
+All three are **drafts**, written with AI assistance and not yet reviewed by a
+person. The worksheet says so in its header (`mapping draft`) and in a note
+above the rows; the CSV, which has no room for one, says it on stderr.
+A reviewed mapping changes `status` to `complete` in its source file.
+
+```bash
+node mapping.mjs mappings/src/nis2.json > mappings/nis2-to-gspp.json
+node validate.mjs mappings/nis2-to-gspp.json
+```
+
+CI regenerates every mapping and fails if the committed file differs.
 
 ## Your tailoring as an OSCAL profile
 
