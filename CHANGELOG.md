@@ -6,6 +6,16 @@ tagged `vX.Y.Z` and written here by the release tool from the commit messages;
 **breaking**: what can change an existing call or a spreadsheet built on the
 output.
 
+## [0.2.0](https://github.com/ohartwig/grundschutz-worksheets/compare/v0.1.0...v0.2.0) (2026-10-11)
+
+### :sparkles: Features
+
+* imports through back-matter with SHA-256; the plan states what does not apply
+
+### :repeat: Continuous Integrations
+
+* GitLab is home now -- yasrt releases, pinup watches the library, GitHub is the mirror
+
 ## 0.1.0 (2026-10-11)
 
 The first release: everything up to the review sheets for the draft
