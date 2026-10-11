@@ -91,12 +91,17 @@ const insertParams = (text, params) =>
   });
 const propOf = (props, name) => (props ?? []).find((p) => p.name === name)?.value ?? "";
 
+// A profile's set-parameters fill the catalog's blanks: "jährlich" instead of
+// "regelmäßig".
+const profile = profilePath ? JSON.parse(readFileSync(profilePath, "utf8")).profile : null;
+const setValues = new Map((profile?.modify?.["set-parameters"] ?? []).map((s) => [s["param-id"], s.values]));
+
 // Index every requirement, however deeply nested, with its practice and depth.
 const rows = new Map();
 const index = (controls, practice, params, depth) => {
   for (const c of controls ?? []) {
     const own = new Map(params);
-    for (const p of c.params ?? []) own.set(p.id, p);
+    for (const p of c.params ?? []) own.set(p.id, setValues.has(p.id) ? { ...p, values: setValues.get(p.id) } : p);
     const stm = (c.parts ?? []).find((p) => p.name === "statement");
     const statement = insertParams(stm?.prose ?? "", own).replace(/\s+/g, " ").trim();
     const modal = propOf(stm?.props, "modal_verb") || (statement.match(/\b(MUSS|MÜSSEN|SOLLTE|SOLLTEN|KANN|KÖNNEN|DARF)\b/) ?? [""])[0];
@@ -157,8 +162,7 @@ if (mappingPath) {
     selected.push({ ...r, depth: 0, from: [...src] });
   }
 }
-if (profilePath) {
-  const { profile } = JSON.parse(readFileSync(profilePath, "utf8"));
+if (profile) {
   const imp = profile?.imports?.[0];
   if (!imp || !imp.href.includes(`/${commit}/`)) {
     console.error(`profile does not import the catalog at commit ${commit}: ${imp?.href}`);
