@@ -50,7 +50,7 @@
 
 import { createHash } from "node:crypto";
 import { readFileSync, readdirSync } from "node:fs";
-import { libraryUrl } from "./lib/oscal.mjs";
+import { libraryUrl, resolveImport, sha256 } from "./lib/oscal.mjs";
 import { LIBRARY } from "./tools/bsi-library.mjs";
 
 const args = process.argv.slice(2);
@@ -165,16 +165,19 @@ const rawUrl = (p) => {
   }
   return url;
 };
-const load = async (p) => {
+// The bytes as well as the JSON: a profile's import may carry their hash.
+const fetchBytes = async (p) => {
   const r = await fetch(rawUrl(p));
   if (!r.ok) {
     console.error(`${r.status} for ${rawUrl(p)}`);
     process.exit(1);
   }
-  return r.json();
+  return Buffer.from(await r.arrayBuffer());
 };
+const load = async (p) => JSON.parse((await fetchBytes(p)).toString("utf8"));
 
-const { catalog } = catalogFile ? JSON.parse(readFileSync(catalogFile, "utf8")) : await load(path);
+const catalogBytes = catalogFile ? readFileSync(catalogFile) : await fetchBytes(path);
+const { catalog } = JSON.parse(catalogBytes.toString("utf8"));
 if (!catalog) {
   console.error("not an OSCAL catalog (no top-level `catalog`)");
   process.exit(1);
@@ -279,10 +282,17 @@ if (mappingPath || mappingFile) {
   }
 }
 if (profile) {
-  const imp = profile?.imports?.[0];
-  // Exactly the URL this run reads -- the form profile.mjs writes.
-  if (!imp || imp.href !== rawUrl(path)) {
-    console.error(`profile does not import ${path} from the library at commit ${commit}: ${imp?.href}`);
+  const imp = profile.imports?.[0];
+  // Exactly the URL this run reads, directly or through a back-matter
+  // resource (the form profile.mjs writes) -- and where the resource carries
+  // a hash, exactly the bytes this run read.
+  const target = resolveImport(profile, imp?.href);
+  if (!imp || target.href !== rawUrl(path)) {
+    console.error(`profile does not import ${path} from the library at commit ${commit}: ${target.href ?? imp?.href}`);
+    process.exit(2);
+  }
+  if (target.sha256 && target.sha256 !== sha256(catalogBytes)) {
+    console.error(`profile was made against other bytes of ${path}: sha256 ${target.sha256}, read ${sha256(catalogBytes)}`);
     process.exit(2);
   }
   const include = new Set((imp["include-controls"] ?? []).flatMap((x) => x["with-ids"] ?? []));
