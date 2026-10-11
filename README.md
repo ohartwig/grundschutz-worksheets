@@ -53,6 +53,7 @@ node worksheet.mjs control_layer/Mindeststandard-TLS/Entwurf-Mindeststandard-TLS
 | `--levels <list>` | Only these security levels, e.g. `normal-SdT` or `erhöht`. |
 | `--modal <list>` | Only these modal verbs, e.g. `MUSS`. |
 | `--preset <id>` | A named audit scope, see below. |
+| `--catalog-file <file>` | A catalog that is not in the library, read from disk and pinned by its SHA-256 instead of a commit. |
 
 With `--sources`, an entry ending in `*` matches a prefix: `APP.1.1*` is every
 source control that starts with it.
@@ -88,6 +89,7 @@ node worksheet.mjs --preset itgs2023 --sources 'APP.1.1*,OPS.1.1.3*'
 | `nis2` | NIS2 Art. 21(2), own draft mapping (below) | 187 |
 | `dora` | DORA Art. 5 to 30, own draft mapping (below) | 176 |
 | `c5` | BSI C5:2026, own draft mapping (below) | 384 |
+| `a5` | BSI A5 KI-Prüfkatalog, Basismodul, file supplied by you (below) | 57 |
 
 The profile presets read the resolved catalog the BSI publishes next to each
 profile: the profiles themselves import several catalogs through back-matter,
@@ -101,6 +103,22 @@ the source control.
 Each preset file states the counts it yields (`expect`), and CI checks them
 (`npm run test:presets`). Raising a preset's commit means raising those counts
 in the same change, so the diff shows what the new catalog moved.
+
+### A5: a catalog from outside the library
+
+The BSI's A5 catalog for AI systems (Community Draft, Basismodul of
+2026-06-30) is OSCAL in the Grundschutz++ schema, but not in the library, and
+its files state no licence. So it is not in this repository: download the
+"Basismodul – JSON (zip)" from the BSI's A5 page, unpack it and pass the file.
+The preset knows its SHA-256 and refuses any other file.
+
+```bash
+node worksheet.mjs --preset a5 --catalog-file A5-Basismodul-2026-06-30.json
+PRESET_FILES=path/to/dir npm run test:presets   # checks a5 too, where the file is
+```
+
+Without the file, `test:presets` reports a5 as skipped; CI does not have it.
+The Cloudmodul of the same date only repeats GCS.2.5 and has no preset.
 
 ### Own mappings: NIS2, DORA and C5, as drafts
 

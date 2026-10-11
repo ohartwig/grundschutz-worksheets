@@ -1,0 +1,11 @@
+{
+  "id": "a5",
+  "title": "A5 KI-Prüfkatalog, Horizontales Trustworthiness Basismodul (BSI, Community Draft)",
+  "catalog-file": {
+    "name": "A5-Basismodul-2026-06-30.json",
+    "sha256": "615b6a5fa1274cfc344872d94772b715bec6a8c37f00763f7cf75914ff877e34",
+    "source": "BSI A5 page, \"Basismodul – JSON (zip)\": https://www.bsi.bund.de/DE/Themen/Unternehmen-und-Organisationen/Informationen-und-Empfehlungen/Kuenstliche-Intelligenz/A5/A5_node.html"
+  },
+  "expect": { "requirements": 57, "orphans": 0 },
+  "notes": "Not in the BSI library and not in this repository: the files state no licence. Download the zip, unpack it and pass the JSON with --catalog-file; any other file is refused by its SHA-256. The Cloudmodul (2026-06-30) only repeats GCS.2.5 and has no preset."
+}
