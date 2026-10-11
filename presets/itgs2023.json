@@ -1,7 +1,6 @@
 {
   "id": "itgs2023",
   "title": "IT-Grundschutz-Kompendium 2023 to Grundschutz++",
-  "commit": "a12831136f4122a4c43854622180a24f2576a41e",
   "catalog": "control_layer/Grundschutz++/Grundschutz++-resolved_catalog.json",
   "mapping": "control_layer/Mappings/IT-GS2023-zu-GSpp/ITGS-to-GS++-mapping_collection.json",
   "sources-hint": "Bausteine by prefix, e.g. APP.1.1*,OPS.1.1.3*, or single aspects like ISMS.1.A1-UA.1",

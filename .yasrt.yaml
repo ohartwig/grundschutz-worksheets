@@ -1,0 +1,6 @@
+# Release configuration for yasrt; the shared defaults come from the CI
+# component. Tags are v${version}, continuing from v0.1.0.
+product: custom
+tag_format: "v${version}"
+deliverability:
+  non_release_paths: [".gitlab-ci.yml", ".yasrt.yaml"]

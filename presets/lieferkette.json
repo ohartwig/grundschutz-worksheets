@@ -1,7 +1,6 @@
 {
   "id": "lieferkette",
   "title": "Lieferkettensicherheit (Supply Chain Security profile, resolved)",
-  "commit": "a12831136f4122a4c43854622180a24f2576a41e",
   "catalog": "control_layer/Lieferkettensicherheit/Lieferkettensicherheit-resolved_catalog.json",
   "expect": { "requirements": 146, "orphans": 0 }
 }

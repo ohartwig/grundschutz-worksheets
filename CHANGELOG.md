@@ -1,13 +1,10 @@
 # Changelog
 
 What changed for someone who uses the scripts, newest first. Releases are
-tagged `vX.Y.Z`; `main` may be ahead of the latest one. Entries marked
-**breaking** can change what an existing call or a spreadsheet built on the
-output does.
-
-## Unreleased
-
-Nothing yet.
+tagged `vX.Y.Z` and written here by the release tool from the commit messages;
+`main` may be ahead of the latest one. Hand-written entries mark what is
+**breaking**: what can change an existing call or a spreadsheet built on the
+output.
 
 ## 0.1.0 (2026-10-11)
 

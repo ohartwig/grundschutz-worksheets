@@ -51,6 +51,7 @@
 import { createHash } from "node:crypto";
 import { readFileSync, readdirSync } from "node:fs";
 import { libraryUrl } from "./lib/oscal.mjs";
+import { LIBRARY } from "./tools/bsi-library.mjs";
 
 const args = process.argv.slice(2);
 const valued = ["--commit", "--mapping", "--sources", "--profile", "--practices", "--levels", "--modal", "--format", "--preset", "--catalog-file", "--mapping-file"];
@@ -67,7 +68,7 @@ const presetIds = () => readdirSync(presetDir).filter((f) => f.endsWith(".json")
 if (args.includes("--presets")) {
   for (const id of presetIds()) {
     const p = readPreset(id);
-    const pin = p["catalog-file"] ? `--catalog-file ${p["catalog-file"].name}` : `commit ${p.commit.slice(0, 7)}`;
+    const pin = p["catalog-file"] ? `--catalog-file ${p["catalog-file"].name}` : `commit ${LIBRARY.commit.slice(0, 7)}`;
     console.log(`${id.padEnd(12)} ${p.title} · ${pin}${p["sources-hint"] ? `\n${"".padEnd(13)}--sources: ${p["sources-hint"]}` : ""}`);
   }
   process.exit(0);
@@ -97,7 +98,9 @@ const settings = () => {
     if (fileSha !== want.sha256) throw new UsageError(`${catalogFile} is not the ${want.name} the preset is tested with: sha256 ${fileSha}, want ${want.sha256}`);
   }
   const path = catalogFile ? "" : args.find((a, i) => !a.startsWith("--") && !valueAt.has(i)) ?? preset.catalog;
-  const commit = opt("--commit") || preset.commit || "";
+  // A preset runs at the commit the repository is tested at
+  // (tools/bsi-library.mjs); a path on the command line names its own.
+  const commit = opt("--commit") || (presetId && !catalogFile ? LIBRARY.commit : "");
 
   // A mapping is the library's (--mapping, a path at the commit) or a file on
   // disk (--mapping-file, e.g. this repository's mappings/). Which one is said,
@@ -333,7 +336,7 @@ if (summary) {
   for (const r of selected) console.log([...cols.map((c) => q(c === "from" ? r.from.join(" ") : c === "relationship" ? (r.relationship ?? []).join(" ") : r[c])), "", "", ""].join(","));
 } else {
   console.log(`# Worksheet: ${meta}`);
-  if (presetId) console.log(`Preset: ${presetId} · ${preset.title}${preset.commit && commit !== preset.commit ? ` · tested at ${preset.commit}, run at another commit` : ""}`);
+  if (presetId) console.log(`Preset: ${presetId} · ${preset.title}${!catalogFile && commit !== LIBRARY.commit ? ` · tested at ${LIBRARY.commit}, run at another commit` : ""}`);
   if (mappingName) console.log(`Mapping: ${mappingName.split("/").pop()}${mappingStatus ? ` · status ${mappingStatus}` : ""}${sourceFilter.size ? ` · ${sourceFilter.size} source controls` : ""}`);
   const narrowed = [levels.length && `levels ${levels.join(", ")}`, modals.length && `modal ${modals.join(", ")}`, practices.length && `practices ${practices.join(", ")}`].filter(Boolean);
   if (narrowed.length) console.log(`Only: ${narrowed.join(" · ")}`);
