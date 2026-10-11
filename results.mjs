@@ -47,11 +47,9 @@
 //
 // No dependencies. Node 24 (LTS) or later.
 
-import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
+import { NS, byId, everyControl, libraryUrl, uuid5 as uuid5From } from "./lib/oscal.mjs";
 
-const REPO = "https://raw.githubusercontent.com/BSI-Bund/Stand-der-Technik-Bibliothek";
-const NS = "https://github.com/ohartwig/grundschutz-worksheets/ns";
 const UUID_NS = "5c2b8e41-7a3d-4f69-b0e2-9d1c6a8f4e27";
 const METHODS = ["TEST", "EXAMINE", "INTERVIEW"];
 
@@ -89,20 +87,10 @@ for (const s of r.subjects) {
   if (typeof s.satisfied !== "boolean") fail(`${s.title}: satisfied must be true or false`);
 }
 
-const uuid5 = (name) => {
-  const ns = Buffer.from(UUID_NS.replace(/-/g, ""), "hex");
-  const h = createHash("sha1").update(Buffer.concat([ns, Buffer.from(name, "utf8")])).digest();
-  h[6] = (h[6] & 0x0f) | 0x50;
-  h[8] = (h[8] & 0x3f) | 0x80;
-  const x = h.subarray(0, 16).toString("hex");
-  return `${x.slice(0, 8)}-${x.slice(8, 12)}-${x.slice(12, 16)}-${x.slice(16, 20)}-${x.slice(20)}`;
-};
+const uuid5 = uuid5From(UUID_NS);
 
-// A path in the library is plain segments. An empty one, "." or ".." would
-// resolve above the pinned commit and fetch another repository or a branch.
-const segs = String(r.catalog.path ?? "").split("/");
-if (segs.some((x) => !x || x === "." || x === "..")) fail(`catalog.path is not a path in the library: ${r.catalog.path}`);
-const href = `${REPO}/${r.catalog.commit}/${segs.map(encodeURIComponent).join("/")}`;
+// A path in the library is plain segments; anything else has no URL.
+const href = libraryUrl(r.catalog.commit, r.catalog.path) ?? fail(`catalog.path is not a path in the library: ${r.catalog.path}`);
 let catalog;
 if (local) catalog = JSON.parse(readFileSync(local, "utf8")).catalog;
 else {
@@ -112,20 +100,9 @@ else {
 }
 if (!catalog) fail("not an OSCAL catalog");
 const alt = new Map();
-const walk = (controls) => {
-  for (const c of controls ?? []) {
-    alt.set(c.id, (c.props ?? []).find((p) => p.name === "alt-identifier")?.value ?? "");
-    walk(c.controls);
-  }
-};
-const groups = (gs) => {
-  for (const g of gs ?? []) {
-    walk(g.controls);
-    groups(g.groups);
-  }
-};
-walk(catalog.controls);
-groups(catalog.groups);
+for (const c of everyControl(catalog)) {
+  alt.set(c.id, (c.props ?? []).find((p) => p.name === "alt-identifier")?.value ?? "");
+}
 const unknown = r.requirements.filter((id) => !alt.has(id));
 if (unknown.length) fail(`not in the catalog at ${r.catalog.commit.slice(0, 7)}: ${unknown.join(", ")}`);
 if (new Set(r.requirements).size !== r.requirements.length) fail("a requirement is listed twice");
@@ -166,7 +143,6 @@ const observations = subjects.map((s) => {
   };
 });
 const failed = observations.filter((o) => !o._satisfied);
-const byId = (a, b) => a.localeCompare(b, "en", { numeric: true });
 const findings = [...r.requirements].sort(byId).map((id) => ({
   uuid: uuid5(`finding:${run}:${id}`),
   title: `${id}: ${failed.length ? "not satisfied" : "satisfied"}`,
