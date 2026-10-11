@@ -36,7 +36,7 @@
 //   --catalog <file>   check the IDs against a local catalog instead of
 //                      fetching the pinned commit (tests, offline use)
 //
-// Output: OSCAL 1.2.2 assessment plan on stdout, deterministic for the same
+// Output: OSCAL 1.2.3 assessment plan on stdout, deterministic for the same
 // input.
 //
 //   node assessment-plan.mjs checks.json > assessment-plan.json && node validate.mjs assessment-plan.json
@@ -91,7 +91,11 @@ const uuid5 = (name) => {
 const byId = (a, b) => a.localeCompare(b, "en", { numeric: true });
 
 // Every requirement must exist in the catalog at the pinned commit.
-const href = `${REPO}/${p.catalog.commit}/${p.catalog.path.split("/").map(encodeURIComponent).join("/")}`;
+// A path in the library is plain segments. An empty one, "." or ".." would
+// resolve above the pinned commit and fetch another repository or a branch.
+const segs = String(p.catalog.path ?? "").split("/");
+if (segs.some((x) => !x || x === "." || x === "..")) fail(`catalog.path is not a path in the library: ${p.catalog.path}`);
+const href = `${REPO}/${p.catalog.commit}/${segs.map(encodeURIComponent).join("/")}`;
 let catalog;
 if (local) catalog = JSON.parse(readFileSync(local, "utf8")).catalog;
 else {
@@ -149,7 +153,7 @@ const out = {
       title: p.title,
       "last-modified": p["last-modified"],
       version: p.version,
-      "oscal-version": "1.2.2",
+      "oscal-version": "1.2.3",
       props: [
         { name: "checks", ns: NS, value: String(checks.length) },
         { name: "catalog-commit", ns: NS, value: p.catalog.commit },

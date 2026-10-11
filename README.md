@@ -153,7 +153,8 @@ commit. It is the Statement of Applicability as data.
   "catalog": { "path": "control_layer/Grundschutz++/Grundschutz++-resolved_catalog.json",
                "commit": "367d775010abee641b258926bb482fcd05270059" },
   "applicable": ["DET.2.1", "KONF.3.2"],
-  "not-applicable": [{ "id": "ARCH.6.1", "reason": "no own WAN links" }]
+  "not-applicable": [{ "id": "ARCH.6.1", "reason": "no own WAN links" }],
+  "parameters": { "rea.1.2-prm1": "jährlich", "rea.1.1.2-prm1": ["CISO", "SOC"] }
 }
 ```
 
@@ -172,12 +173,19 @@ node worksheet.mjs $CAT --profile profile.json --commit $C   # the worksheet for
   The not-applicable requirements are listed as back-matter resources with the
   reason, under this repository's namespace. A system security plan is where
   OSCAL expects that statement; until you have one, it lives here.
+- **Your values for the blanks:** the catalog leaves some words to you, such as
+  how often (*regelmäßig*) and who (*zuständigen Personen oder Rollen*).
+  `parameters` sets them by parameter ID; they become the profile's
+  `set-parameters`, and the worksheet prints `[jährlich]` instead of
+  `[regelmäßig]`. A parameter of a requirement that is not applicable, or one
+  the catalog does not have, is an error.
 
 ## Self-describing images: a component definition per build
 
 `component.mjs` turns a small source file — which requirements a product or
 pipeline supports, in your own words, with evidence links — into an OSCAL
-component definition (1.2.2, the version the BSI library's own components use).
+component definition (1.2.2, the version the BSI library's own components use;
+the plan, assessment plan, results and POA&M are written as 1.2.3).
 With `--subject image@sha256:…` it describes one specific image, so a build
 pipeline can generate it per image and attach it next to the SBOM, for example
 with `cosign attest --type <predicate URI> --predicate component.json`.
@@ -231,7 +239,7 @@ The predicate type is the one this repository uses; any URI you own works.
 
 ## A security plan assembled, not written
 
-`ssp.mjs` writes an OSCAL system security plan (1.2.2): the owner's
+`ssp.mjs` writes an OSCAL system security plan (1.2.3): the owner's
 statement of how the system implements each requirement the profile
 includes. In OSCAL's chain the plan is the claim; whether the claim is true is
 what assessment results record. So the plan states *implemented*, *partial*
@@ -297,7 +305,7 @@ result's `import-ap`.
 ## Measurements as assessment results
 
 `results.mjs` turns one run of an automated check into OSCAL assessment results
-(1.2.2): which requirements the check evidences, what it looked at, what it saw
+(1.2.3): which requirements the check evidences, what it looked at, what it saw
 for each subject, and whether each requirement was satisfied in this run. The
 check writes a small run file; the generator does the OSCAL.
 
@@ -390,13 +398,17 @@ constraints, which the JSON schema cannot express. A back-matter resource
 without content, for example, passes the JSON schema and fails here. It is
 advisory: its job reports every warning but does not fail the build, and
 `validate.mjs` stays the gate. oscal-cli 1.0.3 bundles OSCAL 1.1.2, so files
-declaring 1.2.2 are checked against the older model.
+declaring 1.2.x are checked against the older model.
 ## Two rules built in
 
 **Pinned.** The library republishes continuously. A check against "the current
 version" cannot be repeated, so the script only accepts a commit and prints it
 in the header. Re-running against a newer commit and diffing the output shows
-exactly which requirements are new or changed.
+exactly which requirements are new or changed. The pin holds for every path
+too: a catalog path is plain segments (no `..`, no leading or trailing `/`),
+`recheck` follows a component's source only into the library at a commit, and
+`--profile` accepts a profile whose import is exactly this run's catalog URL —
+the form `profile.mjs` writes. Anything else is refused, not quietly fetched.
 
 **Nothing is dropped silently.** Nested requirements are resolved to any depth.
 Mapping targets that the catalog does not contain — the mapping lags the catalog —

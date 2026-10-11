@@ -29,7 +29,7 @@
 //                 "requirements": ["TEST.4.1"], "due": "2026-10-31",
 //                 "status": "open" }] }               open | in-progress | done
 //
-// Paths are relative to the input file. Output: OSCAL 1.2.2 POA&M on stdout,
+// Paths are relative to the input file. Output: OSCAL 1.2.3 POA&M on stdout,
 // deterministic for the same input.
 //
 //   node poam.mjs poam.json > poam-out.json && node validate.mjs poam-out.json
@@ -114,7 +114,8 @@ if (p.actions) {
   for (const it of a.items ?? []) {
     if (!it.id || !it.title || !Array.isArray(it.requirements) || !it.requirements.length) fail(`action ${it.id ?? "?"}: needs id, title and requirements`);
     if (it.due && !/^\d{4}-\d\d-\d\d$/.test(it.due)) fail(`action ${it.id}: due must be YYYY-MM-DD`);
-    if (!STATUS[it.status ?? "open"]) fail(`action ${it.id}: status must be open, in-progress or done`);
+    // Own keys only: "constructor" or "toString" would pass a plain lookup.
+    if (!Object.hasOwn(STATUS, it.status ?? "open")) fail(`action ${it.id}: status must be open, in-progress or done`);
     for (const id of it.requirements) actions.set(id, [...(actions.get(id) ?? []), it]);
   }
 }
@@ -192,7 +193,7 @@ const out = {
       title: p.title,
       "last-modified": p["last-modified"],
       version: p.version,
-      "oscal-version": "1.2.2",
+      "oscal-version": "1.2.3",
       props: [
         { name: "items", ns: NS, value: String(items.length) },
         { name: "items-gap", ns: NS, value: String(ids.filter((i) => gaps.has(i)).length) },
