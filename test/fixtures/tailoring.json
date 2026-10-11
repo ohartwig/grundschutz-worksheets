@@ -7,5 +7,6 @@
     "commit": "367d775010abee641b258926bb482fcd05270059"
   },
   "applicable": ["KONF.2.2"],
-  "not-applicable": []
+  "not-applicable": [],
+  "parameters": { "konf.2.2-prm1": "BSI TR-02102-2" }
 }
