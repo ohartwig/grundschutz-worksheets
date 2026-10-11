@@ -35,5 +35,10 @@ for (const f of readdirSync("mappings/src").filter((f) => f.endsWith(".json")).s
   const ok = r.status === 0 && r.stdout === readFileSync(out, "utf8");
   failed += !ok;
   console.log(`${ok ? "ok  " : "FAIL"} ${out} is generated from mappings/src/${f}${ok ? "" : ": run node mapping.mjs and commit the result. " + r.stderr}`);
+  const sheet = `mappings/review/${f.slice(0, -5)}.md`;
+  const rv = spawnSync(process.execPath, ["mapping.mjs", `mappings/src/${f}`, "--review"], { encoding: "utf8" });
+  const same = rv.status === 0 && rv.stdout === readFileSync(sheet, "utf8");
+  failed += !same;
+  console.log(`${same ? "ok  " : "FAIL"} ${sheet} is generated from mappings/src/${f}${same ? "" : ": run node mapping.mjs --review and commit the result. " + rv.stderr}`);
 }
 process.exit(failed ? 1 : 0);
