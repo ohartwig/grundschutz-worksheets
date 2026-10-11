@@ -10,5 +10,9 @@
   "1.2.2": {
     "url": "https://github.com/usnistgov/OSCAL/releases/download/v1.2.2/oscal_complete_schema.json",
     "sha256": "484d09fb794155d25c3d017a461a47a8f07d8a4cc53e7bce2f5b3c025820a945"
+  },
+  "1.2.3": {
+    "url": "https://github.com/usnistgov/OSCAL/releases/download/v1.2.3/oscal_complete_schema.json",
+    "sha256": "384324105c7a817af0f65b120a963146caa0e0d55d969cf0daf60e063b87a206"
   }
 }

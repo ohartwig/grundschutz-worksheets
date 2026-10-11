@@ -50,8 +50,8 @@ jobs:
   # resource without content, for example, passes ajv and fails here).
   # Advisory, not binding: the job reports every WARNING or ERROR and turns red,
   # but it does not fail the workflow -- validate.mjs remains the gate.
-  # oscal-cli 1.0.3 bundles OSCAL 1.1.2; the 1.2.2 files are checked against
-  # that model, which covers what they use but is not a full 1.2.2 check.
+  # oscal-cli 1.0.3 bundles OSCAL 1.1.2; the 1.2.x files are checked against
+  # that model, which covers what they use but is not a full 1.2.x check.
   oscal-cli:
     runs-on: ubuntu-latest
     continue-on-error: true

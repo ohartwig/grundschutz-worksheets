@@ -36,7 +36,7 @@
 //   --catalog <file>   check the IDs against a local catalog instead of
 //                      fetching the pinned commit (tests, offline use)
 //
-// Output: OSCAL 1.2.2 assessment plan on stdout, deterministic for the same
+// Output: OSCAL 1.2.3 assessment plan on stdout, deterministic for the same
 // input.
 //
 //   node assessment-plan.mjs checks.json > assessment-plan.json && node validate.mjs assessment-plan.json
@@ -149,7 +149,7 @@ const out = {
       title: p.title,
       "last-modified": p["last-modified"],
       version: p.version,
-      "oscal-version": "1.2.2",
+      "oscal-version": "1.2.3",
       props: [
         { name: "checks", ns: NS, value: String(checks.length) },
         { name: "catalog-commit", ns: NS, value: p.catalog.commit },

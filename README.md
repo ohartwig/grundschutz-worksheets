@@ -96,7 +96,8 @@ node worksheet.mjs $CAT --profile profile.json --commit $C   # the worksheet for
 
 `component.mjs` turns a small source file — which requirements a product or
 pipeline supports, in your own words, with evidence links — into an OSCAL
-component definition (1.2.2, the version the BSI library's own components use).
+component definition (1.2.2, the version the BSI library's own components use;
+the plan, assessment plan, results and POA&M are written as 1.2.3).
 With `--subject image@sha256:…` it describes one specific image, so a build
 pipeline can generate it per image and attach it next to the SBOM, for example
 with `cosign attest --type <predicate URI> --predicate component.json`.
@@ -150,7 +151,7 @@ The predicate type is the one this repository uses; any URI you own works.
 
 ## A security plan assembled, not written
 
-`ssp.mjs` writes an OSCAL system security plan (1.2.2): the owner's
+`ssp.mjs` writes an OSCAL system security plan (1.2.3): the owner's
 statement of how the system implements each requirement the profile
 includes. In OSCAL's chain the plan is the claim; whether the claim is true is
 what assessment results record. So the plan states *implemented*, *partial*
@@ -216,7 +217,7 @@ result's `import-ap`.
 ## Measurements as assessment results
 
 `results.mjs` turns one run of an automated check into OSCAL assessment results
-(1.2.2): which requirements the check evidences, what it looked at, what it saw
+(1.2.3): which requirements the check evidences, what it looked at, what it saw
 for each subject, and whether each requirement was satisfied in this run. The
 check writes a small run file; the generator does the OSCAL.
 
@@ -309,7 +310,7 @@ constraints, which the JSON schema cannot express. A back-matter resource
 without content, for example, passes the JSON schema and fails here. It is
 advisory: its job reports every warning but does not fail the build, and
 `validate.mjs` stays the gate. oscal-cli 1.0.3 bundles OSCAL 1.1.2, so files
-declaring 1.2.2 are checked against the older model.
+declaring 1.2.x are checked against the older model.
 ## Two rules built in
 
 **Pinned.** The library republishes continuously. A check against "the current
