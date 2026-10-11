@@ -1,0 +1,42 @@
+# Changelog
+
+What changed for someone who uses the scripts, newest first. There are no
+releases yet; `main` is what you get. Entries marked **breaking** can change
+what an existing call or a spreadsheet built on the output does.
+
+## Unreleased (since 2026-10-07)
+
+### Breaking
+
+- **CSV:** a new column `relationship` stands between `from` and `statement`,
+  one entry per `from` entry. A sheet that reads columns by position needs
+  updating; one that reads them by header name does not. (#6)
+- **`--mapping` reads only the library.** A mapping on disk is named with
+  `--mapping-file`; nothing is guessed from what exists in the working
+  directory. (#6)
+- **An own mapping is pinned to its commit.** A `--mapping-file` must target
+  exactly the catalog and commit the run reads, otherwise the worksheet stops
+  with exit 2: regenerate the mapping with `mapping.mjs` at that commit. (#6)
+- **Paths stay in the library.** A catalog path with an empty segment, `.` or
+  `..` is refused by every script; `recheck` follows a component's source only
+  into the library at a commit; `--profile` accepts only a profile that imports
+  this run's catalog URL. (#4)
+- **CSV cells** that start with `=`, `+`, `-`, `@`, a tab or CR get a leading
+  `'`, so a spreadsheet shows them as text instead of running them. (#4)
+- **OSCAL 1.2.3:** the system security plan, assessment plan, assessment
+  results and POA&M are written as 1.2.3 (component definitions and mappings
+  stay 1.2.2, the library's version). `validate.mjs` ships the 1.2.3 schema. (#5)
+
+### New
+
+- **Presets** (`--preset`, `--presets`): one name per audit scope -- `gspp`,
+  `iso27001`, `itgs2023`, `lieferkette`, `wlan`, `nis2`, `dora`, `c5`, `a5`.
+  Each is a starting point, not an approved scope; worksheets made from one
+  say so under their header. (#6)
+- **Own mappings** for NIS2, DORA and C5:2026 (`mapping.mjs`, `mappings/`),
+  as unreviewed drafts. A draft may not claim full coverage (`subset-of`,
+  `equal-to`, `equivalent-to`). (#6)
+- `--catalog-file` for a catalog outside the library, pinned by its SHA-256
+  (A5). `--levels`, `--modal`, and `*` prefixes in `--sources`. (#6)
+- **Parameters** in a tailoring file become the profile's `set-parameters`,
+  and the worksheet prints your value in place of the catalog's blank. (#7)
