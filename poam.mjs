@@ -29,7 +29,7 @@
 //                 "requirements": ["TEST.4.1"], "due": "2026-10-31",
 //                 "status": "open" }] }               open | in-progress | done
 //
-// Paths are relative to the input file. Output: OSCAL 1.2.2 POA&M on stdout,
+// Paths are relative to the input file. Output: OSCAL 1.2.3 POA&M on stdout,
 // deterministic for the same input.
 //
 //   node poam.mjs poam.json > poam-out.json && node validate.mjs poam-out.json
@@ -192,7 +192,7 @@ const out = {
       title: p.title,
       "last-modified": p["last-modified"],
       version: p.version,
-      "oscal-version": "1.2.2",
+      "oscal-version": "1.2.3",
       props: [
         { name: "items", ns: NS, value: String(items.length) },
         { name: "items-gap", ns: NS, value: String(ids.filter((i) => gaps.has(i)).length) },
