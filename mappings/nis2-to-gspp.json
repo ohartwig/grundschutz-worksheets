@@ -52,7 +52,7 @@
         "maps": [
           {
             "uuid": "92e6764d-f6ab-55f7-88f8-d4d94f4f672b",
-            "relationship": "subset-of",
+            "relationship": "intersects-with",
             "sources": [
               {
                 "type": "control",
@@ -127,7 +127,7 @@
           },
           {
             "uuid": "d1597487-b2a4-5d9b-8c61-210b72e2007b",
-            "relationship": "subset-of",
+            "relationship": "intersects-with",
             "sources": [
               {
                 "type": "control",
@@ -233,7 +233,7 @@
           },
           {
             "uuid": "e4b0e3af-39b8-50a5-873a-e90a71689623",
-            "relationship": "subset-of",
+            "relationship": "intersects-with",
             "sources": [
               {
                 "type": "control",
@@ -505,7 +505,7 @@
           },
           {
             "uuid": "9ab3d8ef-7ba7-5fad-ab0c-62eebcda55c8",
-            "relationship": "subset-of",
+            "relationship": "intersects-with",
             "sources": [
               {
                 "type": "control",
@@ -754,7 +754,7 @@
           },
           {
             "uuid": "a5f9ab9b-05b2-59ec-aa2f-8f06c11d7cdd",
-            "relationship": "subset-of",
+            "relationship": "intersects-with",
             "sources": [
               {
                 "type": "control",
@@ -812,7 +812,7 @@
           },
           {
             "uuid": "4c7bf6c5-5860-586e-9763-71b312399b0a",
-            "relationship": "subset-of",
+            "relationship": "intersects-with",
             "sources": [
               {
                 "type": "control",
@@ -1259,7 +1259,7 @@
           },
           {
             "uuid": "37bf8209-87f6-53f4-926f-cc7f78ac357a",
-            "relationship": "subset-of",
+            "relationship": "intersects-with",
             "sources": [
               {
                 "type": "control",

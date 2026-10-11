@@ -25,21 +25,21 @@
       "source": "21.2.a",
       "remarks": "Policies on risk analysis and information system security (§ 30 Abs. 2 Nr. 1). Annex A has the policies; risk analysis itself is ISO clause 6.1, not Annex A, so the risk-management requirements are direct targets.",
       "via": { "iso27001": ["5.1", "5.2", "5.4"] },
-      "relationship": "subset-of",
+      "relationship": "intersects-with",
       "targets": ["GC.12.1", "RISK.1.1", "RISK.1.3", "RISK.1.5", "STM.4.1"]
     },
     {
       "source": "21.2.b",
       "remarks": "Incident handling (Nr. 2).",
       "via": { "iso27001": ["5.24", "5.25", "5.26", "5.27", "5.28", "6.8"] },
-      "relationship": "subset-of",
+      "relationship": "intersects-with",
       "targets": ["DET.2.1", "REA.2.1"]
     },
     {
       "source": "21.2.c",
       "remarks": "Business continuity, backup management, disaster recovery and crisis management (Nr. 3).",
       "via": { "iso27001": ["5.29", "5.30", "8.13", "8.14"] },
-      "relationship": "subset-of",
+      "relationship": "intersects-with",
       "targets": ["NOT.2.1"]
     },
     {
@@ -51,21 +51,21 @@
       "source": "21.2.e",
       "remarks": "Security in acquisition, development and maintenance, including vulnerability handling and disclosure (Nr. 5). Disclosure is the intake of external reports, which Annex A does not name.",
       "via": { "iso27001": ["8.8", "8.25", "8.26", "8.27", "8.28", "8.29", "8.30", "8.31", "8.32"] },
-      "relationship": "subset-of",
+      "relationship": "intersects-with",
       "targets": ["DET.5.1", "DET.5.9", "BES.5.10.3"]
     },
     {
       "source": "21.2.f",
       "remarks": "Policies and procedures to assess the effectiveness of the measures (Nr. 6). Annex A has the independent and compliance reviews; ISO clause 9 is the rest.",
       "via": { "iso27001": ["5.35", "5.36"] },
-      "relationship": "subset-of",
+      "relationship": "intersects-with",
       "targets": ["PERF.4.1", "VRB.6.1"]
     },
     {
       "source": "21.2.g",
       "remarks": "Basic cyber hygiene practices and cybersecurity training (Nr. 7). Hygiene is not defined in the directive; taken here as awareness, malware protection, configuration and patching.",
       "via": { "iso27001": ["6.3", "8.7", "8.8", "8.9", "8.19"] },
-      "relationship": "subset-of",
+      "relationship": "intersects-with",
       "targets": ["SENS.1.1"]
     },
     {
@@ -82,7 +82,7 @@
       "source": "21.2.j",
       "remarks": "Multi-factor or continuous authentication, secured voice, video and text communications, and secured emergency communication systems (Nr. 10). Annex A has authentication and information transfer; MFA itself is a direct target.",
       "via": { "iso27001": ["8.5", "5.14", "8.20", "8.21"] },
-      "relationship": "subset-of",
+      "relationship": "intersects-with",
       "targets": ["BER.5.8", "BER.5.9"]
     }
   ]

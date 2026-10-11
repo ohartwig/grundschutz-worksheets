@@ -349,14 +349,15 @@ for (const [file, want] of cases) {
     failed += v.status !== 0;
     console.log(`${v.status === 0 ? "ok  " : "FAIL"} generated mapping validates${v.status === 0 ? "" : ": " + v.stdout}`);
     const w = spawnSync(process.execPath, ["worksheet.mjs", "control_layer/Mindeststandard-TLS/Entwurf-Mindeststandard-TLS-catalog.json",
-      "--mapping", ".schema-cache/test-mapping.json", "--commit", "367d775010abee641b258926bb482fcd05270059"], { encoding: "utf8" });
-    const ok = w.status === 0 && /status draft/.test(w.stdout) && /from A\.1 \(subset-of\)/.test(w.stdout) && /3 requirements\./.test(w.stdout)
+      "--mapping-file", ".schema-cache/test-mapping.json", "--commit", "367d775010abee641b258926bb482fcd05270059"], { encoding: "utf8" });
+    const ok = w.status === 0 && /status draft/.test(w.stdout) && /from A\.1 \(intersects-with\)/.test(w.stdout) && /3 requirements\./.test(w.stdout)
+      && /^> .*not reviewed/m.test(w.stdout)
       && /a proposal to review/.test(w.stderr);
     failed += !ok;
-    console.log(`${ok ? "ok  " : "FAIL"} worksheet reads an own mapping from disk and says it is a draft${ok ? "" : ": " + w.stdout + w.stderr}`);
+    console.log(`${ok ? "ok  " : "FAIL"} worksheet reads an own mapping from disk and says it is a draft, in the file too${ok ? "" : ": " + w.stdout + w.stderr}`);
     // The mapping was made at 367d775; another commit is another catalog.
     const other = spawnSync(process.execPath, ["worksheet.mjs", "control_layer/Mindeststandard-TLS/Entwurf-Mindeststandard-TLS-catalog.json",
-      "--mapping", ".schema-cache/test-mapping.json", "--commit", "a12831136f4122a4c43854622180a24f2576a41e"], { encoding: "utf8" });
+      "--mapping-file", ".schema-cache/test-mapping.json", "--commit", "a12831136f4122a4c43854622180a24f2576a41e"], { encoding: "utf8" });
     const pinned = other.status === 2 && /is not made for/.test(other.stderr);
     failed += !pinned;
     console.log(`${pinned ? "ok  " : "FAIL"} worksheet refuses an own mapping made at another commit (exit ${other.status})`);
@@ -376,6 +377,9 @@ for (const [file, want] of cases) {
   const refused = bad.status === 1 && /NOPE\.1 not in the catalog/.test(bad.stderr) && /A\.3: neither mapped/.test(bad.stderr);
   failed += !refused;
   console.log(`${refused ? "ok  " : "FAIL"} unknown target and unmapped source are refused${refused ? "" : ": " + bad.stderr}`);
+  const full = /subset-of claims full coverage, which a draft mapping cannot/.test(bad.stderr);
+  failed += !full;
+  console.log(`${full ? "ok  " : "FAIL"} a draft mapping may not claim subset-of${full ? "" : ": " + bad.stderr}`);
 }
 // --catalog-file: a catalog from disk, pinned by its hash; a preset that names
 // a file refuses another one, and refuses to run without it.

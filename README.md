@@ -45,7 +45,8 @@ node worksheet.mjs control_layer/Mindeststandard-TLS/Entwurf-Mindeststandard-TLS
 | Option | Meaning |
 |---|---|
 | `--commit <sha>` | Required unless a preset names it. A full 40-character commit of the library. Branch names are refused. |
-| `--mapping <path>` | Only requirements a mapping collection points at, each with the source controls that lead to it. |
+| `--mapping <path>` | Only requirements a mapping collection of the library points at, each with the source controls that lead to it. |
+| `--mapping-file <file>` | The same with a mapping collection on disk, such as one written by `mapping.mjs`. It must target the catalog at `--commit`. |
 | `--sources <list\|@file>` | With `--mapping`: only these source controls, comma-separated or one per line in a file. |
 | `--practices <list>` | Only these practices, e.g. `DET,KONF`. |
 | `--format md\|csv` | Markdown checklist (default) or CSV with empty `evidence`, `status` and `note` columns. |
@@ -77,7 +78,8 @@ A Markdown row looks like this:
 > repository (`nis2`, `dora`, `c5`) are unreviewed drafts, and `a5` reads a
 > catalog that is itself a Community Draft. None of it is legal
 > advice, and a worksheet that comes out of a preset proves nothing until a
-> person has reviewed it.
+> person has reviewed it. Every worksheet made from a preset repeats this in a
+> note under its header.
 
 A preset names the catalog, the mapping if there is one, and the library commit
 it is tested at, so `--preset iso27001` replaces three arguments. Options on
@@ -138,7 +140,8 @@ The Cloudmodul of the same date only repeats GCS.2.5 and has no preset.
 
 The library has no mappings for NIS2, DORA or C5:2026. `mapping.mjs` writes one
 from a small source file in `mappings/src/` into an OSCAL mapping collection
-in `mappings/`, which `--mapping` and the presets read from disk:
+in `mappings/`, which the presets name as `mapping-file` and `--mapping-file`
+reads from disk:
 
 | Preset | Source, one entry per | Requirements at `a128311` |
 |---|---|---|
@@ -152,7 +155,9 @@ own ISO mapping at the same commit. The only judgement made here is the step
 to ISO, which a reviewer can check against a list they know. Derived targets
 are `intersects-with`; direct targets cover what Annex A lacks (risk analysis,
 MFA, vulnerability disclosure, exit strategies) and carry their own
-relationship. Sources without any target are listed with a reason, for example
+relationship -- but while a mapping is a draft, `mapping.mjs` refuses the ones
+that claim full coverage (`subset-of`, `equal-to`, `equivalent-to`). That the
+targets cover all of a source is exactly what a reviewer has to confirm. Sources without any target are listed with a reason, for example
 reports to the supervisor (DORA Art. 19), which Grundschutz++ does not ask for.
 
 C5:2026 has no references to ISO 27001, and its machine-readable release is
@@ -161,7 +166,8 @@ own wording. INQ-01 to INQ-04 (requests from authorities for customer data)
 have no target.
 
 All three are **drafts**, written with AI assistance and not yet reviewed by a
-person. The worksheet says so in its header (`mapping draft`) and on stderr.
+person. The worksheet says so in its header (`mapping draft`) and in a note
+above the rows; the CSV, which has no room for one, says it on stderr.
 A reviewed mapping changes `status` to `complete` in its source file.
 
 ```bash
