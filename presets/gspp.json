@@ -1,0 +1,8 @@
+{
+  "id": "gspp",
+  "title": "Grundschutz++, the whole catalog",
+  "commit": "a12831136f4122a4c43854622180a24f2576a41e",
+  "catalog": "control_layer/Grundschutz++/Grundschutz++-resolved_catalog.json",
+  "expect": { "requirements": 1000, "orphans": 0 },
+  "notes": "Narrow it with --levels normal-SdT (no raised protection needs) or --modal MUSS."
+}

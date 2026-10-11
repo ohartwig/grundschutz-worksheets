@@ -19,43 +19,79 @@
 //
 // Usage:
 //   node worksheet.mjs <catalog path> --commit <sha> [options]
+//   node worksheet.mjs --preset <id> [options]
+//   node worksheet.mjs --presets
 //
 // Options:
+//   --preset <id>         a named audit scope from presets/<id>.json: catalog,
+//                         mapping and the commit it is tested at; options given
+//                         on the command line win
+//   --presets             list the presets
 //   --mapping <path>      only requirements a mapping collection points at,
 //                         each with the source controls that lead to it
 //   --sources <list|@file> with --mapping: only these source controls
 //                         (e.g. your applicable Annex A controls), comma-separated
-//                         or one per line in a file
+//                         or one per line in a file; a trailing * matches a prefix
+//                         (APP.1.1* is every aspect of that Baustein)
 //   --profile <file>      only the requirements an OSCAL profile includes (see
 //                         profile.mjs); its catalog import must name --commit
 //   --practices <list>    only these practices, e.g. DET,KONF
+//   --levels <list>       only these security levels, e.g. normal-SdT
+//   --modal <list>        only these modal verbs, e.g. MUSS,SOLLTE
 //   --format md|csv       Markdown checklist (default) or CSV for a spreadsheet
 //   --summary             counts by practice, level, modal verb and action word
 
-import { readFileSync } from "node:fs";
+import { readFileSync, readdirSync } from "node:fs";
 
 const REPO = "https://raw.githubusercontent.com/BSI-Bund/Stand-der-Technik-Bibliothek";
 
 const args = process.argv.slice(2);
-const valued = ["--commit", "--mapping", "--sources", "--profile", "--practices", "--format"];
+const valued = ["--commit", "--mapping", "--sources", "--profile", "--practices", "--levels", "--modal", "--format", "--preset"];
 const opt = (name) => {
   const i = args.indexOf(name);
   return i >= 0 ? args[i + 1] ?? "" : "";
 };
 const valueAt = new Set(valued.map((n) => args.indexOf(n) + 1).filter((i) => i > 0));
-const path = args.find((a, i) => !a.startsWith("--") && !valueAt.has(i));
-const commit = opt("--commit");
-const mappingPath = opt("--mapping");
+
+// A preset names a catalog, maybe a mapping, and the commit it is tested at.
+const presetDir = new URL("presets/", import.meta.url);
+const readPreset = (id) => JSON.parse(readFileSync(new URL(`${id}.json`, presetDir), "utf8"));
+const presetIds = () => readdirSync(presetDir).filter((f) => f.endsWith(".json")).map((f) => f.slice(0, -5)).sort();
+if (args.includes("--presets")) {
+  for (const id of presetIds()) {
+    const p = readPreset(id);
+    console.log(`${id.padEnd(12)} ${p.title} · commit ${p.commit.slice(0, 7)}${p["sources-hint"] ? `\n${"".padEnd(13)}--sources: ${p["sources-hint"]}` : ""}`);
+  }
+  process.exit(0);
+}
+const presetId = opt("--preset");
+let preset = {};
+if (presetId) {
+  if (!presetIds().includes(presetId)) {
+    console.error(`unknown preset "${presetId}"; known: ${presetIds().join(", ")}`);
+    process.exit(2);
+  }
+  preset = readPreset(presetId);
+}
+
+const path = args.find((a, i) => !a.startsWith("--") && !valueAt.has(i)) ?? preset.catalog;
+const commit = opt("--commit") || preset.commit || "";
+const mappingPath = opt("--mapping") || (opt("--profile") ? "" : preset.mapping ?? "");
 const profilePath = opt("--profile");
 const list = (s) => s.split(/[,\n]/).map((x) => x.trim()).filter(Boolean);
 const sourcesArg = opt("--sources");
 const sourceFilter = new Set(sourcesArg.startsWith("@") ? list(readFileSync(sourcesArg.slice(1), "utf8")) : list(sourcesArg));
+const sourcePrefixes = [...sourceFilter].filter((s) => s.endsWith("*")).map((s) => s.slice(0, -1));
+const sourceWanted = (id) => !sourceFilter.size || sourceFilter.has(id) || sourcePrefixes.some((p) => id.startsWith(p));
 const practices = list(opt("--practices"));
+const levels = list(opt("--levels"));
+const modals = list(opt("--modal"));
 const format = opt("--format") || "md";
 const summary = args.includes("--summary");
 
 if (!path || !/^[0-9a-f]{40}$/.test(commit) || !["md", "csv"].includes(format)) {
-  console.error("usage: worksheet.mjs <catalog path> --commit <40-char sha> [--mapping <path>] [--sources <list|@file>] [--profile <file>] [--practices A,B] [--format md|csv] [--summary]");
+  console.error("usage: worksheet.mjs <catalog path> --commit <40-char sha> [--mapping <path>] [--sources <list|@file>] [--profile <file>] [--practices A,B] [--levels L] [--modal M] [--format md|csv] [--summary]");
+  console.error("       worksheet.mjs --preset <id> [options]   ·   worksheet.mjs --presets");
   console.error("A branch name is refused on purpose: the library republishes continuously.");
   process.exit(2);
 }
@@ -135,26 +171,29 @@ let selected = [...rows.values()];
 const orphans = [];
 if (mappingPath) {
   const { "mapping-collection": mc } = await load(mappingPath);
+  // target -> source -> relationships. The relationship says how much of the
+  // source control the requirement covers: intersects-with is only a part.
   const sources = new Map();
   for (const m of mc?.mappings ?? []) {
     for (const x of m.maps ?? []) {
-      const src = (x.sources ?? []).map((s) => s["id-ref"]).filter((s) => !sourceFilter.size || sourceFilter.has(s));
+      const src = (x.sources ?? []).map((s) => s["id-ref"]).filter(sourceWanted);
       if (!src.length) continue;
       for (const t of x.targets ?? []) {
-        const set = sources.get(t["id-ref"]) ?? new Set();
-        for (const s of src) set.add(s);
-        sources.set(t["id-ref"], set);
+        const bySource = sources.get(t["id-ref"]) ?? new Map();
+        for (const s of src) bySource.set(s, (bySource.get(s) ?? new Set()).add(x.relationship || "-"));
+        sources.set(t["id-ref"], bySource);
       }
     }
   }
   selected = [];
-  for (const [id, src] of [...sources].sort(([a], [b]) => a.localeCompare(b, "en", { numeric: true }))) {
+  for (const [id, bySource] of [...sources].sort(([a], [b]) => a.localeCompare(b, "en", { numeric: true }))) {
+    const from = [...bySource.keys()];
     const r = rows.get(id);
     if (!r) {
-      orphans.push(`${id} (from ${[...src].join(", ")})`);
+      orphans.push(`${id} (from ${from.join(", ")})`);
       continue;
     }
-    selected.push({ ...r, depth: 0, from: [...src] });
+    selected.push({ ...r, depth: 0, from, relationship: from.map((s) => [...bySource.get(s)].join("/")) });
   }
 }
 if (profilePath) {
@@ -175,8 +214,10 @@ if (profilePath) {
   }
 }
 if (practices.length) selected = selected.filter((r) => practices.includes(r.practice));
+if (levels.length) selected = selected.filter((r) => levels.includes(r.level));
+if (modals.length) selected = selected.filter((r) => modals.includes(r.modal));
 
-const meta = `${catalog.metadata?.title} · catalog version ${catalog.metadata?.version} · commit ${commit}`;
+const meta = `${catalog.metadata?.title} · catalog version ${catalog.metadata?.version} · commit ${commit}${presetId ? ` · preset ${presetId}` : ""}`;
 
 if (summary) {
   const count = (key) => {
@@ -192,12 +233,16 @@ if (summary) {
   }
 } else if (format === "csv") {
   const q = (v) => `"${String(v).replace(/"/g, '""')}"`;
-  const cols = ["id", "practice", "title", "level", "modal", "action", "subject", "target", "documentation", "effort", "from", "statement"];
+  // relationship lists one entry per source in `from`, in the same order.
+  const cols = ["id", "practice", "title", "level", "modal", "action", "subject", "target", "documentation", "effort", "from", "relationship", "statement"];
   console.log([...cols, "evidence", "status", "note"].join(","));
-  for (const r of selected) console.log([...cols.map((c) => q(c === "from" ? r.from.join(" ") : r[c])), "", "", ""].join(","));
+  for (const r of selected) console.log([...cols.map((c) => q(c === "from" ? r.from.join(" ") : c === "relationship" ? (r.relationship ?? []).join(" ") : r[c])), "", "", ""].join(","));
 } else {
   console.log(`# Worksheet: ${meta}`);
+  if (presetId) console.log(`Preset: ${presetId} · ${preset.title}${commit !== preset.commit ? ` · tested at ${preset.commit}, run at another commit` : ""}`);
   if (mappingPath) console.log(`Mapping: ${mappingPath.split("/").pop()}${sourceFilter.size ? ` · ${sourceFilter.size} source controls` : ""}`);
+  const narrowed = [levels.length && `levels ${levels.join(", ")}`, modals.length && `modal ${modals.join(", ")}`, practices.length && `practices ${practices.join(", ")}`].filter(Boolean);
+  if (narrowed.length) console.log(`Only: ${narrowed.join(" · ")}`);
   if (profilePath) console.log(`Profile: ${profilePath.split("/").pop()}`);
   console.log("");
   let practice;
@@ -207,7 +252,7 @@ if (summary) {
       console.log(`\n## ${practice || "(no practice)"} (${selected.filter((x) => x.practice === practice).length})\n`);
     }
     const pad = "  ".repeat(r.depth);
-    const facts = [r.level, r.modal, r.action, r.subject && `subject ${r.subject}`, r.documentation && `doc ${r.documentation}`, r.effort && `effort ${r.effort}`, r.from.length && `from ${r.from.join(", ")}`].filter(Boolean);
+    const facts = [r.level, r.modal, r.action, r.subject && `subject ${r.subject}`, r.documentation && `doc ${r.documentation}`, r.effort && `effort ${r.effort}`, r.from.length && `from ${r.from.map((s, i) => `${s} (${r.relationship[i]})`).join(", ")}`].filter(Boolean);
     console.log(`${pad}- [ ] **${r.id}** ${r.title} · ${facts.join(" · ")}`);
     if (r.statement) console.log(`${pad}      ${r.statement}`);
   }

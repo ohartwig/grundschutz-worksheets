@@ -44,19 +44,62 @@ node worksheet.mjs control_layer/Mindeststandard-TLS/Entwurf-Mindeststandard-TLS
 
 | Option | Meaning |
 |---|---|
-| `--commit <sha>` | Required. A full 40-character commit of the library. Branch names are refused. |
+| `--commit <sha>` | Required unless a preset names it. A full 40-character commit of the library. Branch names are refused. |
 | `--mapping <path>` | Only requirements a mapping collection points at, each with the source controls that lead to it. |
 | `--sources <list\|@file>` | With `--mapping`: only these source controls, comma-separated or one per line in a file. |
 | `--practices <list>` | Only these practices, e.g. `DET,KONF`. |
 | `--format md\|csv` | Markdown checklist (default) or CSV with empty `evidence`, `status` and `note` columns. |
 | `--summary` | Counts instead of rows. |
+| `--levels <list>` | Only these security levels, e.g. `normal-SdT` or `erhöht`. |
+| `--modal <list>` | Only these modal verbs, e.g. `MUSS`. |
+| `--preset <id>` | A named audit scope, see below. |
+
+With `--sources`, an entry ending in `*` matches a prefix: `APP.1.1*` is every
+source control that starts with it.
 
 A Markdown row looks like this:
 
 ```text
-- [ ] **KONF.2.1** Grundkonfiguration für Systeme · normal-SdT · SOLLTE · dokumentieren · subject Konfiguration für IT-Systeme · doc Konfigurationshistorie · effort 3 · from 8.9
+- [ ] **KONF.2.1** Grundkonfiguration für Systeme · normal-SdT · SOLLTE · dokumentieren · subject Konfiguration für IT-Systeme · doc Konfigurationshistorie · effort 3 · from 8.9 (subset-of)
       Konfiguration für IT-Systeme SOLLTE eine Grundkonfiguration dokumentieren.
 ```
+
+## Presets: one name per audit scope
+
+A preset names the catalog, the mapping if there is one, and the library commit
+it is tested at, so `--preset iso27001` replaces three arguments. Options on
+the command line win, `--commit` included; the header then says the preset was
+tested at another commit.
+
+```bash
+node worksheet.mjs --presets                                   # what there is
+node worksheet.mjs --preset iso27001 --sources @soa.txt --format csv
+node worksheet.mjs --preset gspp --levels normal-SdT --summary
+node worksheet.mjs --preset itgs2023 --sources 'APP.1.1*,OPS.1.1.3*'
+```
+
+| Preset | Scope | Requirements at `a128311` |
+|---|---|---|
+| `gspp` | Grundschutz++, the whole catalog | 1000 (773 normal-SdT) |
+| `iso27001` | ISO/IEC 27001:2022 Annex A through the BSI mapping | 280, 19 targets not in the catalog |
+| `itgs2023` | IT-Grundschutz-Kompendium 2023 through the BSI mapping | 322, 17 targets not in the catalog |
+| `lieferkette` | Lieferkettensicherheit profile, resolved | 146 |
+| `wlan` | WLAN profile, resolved | 48 |
+
+The profile presets read the resolved catalog the BSI publishes next to each
+profile: the profiles themselves import several catalogs through back-matter,
+which `--profile` does not follow.
+
+With a mapping, every source control carries its relationship, for example
+`from 5.15 (subset-of)`; in the CSV it is the `relationship` column, one entry
+per `from` entry. `intersects-with` means the requirement covers only part of
+the source control.
+
+Each preset file states the counts it yields (`expect`), and CI checks them
+(`npm run test:presets`). Raising a preset's commit means raising those counts
+in the same change, so the diff shows what the new catalog moved. The library
+has no mappings for C5, NIS2 or DORA; presets for those would need a mapping
+maintained in this repository.
 
 ## Your tailoring as an OSCAL profile
 
