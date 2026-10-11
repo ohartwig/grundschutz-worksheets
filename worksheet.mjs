@@ -50,8 +50,7 @@
 
 import { createHash } from "node:crypto";
 import { readFileSync, readdirSync } from "node:fs";
-
-const REPO = "https://raw.githubusercontent.com/BSI-Bund/Stand-der-Technik-Bibliothek";
+import { libraryUrl } from "./lib/oscal.mjs";
 
 const args = process.argv.slice(2);
 const valued = ["--commit", "--mapping", "--sources", "--profile", "--practices", "--levels", "--modal", "--format", "--preset", "--catalog-file", "--mapping-file"];
@@ -148,12 +147,12 @@ if (sourceFilter.size && !mappingPath && !mappingFile) {
 // A path in the library is plain segments. An empty one, "." or ".." would
 // resolve above the pinned commit and fetch another repository or a branch.
 const rawUrl = (p) => {
-  const segs = p.split("/");
-  if (segs.some((x) => !x || x === "." || x === "..")) {
+  const url = libraryUrl(commit, p);
+  if (!url) {
     console.error(`not a path in the library: ${p}`);
     process.exit(2);
   }
-  return `${REPO}/${commit}/${segs.map(encodeURIComponent).join("/")}`;
+  return url;
 };
 const load = async (p) => {
   const r = await fetch(rawUrl(p));

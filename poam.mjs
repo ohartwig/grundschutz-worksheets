@@ -36,11 +36,10 @@
 //
 // No dependencies. Node 24 (LTS) or later.
 
-import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
+import { NS, byId, uuid5 as uuid5From } from "./lib/oscal.mjs";
 
-const NS = "https://github.com/ohartwig/grundschutz-worksheets/ns";
 const UUID_NS = "c47e2a90-1b5d-4e63-8f2a-6d9b0c3e7a15";
 const STATUS = { open: "open", "in-progress": "remediating", done: "closed" };
 
@@ -65,15 +64,7 @@ const p = read(resolve(file), "input");
 for (const k of ["id", "title", "version", "last-modified"]) if (!p[k]) fail(`missing "${k}"`);
 if (!p.ssp?.file || !p.ssp?.href) fail('"ssp" needs "file" and "href"');
 
-const uuid5 = (name) => {
-  const ns = Buffer.from(UUID_NS.replace(/-/g, ""), "hex");
-  const h = createHash("sha1").update(Buffer.concat([ns, Buffer.from(name, "utf8")])).digest();
-  h[6] = (h[6] & 0x0f) | 0x50;
-  h[8] = (h[8] & 0x3f) | 0x80;
-  const x = h.subarray(0, 16).toString("hex");
-  return `${x.slice(0, 8)}-${x.slice(8, 12)}-${x.slice(12, 16)}-${x.slice(16, 20)}-${x.slice(20)}`;
-};
-const byId = (a, b) => a.localeCompare(b, "en", { numeric: true });
+const uuid5 = uuid5From(UUID_NS);
 const prop = (x, name) => (x.props ?? []).find((q) => q.name === name)?.value;
 
 // --- Gaps: what the owner's own plan says is not (fully) in place. ---------

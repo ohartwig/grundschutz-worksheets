@@ -25,8 +25,7 @@
 // No dependencies. Node 24 (LTS) or later.
 
 import { readFileSync } from "node:fs";
-
-const REPO = "https://raw.githubusercontent.com/BSI-Bund/Stand-der-Technik-Bibliothek";
+import { REPO, everyControl } from "./lib/oscal.mjs";
 
 const args = process.argv.slice(2);
 const opt = (name) => (args.includes(name) ? args[args.indexOf(name) + 1] : "");
@@ -87,22 +86,11 @@ if (!catalog) fail("not an OSCAL catalog");
 // ID -> UUID and UUID -> ID, however deeply nested.
 const byId = new Map();
 const byUuid = new Map();
-const walk = (controls) => {
-  for (const c of controls ?? []) {
-    const uuid = (c.props ?? []).find((p) => p.name === "alt-identifier")?.value ?? "";
-    byId.set(c.id, uuid);
-    if (uuid) byUuid.set(uuid, c.id);
-    walk(c.controls);
-  }
-};
-const groups = (gs) => {
-  for (const g of gs ?? []) {
-    walk(g.controls);
-    groups(g.groups);
-  }
-};
-walk(catalog.controls);
-groups(catalog.groups);
+for (const c of everyControl(catalog)) {
+  const uuid = (c.props ?? []).find((p) => p.name === "alt-identifier")?.value ?? "";
+  byId.set(c.id, uuid);
+  if (uuid) byUuid.set(uuid, c.id);
+}
 
 let changed = 0;
 for (const { id, uuid } of claims) {
