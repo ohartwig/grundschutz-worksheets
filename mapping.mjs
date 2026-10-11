@@ -87,7 +87,14 @@ const uuid5 = (name) => {
   return `${x.slice(0, 8)}-${x.slice(8, 12)}-${x.slice(12, 16)}-${x.slice(16, 20)}-${x.slice(20)}`;
 };
 
-const href = `${REPO}/${m.catalog.commit}/${m.catalog.path.split("/").map(encodeURIComponent).join("/")}`;
+// A path in the library is plain segments. An empty one, "." or ".." would
+// resolve above the pinned commit and fetch another repository or a branch.
+const libraryUrl = (p, what) => {
+  const segs = String(p ?? "").split("/");
+  if (segs.some((x) => !x || x === "." || x === "..")) fail(`${what} is not a path in the library: ${p}`);
+  return `${REPO}/${m.catalog.commit}/${segs.map(encodeURIComponent).join("/")}`;
+};
+const href = libraryUrl(m.catalog.path, "catalog.path");
 const r = await fetch(href);
 if (!r.ok) fail(`${r.status} for ${href}`);
 const { catalog } = await r.json();
@@ -116,7 +123,7 @@ const unmapped = m.unmapped ?? [];
 // The BSI mappings a source can go through: control -> Grundschutz++ targets.
 const via = new Map();
 for (const [name, v] of Object.entries(m.via ?? {})) {
-  const u = `${REPO}/${m.catalog.commit}/${v.path.split("/").map(encodeURIComponent).join("/")}`;
+  const u = libraryUrl(v.path, `via.${name}.path`);
   const res = await fetch(u);
   if (!res.ok) fail(`${res.status} for ${u}`);
   const { "mapping-collection": mc } = await res.json();

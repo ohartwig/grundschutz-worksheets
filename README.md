@@ -67,10 +67,24 @@ A Markdown row looks like this:
 
 ## Presets: one name per audit scope
 
+> **Check the scope yourself.** A preset is a starting point, not an audit
+> scope anyone has approved for you. It only selects requirements: which
+> catalog, which mapping, which commit. Whether that selection fits your
+> audit, and whether the mapping behind it says what your auditor will accept,
+> is for you to check against the original texts -- the regulation, the
+> standard, your Statement of Applicability. The BSI mappings (`iso27001`,
+> `itgs2023`) are the BSI's and carry their own status; the mappings of this
+> repository (`nis2`, `dora`, `c5`) are unreviewed drafts, and `a5` reads a
+> catalog that is itself a Community Draft. None of it is legal
+> advice, and a worksheet that comes out of a preset proves nothing until a
+> person has reviewed it.
+
 A preset names the catalog, the mapping if there is one, and the library commit
 it is tested at, so `--preset iso27001` replaces three arguments. Options on
 the command line win, `--commit` included; the header then says the preset was
-tested at another commit.
+tested at another commit. An own mapping (`nis2`, `dora`, `c5`) is the
+exception: it is derived from the catalog at one commit and refuses any other
+until it is regenerated there.
 
 ```bash
 node worksheet.mjs --presets                                   # what there is

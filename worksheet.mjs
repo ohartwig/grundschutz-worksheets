@@ -218,6 +218,16 @@ if (mappingPath) {
   // disk; any other path is one of the library's, at the commit.
   const own = [mappingPath, new URL(mappingPath, import.meta.url)].find((p) => existsSync(p));
   const { "mapping-collection": mc } = own ? JSON.parse(readFileSync(own, "utf8")) : await load(mappingPath);
+  // An own mapping is derived from one catalog at one commit; applied to
+  // another, its targets may not exist or may mean something else. So it must
+  // name exactly the catalog this run reads -- the form mapping.mjs writes.
+  if (own) {
+    const targets = [...new Set((mc?.mappings ?? []).map((x) => x["target-resource"]?.href))];
+    if (!targets.length || targets.some((h) => h !== rawUrl(path))) {
+      console.error(`mapping ${mappingPath} is not made for ${path} at commit ${commit}: it targets ${targets.join(", ") || "nothing"}. Regenerate it with mapping.mjs at that commit.`);
+      process.exit(2);
+    }
+  }
   mappingStatus = mc?.provenance?.status ?? "";
   if (own && mappingStatus !== "complete") console.error(`Mapping ${mappingPath} is ${mappingStatus || "of unknown status"}: a proposal to review, not an established mapping.`);
   // target -> source -> relationships. The relationship says how much of the
