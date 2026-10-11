@@ -2,7 +2,8 @@
 
 Copies of `oscal_complete_schema.json` from the NIST OSCAL releases
 ([v1.1.3](https://github.com/usnistgov/OSCAL/releases/tag/v1.1.3),
-[v1.2.2](https://github.com/usnistgov/OSCAL/releases/tag/v1.2.2)), unchanged.
+[v1.2.2](https://github.com/usnistgov/OSCAL/releases/tag/v1.2.2),
+[v1.2.3](https://github.com/usnistgov/OSCAL/releases/tag/v1.2.3)), unchanged.
 `validate.mjs` checks each against the SHA-256 in `../schemas.json` before use.
 
 They are kept here so that validation works where github.com and its release
