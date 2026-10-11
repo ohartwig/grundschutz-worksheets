@@ -481,7 +481,7 @@ security plan, assessment plan, results, POA&M (`test/conformance.mjs`):
 - [compliance-trestle](https://github.com/oscal-compass/compliance-trestle)
   5.1 imports and validates every document, advisory: it cannot follow a
   plan's `#uuid` import of a profile, so it reads a copy of the plan that
-  names the profile directly (`.gitlab-ci.yml` says why).
+  names the profile directly.
 
 ## Two rules built in
 
@@ -525,7 +525,9 @@ evolving — nothing here claims conformance.
 
 Development happens in a GitLab project; this GitHub repository is its public
 mirror, rewritten and pushed on every change to `main` together with the
-release tags (`vX.Y.Z`, see [CHANGELOG.md](CHANGELOG.md)). Issues are welcome
+release tags (`vX.Y.Z`, see [CHANGELOG.md](CHANGELOG.md)). The CI
+configuration stays there; what it checks is described under the validation
+above. Issues are welcome
 here; a pull request cannot be merged on GitHub, but a change in it will be
 carried over by hand.
 
