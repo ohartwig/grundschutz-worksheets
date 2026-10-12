@@ -438,6 +438,44 @@ Signed and stored next to the thing it measures, for example as an OCI artefact
 with `oras push` and `cosign sign`, a result becomes evidence a third party can
 verify without trusting the pipeline that wrote it.
 
+## How far the measurements reach: coverage per standard
+
+Checks evidence Grundschutz++ requirements. `coverage.mjs` follows a preset's
+mapping and says per requirement of the other standard what the results show
+about it -- no more than the mapping allows:
+
+```bash
+node coverage.mjs --preset nis2 results/*.json > nis2-coverage.md
+node coverage.mjs --mapping-file my-mapping.json results/*.json --format csv
+```
+
+| State | When |
+|---|---|
+| satisfied | every target measured and satisfied in full, through `equivalent-to`, `equal-to` or `subset-of` |
+| partial | satisfied, but through `intersects-with`/`superset-of`, with a target unmeasured, or by a check that shows its target only in part |
+| not satisfied | a measured target was not satisfied |
+| not measured | nothing measured any target -- never read as satisfied |
+| no mapping | the mapping's gap summary: no Grundschutz++ requirement fits it |
+
+The report leads with the gaps, not a percentage: how many requirements
+nothing measures, how many no measurement can reach, and whether the mapping
+is still a draft. A preset without a mapping (`gspp`, `lieferkette`, `wlan`)
+is Grundschutz++ itself.
+
+## Over a period: did the controls keep working?
+
+A nightly run proves a night. `period.mjs` reads the results of many runs and
+says, per check and per requirement, how many runs a period had, how many found
+something not as required, and the longest stretch without any run -- from the
+start of the period to the first run and from the last to its end included.
+With `--every`, the cadence the assessment plan promises, a longer gap is named:
+for that stretch nothing shows the control working. That is the question of a
+SOC 2 Type II report, and of an ISO or NIS2 audit too.
+
+```bash
+node period.mjs results/*.json --from 2026-10-13 --to 2027-01-13 --every 24h
+```
+
 ## What will be fixed: a POA&M
 
 The last link of the chain. `poam.mjs` turns two things into items: a
