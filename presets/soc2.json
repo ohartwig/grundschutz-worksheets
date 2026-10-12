@@ -1,9 +1,9 @@
 {
   "id": "soc2",
-  "title": "SOC 2 common criteria (CC1 to CC9) to Grundschutz++ (draft mapping of this repository)",
+  "title": "SOC 2 common criteria, availability and confidentiality to Grundschutz++ (draft mapping of this repository)",
   "catalog": "control_layer/Grundschutz++/Grundschutz++-resolved_catalog.json",
   "mapping-file": "mappings/soc2-to-gspp.json",
-  "sources-hint": "Criteria or whole series, e.g. CC6.1,CC8.1 or CC7.*",
-  "expect": { "requirements": 207, "orphans": 0 },
-  "notes": "Own mapping, status draft: derived through ISO 27001 and the BSI mapping, the step to ISO is not yet reviewed. Only the 33 common criteria are mapped; A1, C1, PI1 and P1 to P8 are in standards/soc2.json but not mapped yet. The criteria are the AICPA's; only their IDs are used."
+  "sources-hint": "Criteria or whole series, e.g. CC6.1,A1.2 or CC7.*",
+  "expect": { "requirements": 231, "orphans": 0 },
+  "notes": "Own mapping, status draft: derived through ISO 27001 and the BSI mapping, the step to ISO is not yet reviewed. The 33 common criteria, A1 and C1 are mapped; PI1 and P1 to P8 are in standards/soc2.json but not mapped yet. The criteria are the AICPA's; only their IDs are used."
 }
