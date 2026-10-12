@@ -68,7 +68,7 @@
 
 import { readFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
-import { NS, byId, importResource, uuid5 as uuid5From } from "./lib/oscal.mjs";
+import { NS, byId, importResource, measurements, uuid5 as uuid5From } from "./lib/oscal.mjs";
 
 const UUID_NS = "8e3f1a52-6c0d-4b7e-9a21-f4c5d7e6b039";
 
@@ -151,44 +151,12 @@ for (const f of s.components ?? []) {
   }
 }
 
-// --- What was measured: per requirement, the latest finding of EACH check. -
-// Several checks may evidence one requirement. Taking only the newest finding
-// overall would let a later passing check hide an earlier failing one, so the
-// latest finding is kept per check, and the requirement is satisfied only when
-// every check's latest finding is.
-const perCheck = new Map(); // id -> Map(check -> { state, at, title, description })
-for (const f of s.results ?? []) {
-  const ar = read(f, "assessment results")["assessment-results"];
-  if (!ar) fail(`${f} is not OSCAL assessment results`);
-  for (const r of ar.results ?? []) {
-    const at = r.end || r.start;
-    const check = (r.props ?? []).find((p) => p.name === "check")?.value || r.title;
-    for (const fd of r.findings ?? []) {
-      const id = fd.target?.["target-id"];
-      const state = fd.target?.status?.state;
-      if (!id || !state) continue;
-      if (!perCheck.has(id)) perCheck.set(id, new Map());
-      const prev = perCheck.get(id).get(check);
-      const partial = (fd.props ?? []).some((p) => p.name === "coverage" && p.value === "partial");
-      if (!prev || at > prev.at) perCheck.get(id).set(check, { state, at, title: r.title, description: fd.description, partial });
-    }
-  }
-}
-const measured = new Map(); // id -> { state, at, title, description, check }
-for (const [id, checks] of perCheck) {
-  const all = [...checks.entries()].sort(([a], [b]) => a.localeCompare(b));
-  const failing = all.filter(([, m]) => m.state !== "satisfied");
-  const shown = failing.length ? failing : all;
-  measured.set(id, {
-    state: failing.length ? "not-satisfied" : "satisfied",
-    at: all.map(([, m]) => m.at).sort().at(-1),
-    title: shown.map(([, m]) => m.title).join("; "),
-    description: shown[0][1].description,
-    check: all.map(([c]) => c).join(", "),
-    // Partial unless one check evidences the requirement in full.
-    partial: all.every(([, m]) => m.partial),
-  });
-}
+// --- What was measured: per requirement, the latest finding of EACH check
+// (lib/oscal.mjs, measurements): satisfied only when every check's latest
+// finding is, partial unless one check shows it in full.
+const measured = measurements(
+  (s.results ?? []).map((f) => read(f, "assessment results")["assessment-results"] ?? fail(`${f} is not OSCAL assessment results`)),
+);
 
 // --- What the infrastructure code declares: the inventory. ---------------
 let inventory = [];

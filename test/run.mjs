@@ -383,6 +383,53 @@ for (const [file, want] of cases) {
     console.log(`${ok ? "ok  " : "FAIL"} partial coverage: ${name}${ok ? "" : ": " + part.stderr + wrong.stderr + ssp.stderr + v.stdout}`);
   }
 }
+// coverage.mjs and period.mjs over the same kind of results: how far a
+// measurement reaches through a mapping, and whether the runs covered a period.
+{
+  const { writeFileSync, readFileSync, mkdirSync } = await import("node:fs");
+  mkdirSync(".schema-cache", { recursive: true });
+  const cat = ["--catalog", "test/fixtures/recheck-catalog.json"];
+  const res = (name, change) => {
+    const run = JSON.parse(readFileSync("test/fixtures/results-run.json", "utf8"));
+    change(run);
+    writeFileSync(`.schema-cache/${name}-run.json`, JSON.stringify(run));
+    const r = spawnSync(process.execPath, ["results.mjs", `.schema-cache/${name}-run.json`, ...cat], { encoding: "utf8" });
+    writeFileSync(`.schema-cache/${name}.json`, r.stdout);
+    return `.schema-cache/${name}.json`;
+  };
+  // TEST.3.1.3 satisfied but only in part, DEV.4.3 satisfied in full, DET.5.3 not measured.
+  const ok = res("cov-ok", (r) => (r.partial = ["TEST.3.1.3"]));
+  const bad = res("cov-bad", (r) => ((r.requirements = ["TEST.3.1.3"]), (r.subjects[0].satisfied = false)));
+  const cov = (...files) => spawnSync(process.execPath, ["coverage.mjs", "--mapping-file", "test/fixtures/coverage-mapping.json", ...files, "--format", "csv"], { encoding: "utf8" });
+  const state = (r) => Object.fromEntries(r.stdout.trim().split("\n").slice(1).map((l) => l.split(",").map((x) => x.replace(/^"|"$/g, ""))).map(([id, s]) => [id, s]));
+  const a = state(cov(ok));
+  const b = state(cov(bad));
+  const md = spawnSync(process.execPath, ["coverage.mjs", "--mapping-file", "test/fixtures/coverage-mapping.json", ok], { encoding: "utf8" });
+  // Three nightly runs with a four-day hole.
+  const nights = ["2026-09-30", "2026-10-01", "2026-10-05"].map((d, i) =>
+    res(`night-${i}`, (r) => ((r.start = `${d}T03:00:00Z`), (r.end = `${d}T03:04:00Z`), i === 1 && (r.subjects[0].satisfied = false))));
+  const period = (...extra) => spawnSync(process.execPath, ["period.mjs", ...nights, "--from", "2026-09-30", "--to", "2026-10-05", ...extra], { encoding: "utf8" });
+  const p = period("--every", "24h");
+  const pc = period("--format", "csv");
+  const row = (kind, key) => pc.stdout.split("\n").find((l) => l.startsWith(`"${kind}","${key}"`))?.split(",").map((x) => x.replace(/^"|"$/g, ""));
+  const cases = [
+    ["equivalent and fully measured, but the check is partial: partial", a["A.1"] === "partial"],
+    ["intersects-with stays partial however well measured", a["A.2"] === "partial"],
+    ["equivalent, measured in full and satisfied: satisfied", a["A.5"] === "satisfied"],
+    ["nothing measured is not measured, never satisfied", a["A.3"] === "not measured"],
+    ["what the mapping cannot reach is named: no mapping", a["A.4"] === "no mapping"],
+    ["a measured failure makes its sources not satisfied", b["A.1"] === "not satisfied"],
+    ["the report leads with the gaps", /\*\*Not measured: 1\*\*/.test(md.stdout) && /\*\*No mapping: 1\*\*/.test(md.stdout)],
+    ["period: runs and failures per check", row("check", "protected-branches")?.slice(2, 4).join() === "3,1"],
+    ["period: the longest gap, from run to run", row("check", "protected-branches")?.[7] === "96"],
+    ["period: a gap longer than the cadence is named", p.status === 0 && /Gaps longer than the cadence: 1 check/.test(p.stdout) && /\*\*\(late\)\*\*/.test(p.stdout)],
+    ["period: nothing in the period is an error", spawnSync(process.execPath, ["period.mjs", ...nights, "--from", "2027-01-01", "--to", "2027-01-02"], { encoding: "utf8" }).status === 1],
+  ];
+  for (const [name, good] of cases) {
+    failed += !good;
+    console.log(`${good ? "ok  " : "FAIL"} coverage/period: ${name}${good ? "" : ": " + JSON.stringify({ a, b }) + p.stderr + pc.stdout}`);
+  }
+}
 // mapping.mjs: deterministic, validates; an unknown target or a source left
 // out is refused, and worksheet.mjs reads the result from disk.
 {
