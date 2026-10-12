@@ -27,6 +27,15 @@ for (const f of readdirSync("presets").filter((f) => f.endsWith(".json")).sort()
   console.log(`${ok ? "ok  " : "FAIL"} ${p.id}: ${requirements} requirements, ${orphans} orphans; want ${p.expect.requirements}, ${p.expect.orphans}`);
   if (!ok && r.status !== 0) console.log(r.stderr);
 }
+// The catalogs of EU acts are generated from the Journal's text: the committed
+// file must be what tools/eu-catalog.mjs makes of the pinned document today.
+for (const f of readdirSync("standards/src").filter((f) => f.endsWith(".json")).sort()) {
+  const out = `standards/${f}`;
+  const r = spawnSync(process.execPath, ["tools/eu-catalog.mjs", `standards/src/${f}`], { encoding: "utf8" });
+  const ok = r.status === 0 && r.stdout === readFileSync(out, "utf8");
+  failed += !ok;
+  console.log(`${ok ? "ok  " : "FAIL"} ${out} is generated from standards/src/${f}${ok ? "" : ": run node tools/eu-catalog.mjs and commit the result. " + r.stderr}`);
+}
 // The mappings of this repository are generated: the committed file must be
 // what mapping.mjs makes of its source today.
 for (const f of readdirSync("mappings/src").filter((f) => f.endsWith(".json")).sort()) {

@@ -3,8 +3,8 @@
     "uuid": "78b3fc86-502c-56d5-8677-b56bca41d752",
     "metadata": {
       "title": "NIS2 Art. 21(2) (§ 30 Abs. 2 BSIG) to Grundschutz++",
-      "last-modified": "2026-10-11T00:00:00Z",
-      "version": "0.1.0",
+      "last-modified": "2026-10-12T00:00:00Z",
+      "version": "0.2.0",
       "oscal-version": "1.2.2",
       "props": [
         {
@@ -42,7 +42,7 @@
         "uuid": "5cc30872-c0d5-5589-bec7-3d5196adbefc",
         "source-resource": {
           "type": "catalog",
-          "href": "https://eur-lex.europa.eu/eli/dir/2022/2555/oj",
+          "href": "#f954152b-ecfb-5647-afa7-43a9f244c76f",
           "remarks": "Directive (EU) 2022/2555 (NIS2), Art. 21(2); § 30 Abs. 2 BSIG"
         },
         "target-resource": {
@@ -51,12 +51,12 @@
         },
         "maps": [
           {
-            "uuid": "92e6764d-f6ab-55f7-88f8-d4d94f4f672b",
+            "uuid": "4c8c1ed2-6f49-500b-8489-01b66d64619a",
             "relationship": "intersects-with",
             "sources": [
               {
                 "type": "control",
-                "id-ref": "21.2.a"
+                "id-ref": "Art.21.2.a"
               }
             ],
             "targets": [
@@ -84,12 +84,12 @@
             "remarks": "Policies on risk analysis and information system security (§ 30 Abs. 2 Nr. 1). Annex A has the policies; risk analysis itself is ISO clause 6.1, not Annex A, so the risk-management requirements are direct targets."
           },
           {
-            "uuid": "66781cf8-9c59-51c8-b012-70f356fa2df8",
+            "uuid": "23ca0254-802a-5147-82b0-09ac5571b4c7",
             "relationship": "intersects-with",
             "sources": [
               {
                 "type": "control",
-                "id-ref": "21.2.a"
+                "id-ref": "Art.21.2.a"
               }
             ],
             "targets": [
@@ -126,12 +126,12 @@
             "remarks": "Policies on risk analysis and information system security (§ 30 Abs. 2 Nr. 1). Annex A has the policies; risk analysis itself is ISO clause 6.1, not Annex A, so the risk-management requirements are direct targets.\n\nDerived through the BSI mapping from ISO/IEC 27001:2022 Annex A 5.1, 5.2, 5.4."
           },
           {
-            "uuid": "d1597487-b2a4-5d9b-8c61-210b72e2007b",
+            "uuid": "d6e33d6d-dac6-588c-9988-eba8220c6ce6",
             "relationship": "intersects-with",
             "sources": [
               {
                 "type": "control",
-                "id-ref": "21.2.b"
+                "id-ref": "Art.21.2.b"
               }
             ],
             "targets": [
@@ -147,12 +147,12 @@
             "remarks": "Incident handling (Nr. 2)."
           },
           {
-            "uuid": "8d18c77a-29d9-5c5d-917d-6c72ed4e7918",
+            "uuid": "354156d0-2da8-57f3-a7a1-60167df4c8de",
             "relationship": "intersects-with",
             "sources": [
               {
                 "type": "control",
-                "id-ref": "21.2.b"
+                "id-ref": "Art.21.2.b"
               }
             ],
             "targets": [
@@ -232,12 +232,12 @@
             "remarks": "Incident handling (Nr. 2).\n\nDerived through the BSI mapping from ISO/IEC 27001:2022 Annex A 5.24, 5.25, 5.26, 5.27, 5.28, 6.8."
           },
           {
-            "uuid": "e4b0e3af-39b8-50a5-873a-e90a71689623",
+            "uuid": "06a06839-5cd3-5033-8ac7-b4afbd0ce238",
             "relationship": "intersects-with",
             "sources": [
               {
                 "type": "control",
-                "id-ref": "21.2.c"
+                "id-ref": "Art.21.2.c"
               }
             ],
             "targets": [
@@ -249,12 +249,12 @@
             "remarks": "Business continuity, backup management, disaster recovery and crisis management (Nr. 3)."
           },
           {
-            "uuid": "2579b035-0fd6-5691-8747-0b38fff6564e",
+            "uuid": "420d2d74-62f1-59a9-9ac8-8b4dcd53fb56",
             "relationship": "intersects-with",
             "sources": [
               {
                 "type": "control",
-                "id-ref": "21.2.c"
+                "id-ref": "Art.21.2.c"
               }
             ],
             "targets": [
@@ -360,12 +360,12 @@
             "remarks": "Business continuity, backup management, disaster recovery and crisis management (Nr. 3).\n\nDerived through the BSI mapping from ISO/IEC 27001:2022 Annex A 5.29, 5.30, 8.13, 8.14."
           },
           {
-            "uuid": "61dbff38-28fd-5b46-b5c6-2b8e207fc86e",
+            "uuid": "c198f639-3c1c-5279-9c63-7e5fb19a61f7",
             "relationship": "intersects-with",
             "sources": [
               {
                 "type": "control",
-                "id-ref": "21.2.d"
+                "id-ref": "Art.21.2.d"
               }
             ],
             "targets": [
@@ -504,12 +504,12 @@
             "remarks": "Supply chain security, including the relationship with direct suppliers and service providers (Nr. 4).\n\nDerived through the BSI mapping from ISO/IEC 27001:2022 Annex A 5.19, 5.20, 5.21, 5.22, 5.23."
           },
           {
-            "uuid": "9ab3d8ef-7ba7-5fad-ab0c-62eebcda55c8",
+            "uuid": "4d65b04f-5b8b-5dd1-9433-033f3f4d71dd",
             "relationship": "intersects-with",
             "sources": [
               {
                 "type": "control",
-                "id-ref": "21.2.e"
+                "id-ref": "Art.21.2.e"
               }
             ],
             "targets": [
@@ -529,12 +529,12 @@
             "remarks": "Security in acquisition, development and maintenance, including vulnerability handling and disclosure (Nr. 5). Disclosure is the intake of external reports, which Annex A does not name."
           },
           {
-            "uuid": "3b4a1045-7469-5988-9c7d-5e0505ed4ec0",
+            "uuid": "49739589-6b28-5d3d-89db-6177c6fcd788",
             "relationship": "intersects-with",
             "sources": [
               {
                 "type": "control",
-                "id-ref": "21.2.e"
+                "id-ref": "Art.21.2.e"
               }
             ],
             "targets": [
@@ -753,12 +753,12 @@
             "remarks": "Security in acquisition, development and maintenance, including vulnerability handling and disclosure (Nr. 5). Disclosure is the intake of external reports, which Annex A does not name.\n\nDerived through the BSI mapping from ISO/IEC 27001:2022 Annex A 8.8, 8.25, 8.26, 8.27, 8.28, 8.29, 8.30, 8.31, 8.32."
           },
           {
-            "uuid": "a5f9ab9b-05b2-59ec-aa2f-8f06c11d7cdd",
+            "uuid": "a55a9663-583f-5329-b4cf-c3bec99dbf0b",
             "relationship": "intersects-with",
             "sources": [
               {
                 "type": "control",
-                "id-ref": "21.2.f"
+                "id-ref": "Art.21.2.f"
               }
             ],
             "targets": [
@@ -774,12 +774,12 @@
             "remarks": "Policies and procedures to assess the effectiveness of the measures (Nr. 6). Annex A has the independent and compliance reviews; ISO clause 9 is the rest."
           },
           {
-            "uuid": "833d13d4-0d0e-51f7-9038-3698f8d5a6e7",
+            "uuid": "afdf3ef4-4728-5d59-8494-23c06c5b5d5d",
             "relationship": "intersects-with",
             "sources": [
               {
                 "type": "control",
-                "id-ref": "21.2.f"
+                "id-ref": "Art.21.2.f"
               }
             ],
             "targets": [
@@ -811,12 +811,12 @@
             "remarks": "Policies and procedures to assess the effectiveness of the measures (Nr. 6). Annex A has the independent and compliance reviews; ISO clause 9 is the rest.\n\nDerived through the BSI mapping from ISO/IEC 27001:2022 Annex A 5.35, 5.36."
           },
           {
-            "uuid": "4c7bf6c5-5860-586e-9763-71b312399b0a",
+            "uuid": "3ee695f7-e5de-5a45-9fb9-770b4eb359c5",
             "relationship": "intersects-with",
             "sources": [
               {
                 "type": "control",
-                "id-ref": "21.2.g"
+                "id-ref": "Art.21.2.g"
               }
             ],
             "targets": [
@@ -828,12 +828,12 @@
             "remarks": "Basic cyber hygiene practices and cybersecurity training (Nr. 7). Hygiene is not defined in the directive; taken here as awareness, malware protection, configuration and patching."
           },
           {
-            "uuid": "0cf28dfd-a4e1-5ed5-b20d-91160dc84873",
+            "uuid": "d2cc2c37-95a5-53e1-9ce6-1f3d861b5aa6",
             "relationship": "intersects-with",
             "sources": [
               {
                 "type": "control",
-                "id-ref": "21.2.g"
+                "id-ref": "Art.21.2.g"
               }
             ],
             "targets": [
@@ -960,12 +960,12 @@
             "remarks": "Basic cyber hygiene practices and cybersecurity training (Nr. 7). Hygiene is not defined in the directive; taken here as awareness, malware protection, configuration and patching.\n\nDerived through the BSI mapping from ISO/IEC 27001:2022 Annex A 6.3, 8.7, 8.8, 8.9, 8.19."
           },
           {
-            "uuid": "f3e258dc-18ab-5eb4-8c0a-ca63960f476c",
+            "uuid": "adbbb3f3-c505-5246-a36f-deae65804508",
             "relationship": "intersects-with",
             "sources": [
               {
                 "type": "control",
-                "id-ref": "21.2.h"
+                "id-ref": "Art.21.2.h"
               }
             ],
             "targets": [
@@ -1008,12 +1008,12 @@
             "remarks": "Policies and procedures regarding the use of cryptography and, where appropriate, encryption (Nr. 8).\n\nDerived through the BSI mapping from ISO/IEC 27001:2022 Annex A 8.24."
           },
           {
-            "uuid": "ec2695f8-5cd1-5ca1-9241-72b0f860c439",
+            "uuid": "621a41b9-b095-5410-b754-7e8e13e6ef06",
             "relationship": "intersects-with",
             "sources": [
               {
                 "type": "control",
-                "id-ref": "21.2.i"
+                "id-ref": "Art.21.2.i"
               }
             ],
             "targets": [
@@ -1258,12 +1258,12 @@
             "remarks": "Human resources security, access control policies and asset management (Nr. 9).\n\nDerived through the BSI mapping from ISO/IEC 27001:2022 Annex A 6.1, 6.2, 6.4, 6.5, 6.6, 5.9, 5.10, 5.11, 5.12, 5.15, 5.16, 5.17, 5.18, 8.2, 8.3."
           },
           {
-            "uuid": "37bf8209-87f6-53f4-926f-cc7f78ac357a",
+            "uuid": "e1e9c042-8e1f-5df0-8903-2ec4a053540e",
             "relationship": "intersects-with",
             "sources": [
               {
                 "type": "control",
-                "id-ref": "21.2.j"
+                "id-ref": "Art.21.2.j"
               }
             ],
             "targets": [
@@ -1279,12 +1279,12 @@
             "remarks": "Multi-factor or continuous authentication, secured voice, video and text communications, and secured emergency communication systems (Nr. 10). Annex A has authentication and information transfer; MFA itself is a direct target."
           },
           {
-            "uuid": "34730ad4-bae4-5437-ba54-46b155baa882",
+            "uuid": "d6162065-8a05-52a4-8248-c55434d366d6",
             "relationship": "intersects-with",
             "sources": [
               {
                 "type": "control",
-                "id-ref": "21.2.j"
+                "id-ref": "Art.21.2.j"
               }
             ],
             "targets": [
@@ -1367,6 +1367,26 @@
           }
         ]
       }
-    ]
+    ],
+    "back-matter": {
+      "resources": [
+        {
+          "uuid": "f954152b-ecfb-5647-afa7-43a9f244c76f",
+          "title": "NIS2 (Richtlinie (EU) 2022/2555): Governance, Risikomanagementmaßnahmen, Berichtspflichten",
+          "rlinks": [
+            {
+              "href": "../standards/nis2.json",
+              "media-type": "application/json",
+              "hashes": [
+                {
+                  "algorithm": "SHA-256",
+                  "value": "e19cf36805d4d79ca083356a212fc836c1742980140501e3bc1e1aebb0eed35a"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
   }
 }

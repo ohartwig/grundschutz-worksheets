@@ -1,11 +1,13 @@
 # Review: NIS2 Art. 21(2) (§ 30 Abs. 2 BSIG) to Grundschutz++
 
-Version 0.1.0 · status draft · catalog Grundschutz++-resolved_catalog.json at a128311
+Version 0.2.0 · status draft · catalog Grundschutz++-resolved_catalog.json at a128311
 
-Source: Directive (EU) 2022/2555 (NIS2), Art. 21(2); § 30 Abs. 2 BSIG (https://eur-lex.europa.eu/eli/dir/2022/2555/oj). Check every section against the original text, not against the remark.
+Source: Directive (EU) 2022/2555 (NIS2), Art. 21(2); § 30 Abs. 2 BSIG (standards/nis2.json). Check every section against the original text, not against the remark.
 Derived targets come from the BSI's own mapping and are only as right as the step to it; a direct target is this repository's judgement.
 
-## 21.2.a
+## Art.21.2.a
+
+Text: Konzepte in Bezug auf die Risikoanalyse und Sicherheit für Informationssysteme;
 
 > Policies on risk analysis and information system security (§ 30 Abs. 2 Nr. 1). Annex A has the policies; risk analysis itself is ISO clause 6.1, not Annex A, so the risk-management requirements are direct targets.
 
@@ -15,7 +17,9 @@ Derived targets come from the BSI's own mapping and are only as right as the ste
 - [ ] Relationship: intersects-with holds (or the targets cover all of the source: then subset-of)
 - [ ] The remark is our own wording, not the source's text
 
-## 21.2.b
+## Art.21.2.b
+
+Text: Bewältigung von Sicherheitsvorfällen;
 
 > Incident handling (Nr. 2).
 
@@ -25,7 +29,9 @@ Derived targets come from the BSI's own mapping and are only as right as the ste
 - [ ] Relationship: intersects-with holds (or the targets cover all of the source: then subset-of)
 - [ ] The remark is our own wording, not the source's text
 
-## 21.2.c
+## Art.21.2.c
+
+Text: Aufrechterhaltung des Betriebs, wie Backup-Management und Wiederherstellung nach einem Notfall, und Krisenmanagement;
 
 > Business continuity, backup management, disaster recovery and crisis management (Nr. 3).
 
@@ -35,7 +41,9 @@ Derived targets come from the BSI's own mapping and are only as right as the ste
 - [ ] Relationship: intersects-with holds (or the targets cover all of the source: then subset-of)
 - [ ] The remark is our own wording, not the source's text
 
-## 21.2.d
+## Art.21.2.d
+
+Text: Sicherheit der Lieferkette einschließlich sicherheitsbezogener Aspekte der Beziehungen zwischen den einzelnen Einrichtungen und ihren unmittelbaren Anbietern oder Diensteanbietern;
 
 > Supply chain security, including the relationship with direct suppliers and service providers (Nr. 4).
 
@@ -43,7 +51,9 @@ Derived targets come from the BSI's own mapping and are only as right as the ste
   - derived, intersects-with: BES.1.3 Lieferanten- und Dienstleisterverzeichnis; BES.1.3.1 Gesamte Lieferkette; BES.1.4 Outsourcing-Strategie; BES.1.7 Vereinbarung der geteilten Verantwortung; BES.2.2 Dokumentation des Rechtsraums und der Datenlokation; BES.2.3 Vereinbarung des Rechtsraums und der Datenlokation; BES.3.1 Klassifizierung von Lieferantenbeziehungen; BES.4.4 Vertragsvorlage für Outsourcing; BES.4.5 Security by Design; BES.4.5.1 Entwicklung nach einem Sicherheitslebenszyklus; BES.4.8 Konformitätsnachweise; BES.5.2 Service Level Agreement; BES.5.3 Compliance-Verpflichtungen; BES.5.4 Informationssicherheitskontrollmechanismen; BES.5.5.1 Datenlokationen; BES.5.6.3 Nachverfolgbarkeit der Lieferkette; BES.5.9 Umgang mit Änderungen; BES.5.11 Recht auf Audit; BES.5.12 Informationspflichten; BES.6.3 Übertragbarkeit von Daten; BES.7.4.4.1 Software Bill of Materials (SBOM); BES.7.4.12 Software Bill of Materials (SBOM) - Cloud; DLS.3.1 Einhaltung der Sicherheitsvorgaben; DLS.3.2 Checkup; DLS.3.6 Portabilität; DLS.4.1 Dekomissionierung
 - [ ] The remark is our own wording, not the source's text
 
-## 21.2.e
+## Art.21.2.e
+
+Text: Sicherheitsmaßnahmen bei Erwerb, Entwicklung und Wartung von Netz- und Informationssystemen, einschließlich Management und Offenlegung von Schwachstellen;
 
 > Security in acquisition, development and maintenance, including vulnerability handling and disclosure (Nr. 5). Disclosure is the intake of external reports, which Annex A does not name.
 
@@ -53,7 +63,9 @@ Derived targets come from the BSI's own mapping and are only as right as the ste
 - [ ] Relationship: intersects-with holds (or the targets cover all of the source: then subset-of)
 - [ ] The remark is our own wording, not the source's text
 
-## 21.2.f
+## Art.21.2.f
+
+Text: Konzepte und Verfahren zur Bewertung der Wirksamkeit von Risikomanagementmaßnahmen im Bereich der Cybersicherheit;
 
 > Policies and procedures to assess the effectiveness of the measures (Nr. 6). Annex A has the independent and compliance reviews; ISO clause 9 is the rest.
 
@@ -63,7 +75,9 @@ Derived targets come from the BSI's own mapping and are only as right as the ste
 - [ ] Relationship: intersects-with holds (or the targets cover all of the source: then subset-of)
 - [ ] The remark is our own wording, not the source's text
 
-## 21.2.g
+## Art.21.2.g
+
+Text: grundlegende Verfahren im Bereich der Cyberhygiene und Schulungen im Bereich der Cybersicherheit;
 
 > Basic cyber hygiene practices and cybersecurity training (Nr. 7). Hygiene is not defined in the directive; taken here as awareness, malware protection, configuration and patching.
 
@@ -73,7 +87,9 @@ Derived targets come from the BSI's own mapping and are only as right as the ste
 - [ ] Relationship: intersects-with holds (or the targets cover all of the source: then subset-of)
 - [ ] The remark is our own wording, not the source's text
 
-## 21.2.h
+## Art.21.2.h
+
+Text: Konzepte und Verfahren für den Einsatz von Kryptografie und gegebenenfalls Verschlüsselung;
 
 > Policies and procedures regarding the use of cryptography and, where appropriate, encryption (Nr. 8).
 
@@ -81,7 +97,9 @@ Derived targets come from the BSI's own mapping and are only as right as the ste
   - derived, intersects-with: BER.7.1 Etablierte Algorithmen bei der Schlüsselerzeugung; BER.7.6 Etablierte Algorithmen beim Transport; BER.7.8 Etablierte Algorithmen bei der Schlüsselnutzung; BER.7.15 Vorgehensweise nach Nutzung; KONF.2.2 Kryptographische Verfahren in IT-Systemen; KONF.10.2 Kryptographische Verfahren in Anwendungen; KONF.14.1 Verschlüsselung beim Transport
 - [ ] The remark is our own wording, not the source's text
 
-## 21.2.i
+## Art.21.2.i
+
+Text: Sicherheit des Personals, Konzepte für die Zugriffskontrolle und Management von Anlagen;
 
 > Human resources security, access control policies and asset management (Nr. 9).
 
@@ -89,7 +107,9 @@ Derived targets come from the BSI's own mapping and are only as right as the ste
   - derived, intersects-with: ARCH.2.4 Inventar der Netze; ARCH.4.1 Netzzugangskontrolle; ASST.2.1 Inventar der Informationen; ASST.2.1.1 Informationsverantwortung; ASST.2.2 Inventar der Systeme; ASST.2.3 Inventar der Anwendungen; ASST.2.4 Klassifizierung; ASST.3.1 Nutzungsvereinbarungen; BER.2.1 Person-Identität; BER.2.5 Deaktivierung bei Weggang; BER.3.1 Zentrales Management; BER.3.4 Protokollierung von Änderungen; BER.3.5 Identität-Zugangskonto; BER.3.13 Sperre der Anwendung bei Inaktivität; BER.3.19 Gruppenkonten - Passwortwechsel bei Weggang; BER.5.1 Vorgehensweise zur Ausgabe; BER.5.2 Vorgehensweise zur Zurücksetzung; BER.5.3 Vorgehensweise zum Widerruf; BER.5.8 Mehr-Faktor-Authentisierung am Perimeter; BER.6.1 Passwortmanager; BER.6.5 Anlassbezogene Passwortwechsel; BES.6.6 Rückgewähr von Assets; GEB.3.3 Authentifizierung vor Zutritt; KONF.6.5 Dynamische Zugriffskontrolle im System; KONF.6.13 Dynamische Zugriffskontrolle in der Anwendung; PERS.3.1 Dienst- oder Arbeitsvertrag; PERS.3.2 Verfahrensanweisungen; PERS.3.3 Betriebs- und Geschäftsgeheimnisse; PERS.3.5 Prüfung der Bewerbungsunterlagen; PERS.3.6 Vertrauenswürdigkeit von Bewerbenden; PERS.3.6.1 Sicherheitsüberprüfung (intern); PERS.5.1 Maßregelung; PERS.6.1 Vorgehensweise für den Weggang; PERS.6.1.1 Entzug von Berechtigungen gemäß BER; PERS.6.1.2 Neubesetzung; SENS.4.1 Personengebundene Authentisierungsmittel; SENS.4.1.4 Passwörter nur im Passwortmanager; SENS.4.1.6 Keine Weitergabe personengebundener Authentisierungsmittel; SENS.8.6 Begleitung Externer; SENS.10.2 Umgang mit privilegierten Berechtigungen
 - [ ] The remark is our own wording, not the source's text
 
-## 21.2.j
+## Art.21.2.j
+
+Text: Verwendung von Lösungen zur Multi-Faktor-Authentifizierung oder kontinuierlichen Authentifizierung, gesicherte Sprach-, Video- und Textkommunikation sowie gegebenenfalls gesicherte Notfallkommunikationssysteme innerhalb der Einrichtung.
 
 > Multi-factor or continuous authentication, secured voice, video and text communications, and secured emergency communication systems (Nr. 10). Annex A has authentication and information transfer; MFA itself is a direct target.
 

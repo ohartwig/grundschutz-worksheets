@@ -1,7 +1,7 @@
 // Tests for validate.mjs: valid fixtures pass, broken ones fail, an unknown
 // OSCAL version is a setup error rather than a pass. Run with `npm test`.
 import { spawnSync } from "node:child_process";
-import { resolveImport, sha256 } from "../lib/oscal.mjs";
+import { everyControl, resolveImport, sha256 } from "../lib/oscal.mjs";
 
 const cases = [
   ["test/fixtures/valid-catalog.json", 0],
@@ -392,6 +392,74 @@ for (const [file, want] of cases) {
   const full = /subset-of claims full coverage, which a draft mapping cannot/.test(bad.stderr);
   failed += !full;
   console.log(`${full ? "ok  " : "FAIL"} a draft mapping may not claim subset-of${full ? "" : ": " + bad.stderr}`);
+}
+// tools/eu-catalog.mjs: articles of an EU act from the Journal's markup, every
+// word kept and pinned by the document's hash; mapping.mjs takes such a catalog
+// as its source, and worksheet.mjs still reads the IDs of 1.0 (21.2.h).
+{
+  const { writeFileSync, readFileSync, mkdirSync } = await import("node:fs");
+  mkdirSync(".schema-cache", { recursive: true });
+  const eu = (src) => spawnSync(process.execPath, ["tools/eu-catalog.mjs", src, "--file", "test/fixtures/eu-act.xhtml"], { encoding: "utf8" });
+  const a = eu("test/fixtures/eu-act-source.json");
+  writeFileSync(".schema-cache/test-eu-catalog.json", a.stdout);
+  const v = spawnSync(process.execPath, ["validate.mjs", ".schema-cache/test-eu-catalog.json"], { encoding: "utf8" });
+  const cat = a.status === 0 ? JSON.parse(a.stdout).catalog : {};
+  const ctl = (id) => [...everyControl(cat)].find((c) => c.id === id);
+  const src = JSON.parse(readFileSync("test/fixtures/eu-act-source.json", "utf8"));
+  const variant = (name, change) => {
+    const s = structuredClone(src);
+    change(s);
+    writeFileSync(`.schema-cache/${name}`, JSON.stringify(s));
+    return eu(`.schema-cache/${name}`);
+  };
+  const otherBytes = variant("eu-other-bytes.json", (s) => (s.document.sha256 = "0".repeat(64)));
+  const untold = variant("eu-untold.json", (s) => delete s["left-out"]);
+  const nis2Ids = new Set([...everyControl(JSON.parse(readFileSync("standards/nis2.json", "utf8")).catalog)].map((c) => c.id));
+  const cases = [
+    ["validates and is deterministic", a.status === 0 && v.status === 0 && a.stdout === eu("test/fixtures/eu-act-source.json").stdout],
+    ["a paragraph keeps its words, not its number", ctl("Art.1.1")?.parts[0].prose === "Die Einrichtungen treffen geeignete Maßnahmen."],
+    ["an article is a group of its paragraphs", cat.groups?.[0]?.id === "Art.1" && cat.groups[0].title === "Pflichten" && !ctl("Art.1")],
+    ["a point is a control of its paragraph, sub-points stay in its text",
+      /^Meldungen, und zwar\n\ni\) binnen 24 Stunden,\n\nii\) binnen 72 Stunden\.$/.test(ctl("Art.1.2.b")?.parts[0].prose ?? "")],
+    ["a subparagraph after the points keeps its place, labelled",
+      ctl("Art.1.2")?.parts[0].parts?.[0]?.props[0].value === "Unterabsatz 2" && /12 Stunden/.test(ctl("Art.1.2")?.parts[0].parts[0].prose)],
+    ["what is left out is named with its reason", !ctl("Art.1.3") && /Art\.1\.3: Verpflichtet die Kommission/.test(cat.metadata?.remarks)],
+    ["other bytes than the pinned ones are refused", otherBytes.status === 1 && /not the pinned one/.test(otherBytes.stderr)],
+    ["a paragraph neither taken nor left out is refused", untold.status === 1 && /Art\.1\.3: neither taken/.test(untold.stderr)],
+    ["the committed NIS2 catalog has the ten measures of Art. 21(2)",
+      [..."abcdefghij"].every((x) => nis2Ids.has(`Art.21.2.${x}`))],
+  ];
+  for (const [name, ok] of cases) {
+    failed += !ok;
+    console.log(`${ok ? "ok  " : "FAIL"} eu-catalog: ${name}${ok ? "" : ": " + a.stderr + otherBytes.stderr + untold.stderr}`);
+  }
+  const m = spawnSync(process.execPath, ["mapping.mjs", "test/fixtures/mapping-source-catalog.json"], { encoding: "utf8" });
+  writeFileSync(".schema-cache/test-mapping-catalog.json", m.stdout);
+  const mv = spawnSync(process.execPath, ["validate.mjs", ".schema-cache/test-mapping-catalog.json"], { encoding: "utf8" });
+  const mc = m.status === 0 ? JSON.parse(m.stdout)["mapping-collection"] : {};
+  const imp = mc.mappings ? resolveImport(mc, mc.mappings[0]["source-resource"].href) : {};
+  const rv = spawnSync(process.execPath, ["mapping.mjs", "test/fixtures/mapping-source-catalog.json", "--review"], { encoding: "utf8" });
+  const msrc = JSON.parse(readFileSync("test/fixtures/mapping-source-catalog.json", "utf8"));
+  msrc.source.ids.push("Art.99.1");
+  writeFileSync(".schema-cache/mapping-unknown-source.json", JSON.stringify(msrc));
+  const unknown = spawnSync(process.execPath, ["mapping.mjs", ".schema-cache/mapping-unknown-source.json"], { encoding: "utf8" });
+  const ws = (sources) => spawnSync(process.execPath, ["worksheet.mjs", "control_layer/Mindeststandard-TLS/Entwurf-Mindeststandard-TLS-catalog.json",
+    "--mapping-file", ".schema-cache/test-mapping-catalog.json", "--commit", "367d775010abee641b258926bb482fcd05270059", "--sources", sources, "--summary"], { encoding: "utf8" });
+  const now = ws("Art.21.2.h");
+  const then = ws("21.2.h");
+  const count = (r) => r.stdout.match(/^(\d+) requirements$/m)?.[1];
+  const mcases = [
+    ["a mapping imports its source catalog with the catalog's SHA-256", m.status === 0 && mv.status === 0
+      && imp.href === "../standards/nis2.json" && imp.sha256 === sha256(readFileSync("standards/nis2.json"))],
+    ["its review sheet quotes the source's text", rv.status === 0 && /^Text: Konzepte und Verfahren für den Einsatz von Kryptografie/m.test(rv.stdout)],
+    ["a source ID the catalog does not have is refused", unknown.status === 1 && /Art\.99\.1: not a control of standards\/nis2\.json/.test(unknown.stderr)],
+    ["worksheet still takes the short ID of 1.0, with a note", now.status === 0 && count(now) === "1" && count(then) === "1"
+      && /accepted until 2\.0/.test(then.stderr) && !/accepted until/.test(now.stderr)],
+  ];
+  for (const [name, ok] of mcases) {
+    failed += !ok;
+    console.log(`${ok ? "ok  " : "FAIL"} mapping from a catalog: ${name}${ok ? "" : ": " + m.stderr + mv.stdout + unknown.stderr + now.stderr + then.stderr}`);
+  }
 }
 // --catalog-file: a catalog from disk, pinned by its hash; a preset that names
 // a file refuses another one, and refuses to run without it.

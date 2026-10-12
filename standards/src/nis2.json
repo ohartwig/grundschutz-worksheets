@@ -1,0 +1,26 @@
+{
+  "title": "NIS2 (Richtlinie (EU) 2022/2555): Governance, Risikomanagementmaßnahmen, Berichtspflichten",
+  "act": "Richtlinie (EU) 2022/2555 des Europäischen Parlaments und des Rates vom 14. Dezember 2022 über Maßnahmen für ein hohes gemeinsames Cybersicherheitsniveau in der Union, zur Änderung der Verordnung (EU) Nr. 910/2014 und der Richtlinie (EU) 2018/1972 sowie zur Aufhebung der Richtlinie (EU) 2016/1148 (NIS-2-Richtlinie)",
+  "version": "ABl. L 333 vom 27.12.2022",
+  "last-modified": "2026-10-12T00:00:00Z",
+  "eli": "http://data.europa.eu/eli/dir/2022/2555/oj",
+  "language": "de",
+  "document": {
+    "href": "https://publications.europa.eu/resource/cellar/9b84d482-85bd-11ed-9887-01aa75ed71a1.0004.03/DOC_1",
+    "sha256": "48011abb43c5cc0b0aed6f7eea929a39e1f9c74134482072a5aacf28ff0ebd37"
+  },
+  "articles": {
+    "20": "all",
+    "21": [1, 2, 3, 4],
+    "23": [1, 2, 3, 4, 7]
+  },
+  "left-out": {
+    "Art.21.5": "Verpflichtet die Kommission (Durchführungsrechtsakte), nicht die Einrichtungen.",
+    "Art.23.5": "Verpflichtet das CSIRT oder die zuständige Behörde.",
+    "Art.23.6": "Verpflichtet das CSIRT, die zuständige Behörde oder die zentrale Anlaufstelle.",
+    "Art.23.8": "Verpflichtet die zentrale Anlaufstelle.",
+    "Art.23.9": "Verpflichtet die zentrale Anlaufstelle und die ENISA.",
+    "Art.23.10": "Verpflichtet die CSIRTs oder die zuständigen Behörden.",
+    "Art.23.11": "Ermächtigt die Kommission zu Durchführungsrechtsakten."
+  }
+}

@@ -153,7 +153,14 @@ const {
   practices, levels, modals, format, summary,
 } = config;
 const sourcePrefixes = [...sourceFilter].filter((s) => s.endsWith("*")).map((s) => s.slice(0, -1));
-const sourceWanted = (id) => !sourceFilter.size || sourceFilter.has(id) || sourcePrefixes.some((p) => id.startsWith(p));
+// Articles of an EU act are named Art.21.2.a, as in their catalogs
+// (standards/); up to 1.0 the NIS2 mapping said 21.2.a. The short form still
+// selects the same source, with a note, until 2.0.
+const short = (id) => id.replace(/^Art\./, "");
+const wants = (id) => sourceFilter.has(id) || sourcePrefixes.some((p) => id.startsWith(p));
+const sourceWanted = (id) => !sourceFilter.size || wants(id) || (id !== short(id) && wants(short(id)));
+const legacy = [...sourceFilter].filter((s) => /^\d/.test(s));
+if (legacy.length) console.error(`--sources ${legacy.join(",")}: article IDs are written Art.${legacy[0]} now; the short form is accepted until 2.0.`);
 
 // A path in the library is plain segments. An empty one, "." or ".." would
 // resolve above the pinned commit and fetch another repository or a branch.

@@ -1,0 +1,16 @@
+{
+  "title": "Test mapping from an own catalog",
+  "version": "1",
+  "last-modified": "2026-10-12T00:00:00Z",
+  "status": "draft",
+  "method": "hybrid",
+  "description": "Fixture for the mapping.mjs tests: the source is a catalog of this repository.",
+  "source": { "title": "NIS2 Art. 21(2)(h)", "catalog": "standards/nis2.json", "ids": ["Art.21.2.h"] },
+  "catalog": {
+    "path": "control_layer/Mindeststandard-TLS/Entwurf-Mindeststandard-TLS-catalog.json",
+    "commit": "367d775010abee641b258926bb482fcd05270059"
+  },
+  "maps": [
+    { "source": "Art.21.2.h", "relationship": "intersects-with", "targets": ["KONF.14.1"], "remarks": "transport encryption only" }
+  ]
+}
