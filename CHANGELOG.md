@@ -6,6 +6,16 @@ tagged `vX.Y.Z` and written here by the release tool from the commit messages;
 **breaking**: what can change an existing call or a spreadsheet built on the
 output.
 
+## [1.5.0](https://github.com/ohartwig/grundschutz-worksheets/compare/v1.4.0...v1.5.0) (2026-10-12)
+
+### :sparkles: Features
+
+* **standards:** SOC 2 as a catalog of IDs, its common criteria mapped
+
+### :repeat: Continuous Integrations
+
+* **mirror:** rewrite commit and tag messages for GitHub too
+
 ## [1.4.0](https://github.com/ohartwig/grundschutz-worksheets/compare/v1.3.0...v1.4.0) (2026-10-12)
 
 ### :sparkles: Features
