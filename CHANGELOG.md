@@ -6,6 +6,16 @@ tagged `vX.Y.Z` and written here by the release tool from the commit messages;
 **breaking**: what can change an existing call or a spreadsheet built on the
 output.
 
+## [1.3.0](https://github.com/ohartwig/grundschutz-worksheets/compare/v1.2.0...v1.3.0) (2026-10-12)
+
+### :sparkles: Features
+
+* **results:** a check can evidence a requirement in part
+
+### :repeat: Continuous Integrations
+
+* **deps:** pin registry.ole-hartwig.eu/devops/images/python docker tag to 6dd26de
+
 ## [1.2.0](https://github.com/ohartwig/grundschutz-worksheets/compare/v1.1.0...v1.2.0) (2026-10-12)
 
 ### :sparkles: Features
