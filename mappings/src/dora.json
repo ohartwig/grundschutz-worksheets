@@ -1,13 +1,13 @@
 {
   "title": "DORA (Regulation (EU) 2022/2554) Chapters II to V to Grundschutz++",
-  "version": "0.1.0",
-  "last-modified": "2026-10-11T00:00:00Z",
+  "version": "0.2.0",
+  "last-modified": "2026-10-12T00:00:00Z",
   "status": "draft",
   "method": "hybrid",
   "description": "The obligations of financial entities in DORA Chapters II (ICT risk management, Art. 5 to 16), III (ICT incidents, Art. 17 to 19), IV (resilience testing, Art. 24 to 26) and V (ICT third-party risk, Art. 28 to 30), one source per article. Articles that only mandate technical standards or describe authority tasks are left out of the source list. Each article names the ISO/IEC 27001:2022 Annex A controls it corresponds to; the Grundschutz++ targets of those controls come from the BSI's own mapping. Direct targets cover what Annex A lacks. The step from each article to ISO is a draft written with AI assistance and not yet reviewed by a person. The RTS on the ICT risk management framework (Delegated Regulation (EU) 2024/1774) details these articles and is not mapped at its own granularity.",
   "source": {
     "title": "Regulation (EU) 2022/2554 (DORA), Art. 5 to 30",
-    "href": "https://eur-lex.europa.eu/eli/reg/2022/2554/oj",
+    "catalog": "standards/dora.json",
     "ids": ["Art.5", "Art.6", "Art.7", "Art.8", "Art.9", "Art.10", "Art.11", "Art.12", "Art.13", "Art.14", "Art.16",
             "Art.17", "Art.18", "Art.19", "Art.24", "Art.25", "Art.26", "Art.28", "Art.29", "Art.30"]
   },

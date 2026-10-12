@@ -44,7 +44,9 @@
 // yet only the address of its text ("href"). With a catalog, every source ID
 // must be one of its controls, and the mapping imports it the way the other
 // documents here import theirs: a back-matter resource with the catalog's
-// SHA-256, its link relative to mappings/, where the output goes.
+// SHA-256, its link relative to mappings/, where the output goes. A source can
+// be an article that the catalog holds as a group of paragraphs (DORA is
+// mapped by article); the mapping then names all its paragraphs as the source.
 //
 // Output: an OSCAL 1.2.2 mapping collection on stdout, the version of the
 // library's own mappings. Source texts are not copied, only their IDs: the
@@ -52,7 +54,7 @@
 //
 // Checked, and an error otherwise - nothing is dropped silently:
 //   - every target is in the catalog at the pinned commit
-//   - with a source catalog, every source ID is one of its controls
+//   - with a source catalog, every source ID is one of its controls or articles
 //   - every source ID in "source.ids" is either mapped or listed as unmapped
 //     with a reason, and nothing outside "source.ids" appears
 //   - relationships are the set-theory ones of NIST IR 8477, and a mapping
@@ -114,19 +116,30 @@ for (const c of everyControl(catalog)) {
 
 // The source catalog, read from this repository: its controls and their words.
 const sourceText = new Map();
+// An article with paragraphs is a group in such a catalog, and a mapping can
+// only name controls: a source that is an article stands for its paragraphs,
+// all of them together, under the same relationship.
+const members = new Map();
 let sourceResource = null;
 if (m.source.catalog) {
   const segs = m.source.catalog.split("/");
   if (segs.some((x) => !x || x === "." || x === "..")) fail(`source.catalog is not a path in this repository: ${m.source.catalog}`);
   const bytes = readFileSync(new URL(m.source.catalog, import.meta.url));
   const sc = JSON.parse(bytes).catalog ?? fail(`${m.source.catalog} is not an OSCAL catalog`);
-  for (const c of everyControl(sc)) sourceText.set(c.id, { prose: c.parts?.find((x) => x.name === "statement")?.prose ?? "" });
+  for (const c of everyControl(sc)) {
+    const st = c.parts?.find((x) => x.name === "statement");
+    const after = (st?.parts ?? []).map((x) => `${x.props?.find((p) => p.name === "label")?.value ?? x.id}: ${x.prose}`);
+    sourceText.set(c.id, { prose: st?.prose ?? "", after });
+  }
+  for (const g of sc.groups ?? []) members.set(g.id, (g.controls ?? []).map((c) => c.id));
   sourceResource = importResource(uuid5(`source:${m.source.catalog}`), sc.metadata.title, `../${m.source.catalog}`, bytes);
 }
 
 const errors = [];
 const ids = new Set(m.source.ids);
-if (sourceResource) for (const id of ids) if (!sourceText.has(id)) errors.push(`${id}: not a control of ${m.source.catalog}`);
+if (sourceResource) for (const id of ids) if (!sourceText.has(id) && !members.get(id)?.length) errors.push(`${id}: neither a control nor an article of ${m.source.catalog}`);
+const expand = (id) => members.get(id) ?? [id];
+const items = (id) => expand(id).map((s) => ({ type: "control", "id-ref": s }));
 const covered = new Set();
 const maps = m.maps ?? [];
 const unmapped = m.unmapped ?? [];
@@ -214,6 +227,13 @@ const reviewSheet = () => {
     const st = sourceText.get(id);
     lines.push(`## ${id}`, "");
     if (st?.prose) lines.push(`Text: ${st.prose.replace(/\n\n/g, " ")}`, "");
+    const flat = (s) => sourceText.get(s).prose.replace(/\n\n/g, " ");
+    for (const s of members.get(id) ?? []) {
+      lines.push(`- ${s}: ${flat(s)}`);
+      for (const p of [...sourceText.keys()].filter((k) => k.startsWith(`${s}.`))) lines.push(`  - ${p}: ${flat(p)}`);
+      for (const a of sourceText.get(s).after) lines.push(`  - ${a.replace(/\n\n/g, " ")}`);
+    }
+    if (members.has(id)) lines.push("");
     if (why.has(id)) {
       lines.push(`Not mapped: ${why.get(id)}`, "", "- [ ] No requirement of the catalog fits; the reason holds", "");
       continue;
@@ -269,7 +289,7 @@ const out = {
             ? [{
                 uuid: uuid5(`map:${mappingUuid}:${i}:${x.source}`),
                 relationship: x.relationship,
-                sources: [{ type: "control", "id-ref": x.source }],
+                sources: items(x.source),
                 targets: x.targets.map((t) => ({ type: "control", "id-ref": t })),
                 remarks: x.remarks,
               }]
@@ -278,7 +298,7 @@ const out = {
             ? [{
                 uuid: uuid5(`map:${mappingUuid}:${i}:${x.source}:derived`),
                 relationship: "intersects-with",
-                sources: [{ type: "control", "id-ref": x.source }],
+                sources: items(x.source),
                 targets: x.derived.map((t) => ({ type: "control", "id-ref": t })),
                 props: Object.entries(x.via).flatMap(([name, cs]) => cs.map((c) => ({ name: "via", ns: NS, value: `${name}:${c}` }))),
                 remarks: `${x.remarks}\n\nDerived through the BSI mapping${Object.keys(x.via).length > 1 ? "s" : ""} from ${Object.entries(x.via)
@@ -291,7 +311,7 @@ const out = {
         ...(unmapped.length && {
           "source-gap-summary": {
             uuid: uuid5(`gap:${mappingUuid}`),
-            "unmapped-controls": [{ "with-ids": unmapped.map((u) => u.source) }],
+            "unmapped-controls": [{ "with-ids": unmapped.flatMap((u) => expand(u.source)) }],
           },
           remarks: `Not mapped:\n\n${unmapped.map((u) => `- ${u.source}: ${u.reason}`).join("\n")}`,
         }),

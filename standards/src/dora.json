@@ -1,0 +1,47 @@
+{
+  "title": "DORA (Verordnung (EU) 2022/2554): IKT-Risikomanagement, Vorfälle, Tests, Drittparteienrisiko (Art. 5 bis 30)",
+  "act": "Verordnung (EU) 2022/2554 des Europäischen Parlaments und des Rates vom 14. Dezember 2022 über die digitale operationale Resilienz im Finanzsektor und zur Änderung der Verordnungen (EG) Nr. 1060/2009, (EU) Nr. 648/2012, (EU) Nr. 600/2014, (EU) Nr. 909/2014 und (EU) 2016/1011",
+  "version": "ABl. L 333 vom 27.12.2022",
+  "last-modified": "2026-10-12T00:00:00Z",
+  "eli": "http://data.europa.eu/eli/reg/2022/2554/oj",
+  "language": "de",
+  "document": {
+    "href": "https://publications.europa.eu/resource/cellar/0caf473a-85bd-11ed-9887-01aa75ed71a1.0004.03/DOC_1",
+    "sha256": "1b935144ff7f773068daa470aeba4036873cf555c883ab389ab3cf45e1a93717"
+  },
+  "articles": {
+    "5": "all", "6": "all", "7": "all", "8": "all", "9": "all", "10": "all",
+    "11": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+    "12": "all", "13": "all", "14": "all",
+    "16": [1, 2],
+    "17": "all",
+    "18": [1, 2],
+    "19": [1, 2, 3, 4, 5],
+    "23": "all",
+    "24": "all", "25": "all",
+    "26": [1, 2, 3, 4, 5, 6, 7, 8],
+    "27": "all",
+    "28": [1, 2, 3, 4, 5, 6, 7, 8],
+    "29": "all",
+    "30": [1, 2, 3, 4]
+  },
+  "left-out": {
+    "Art.11.11": "Verpflichtet die ESA (Leitlinien zur Kostenschätzung).",
+    "Art.15": "Verpflichtet die ESA (technische Regulierungsstandards zum IKT-Risikomanagement).",
+    "Art.16.3": "Verpflichtet die ESA (technische Regulierungsstandards zum vereinfachten Rahmen).",
+    "Art.18.3": "Verpflichtet die ESA (technische Regulierungsstandards zur Klassifizierung).",
+    "Art.18.4": "Verpflichtet die ESA (Vorgaben für die Standards nach Absatz 3).",
+    "Art.19.6": "Verpflichtet die zuständige Behörde (Weiterleitung von Meldungen).",
+    "Art.19.7": "Verpflichtet EBA, ESMA, EIOPA und EZB (Bewertung von Meldungen).",
+    "Art.19.8": "Betrifft die Zuständigkeiten von ESMA und zuständiger Behörde.",
+    "Art.20": "Verpflichtet die ESA (Inhalt und Vorlagen von Meldungen).",
+    "Art.21": "Verpflichtet die ESA (gemeinsamer Bericht über Vorfälle).",
+    "Art.22": "Betrifft Rückmeldungen der Aufsicht und Berichte der ESA.",
+    "Art.26.9": "Erlaubt den Mitgliedstaaten, eine TLPT-Behörde zu benennen.",
+    "Art.26.10": "Erlaubt der zuständigen Behörde, TLPT-Aufgaben zu übertragen.",
+    "Art.26.11": "Verpflichtet die ESA (technische Regulierungsstandards zu TLPT).",
+    "Art.28.9": "Verpflichtet die ESA (technische Durchführungsstandards zum Informationsregister).",
+    "Art.28.10": "Verpflichtet die ESA (technische Regulierungsstandards zur Leitlinie für IKT-Dienstleistungen).",
+    "Art.30.5": "Verpflichtet die ESA (technische Regulierungsstandards zur Untervergabe)."
+  }
+}

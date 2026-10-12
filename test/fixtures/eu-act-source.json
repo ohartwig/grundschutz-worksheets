@@ -5,7 +5,7 @@
   "last-modified": "2026-10-12T00:00:00Z",
   "eli": "http://data.europa.eu/eli/dir/0000/0/oj",
   "language": "de",
-  "document": { "href": "https://example.org/eu-act.xhtml", "sha256": "6f495c4c0a9848b89822a85e2b753b37810271ae06f41f1bb58ec7cc5e029068" },
-  "articles": { "1": [1, 2] },
-  "left-out": { "Art.1.3": "Verpflichtet die Kommission." }
+  "document": { "href": "https://example.org/eu-act.xhtml", "sha256": "ff79127ec117f9ef8fe84ffcffdba12fa427a51a27f61e5307f9c2474b223724" },
+  "articles": { "1": [1, 2], "2": "all" },
+  "left-out": { "Art.1.3": "Verpflichtet die Kommission.", "Art.3": "Verpflichtet die Behörden." }
 }
