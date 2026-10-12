@@ -147,7 +147,7 @@ reads from disk:
 
 | Preset | Source, one entry per | Requirements at `a128311` |
 |---|---|---|
-| `nis2` | Art. 21(2) (a) to (j) NIS2 = § 30 Abs. 2 Nr. 1 to 10 BSIG | 187 |
+| `nis2` | Art. 21(2) (a) to (j) NIS2 = § 30 Abs. 2 Nr. 1 to 10 BSIG, `Art.21.2.a` to `Art.21.2.j` | 187 |
 | `dora` | DORA article, Art. 5 to 30 | 176 |
 | `c5` | C5:2026 criterion (168; the 6 report conditions GC are left out) | 384 |
 
@@ -184,6 +184,32 @@ node mapping.mjs mappings/src/nis2.json --review > mappings/review/nis2.md
 ```
 
 CI regenerates every mapping and fails if the committed file differs.
+
+### NIS2 in its own words: a catalog of the act
+
+`standards/nis2.json` is an OSCAL catalog of the NIS2 directive itself, in the
+German text of the Official Journal (L 333, 27.12.2022): Art. 20 (governance),
+Art. 21 (1) to (4) (risk-management measures) and Art. 23 (1) to (4) and (7)
+(reporting). An article is a group, a paragraph a control, a lettered point a
+control of its paragraph: `Art.21.2.b` is "Bewältigung von
+Sicherheitsvorfällen". Paragraphs that bind only authorities or the
+Commission are left out, each with its reason in the catalog's remarks.
+
+`tools/eu-catalog.mjs` writes it from `standards/src/nis2.json`, which pins
+the document in the Publications Office's Cellar by address and SHA-256. Other
+bytes are refused, every paragraph of a chosen article is either taken or left
+out with a reason, and the words are not touched beyond whitespace. CI
+regenerates the catalog from the live document and fails if the committed file
+differs; oscal-cli checks it with the other documents. Reuse of EU legal texts
+is authorised with the source acknowledged (Commission Decision 2011/833/EU);
+only the text in the Official Journal is authentic.
+
+The NIS2 mapping takes this catalog as its source: its `source-resource`
+imports it through a back-matter resource with its SHA-256, every source ID
+must be one of its controls, and the review sheet quotes the text of each
+measure next to its targets. The IDs are those of the catalog now,
+`Art.21.2.b` where 1.0 had `21.2.b`; `--sources 21.2.b` still works until 2.0
+and says so on stderr. DORA follows the same way.
 
 ## Your tailoring as an OSCAL profile
 

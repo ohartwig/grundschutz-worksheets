@@ -16,8 +16,8 @@
 //     "method": "hybrid",             // human | automation | hybrid
 //     "description": "What it maps, from which text, and who reviewed it.",
 //     "source": { "title": "Directive (EU) 2022/2555, Art. 21(2)",
-//                 "href": "https://eur-lex.europa.eu/eli/dir/2022/2555/oj",
-//                 "ids": ["21.2.a", ...] },          // every ID of the source
+//                 "catalog": "standards/nis2.json",   // or "href" to the text
+//                 "ids": ["Art.21.2.a", ...] },      // every ID of the source
 //     "catalog": { "path": "control_layer/.../...-resolved_catalog.json",
 //                  "commit": "<40-char sha of the BSI library>" },
 //     "via": { "iso27001": { "title": "ISO/IEC 27001:2022 Annex A",
@@ -39,12 +39,20 @@
 // Until the mapping is "complete", no relationship may claim that the targets
 // cover the whole source (subset-of, equal-to, equivalent-to).
 //
+// The source: an OSCAL catalog of this repository ("catalog", a path from the
+// repository root, written by tools/eu-catalog.mjs), or where there is none
+// yet only the address of its text ("href"). With a catalog, every source ID
+// must be one of its controls, and the mapping imports it the way the other
+// documents here import theirs: a back-matter resource with the catalog's
+// SHA-256, its link relative to mappings/, where the output goes.
+//
 // Output: an OSCAL 1.2.2 mapping collection on stdout, the version of the
 // library's own mappings. Source texts are not copied, only their IDs: the
 // mapping is a judgement about them, not a copy of them.
 //
 // Checked, and an error otherwise - nothing is dropped silently:
 //   - every target is in the catalog at the pinned commit
+//   - with a source catalog, every source ID is one of its controls
 //   - every source ID in "source.ids" is either mapped or listed as unmapped
 //     with a reason, and nothing outside "source.ids" appears
 //   - relationships are the set-theory ones of NIST IR 8477, and a mapping
@@ -64,7 +72,7 @@
 // No dependencies. Node 24 (LTS) or later.
 
 import { readFileSync } from "node:fs";
-import { NS, byId, everyControl, libraryUrl, uuid5 as uuid5From } from "./lib/oscal.mjs";
+import { NS, byId, everyControl, importResource, libraryUrl, uuid5 as uuid5From } from "./lib/oscal.mjs";
 
 const UUID_NS = "b1f0c6a2-5d3e-4f7a-9c8b-2e6d1a4f0b37";
 const RELATIONSHIPS = ["equivalent-to", "equal-to", "subset-of", "superset-of", "intersects-with"];
@@ -86,7 +94,7 @@ if (!/^[0-9a-f]{40}$/.test(m.catalog?.commit ?? "")) fail("catalog.commit must b
 for (const k of ["title", "version", "last-modified", "description"]) if (!m[k]) fail(`missing "${k}"`);
 if (!["draft", "not-complete", "complete"].includes(m.status)) fail('status must be draft, not-complete or complete');
 if (!["human", "automation", "hybrid"].includes(m.method)) fail("method must be human, automation or hybrid");
-if (!m.source?.title || !m.source?.href || !m.source?.ids?.length) fail("source needs title, href and ids");
+if (!m.source?.title || !m.source?.ids?.length || !m.source.catalog === !m.source.href) fail("source needs title, ids and either catalog or href");
 
 const uuid5 = uuid5From(UUID_NS);
 
@@ -104,8 +112,21 @@ for (const c of everyControl(catalog)) {
   titles.set(c.id, c.title ?? "");
 }
 
+// The source catalog, read from this repository: its controls and their words.
+const sourceText = new Map();
+let sourceResource = null;
+if (m.source.catalog) {
+  const segs = m.source.catalog.split("/");
+  if (segs.some((x) => !x || x === "." || x === "..")) fail(`source.catalog is not a path in this repository: ${m.source.catalog}`);
+  const bytes = readFileSync(new URL(m.source.catalog, import.meta.url));
+  const sc = JSON.parse(bytes).catalog ?? fail(`${m.source.catalog} is not an OSCAL catalog`);
+  for (const c of everyControl(sc)) sourceText.set(c.id, { prose: c.parts?.find((x) => x.name === "statement")?.prose ?? "" });
+  sourceResource = importResource(uuid5(`source:${m.source.catalog}`), sc.metadata.title, `../${m.source.catalog}`, bytes);
+}
+
 const errors = [];
 const ids = new Set(m.source.ids);
+if (sourceResource) for (const id of ids) if (!sourceText.has(id)) errors.push(`${id}: not a control of ${m.source.catalog}`);
 const covered = new Set();
 const maps = m.maps ?? [];
 const unmapped = m.unmapped ?? [];
@@ -183,14 +204,16 @@ const reviewSheet = () => {
     "",
     `Version ${m.version} · status ${m.status} · catalog ${m.catalog.path.split("/").pop()} at ${m.catalog.commit.slice(0, 7)}`,
     "",
-    `Source: ${m.source.title} (${m.source.href}). Check every section against the original text, not against the remark.`,
+    `Source: ${m.source.title} (${m.source.catalog ?? m.source.href}). Check every section against the original text, not against the remark.`,
     "Derived targets come from the BSI's own mapping and are only as right as the step to it; a direct target is this repository's judgement.",
     "",
   ];
   const bySource = new Map(maps.map((x) => [x.source, x]));
   const why = new Map(unmapped.map((u) => [u.source, u.reason]));
   for (const id of ids) {
+    const st = sourceText.get(id);
     lines.push(`## ${id}`, "");
+    if (st?.prose) lines.push(`Text: ${st.prose.replace(/\n\n/g, " ")}`, "");
     if (why.has(id)) {
       lines.push(`Not mapped: ${why.get(id)}`, "", "- [ ] No requirement of the catalog fits; the reason holds", "");
       continue;
@@ -237,7 +260,9 @@ const out = {
     mappings: [
       {
         uuid: mappingUuid,
-        "source-resource": { type: "catalog", href: m.source.href, remarks: m.source.title },
+        "source-resource": sourceResource
+          ? { type: "catalog", href: `#${sourceResource.uuid}`, remarks: m.source.title }
+          : { type: "catalog", href: m.source.href, remarks: m.source.title },
         "target-resource": { type: "catalog", href },
         maps: maps.flatMap((x, i) => [
           ...(x.targets?.length
@@ -272,6 +297,7 @@ const out = {
         }),
       },
     ],
+    ...(sourceResource && { "back-matter": { resources: [sourceResource] } }),
   },
 };
 

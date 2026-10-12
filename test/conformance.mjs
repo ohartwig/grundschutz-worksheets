@@ -5,9 +5,12 @@
 // the file next to it. A validator that follows imports -- oscal-cli 3 does --
 // then checks the whole chain, not each file on its own.
 //
+// The catalogs of EU acts this repository generates (standards/) are checked
+// alongside, on their own: they import nothing.
+//
 // Run after `npm test`, which writes the component and results inputs into
 // .schema-cache. CI runs oscal-cli over the directory.
-import { mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { spawnSync } from "node:child_process";
 import { resolve } from "node:path";
 
@@ -66,4 +69,8 @@ put("poam-in.json", {
 gen("poam.json", "poam.mjs", `${dir}/poam-in.json`);
 
 gen("component-definition.json", "component.mjs", "test/fixtures/component-source.json");
+for (const f of readdirSync("standards").filter((f) => f.endsWith(".json"))) {
+  put(`catalog-${f}`, readFileSync(`standards/${f}`, "utf8"));
+  console.log(`${dir}/catalog-${f}`);
+}
 for (const f of ["tailoring.json", "system.json", "checks.json", "run.json", "poam-in.json"]) rmSync(`${dir}/${f}`);
