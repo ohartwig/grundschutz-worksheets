@@ -6,6 +6,12 @@ tagged `vX.Y.Z` and written here by the release tool from the commit messages;
 **breaking**: what can change an existing call or a spreadsheet built on the
 output.
 
+## [1.2.0](https://github.com/ohartwig/grundschutz-worksheets/compare/v1.1.0...v1.2.0) (2026-10-12)
+
+### :sparkles: Features
+
+* **standards:** DORA as a catalog of its own; mappings by article
+
 ## [1.1.0](https://github.com/ohartwig/grundschutz-worksheets/compare/v1.0.0...v1.1.0) (2026-10-12)
 
 ### :sparkles: Features
