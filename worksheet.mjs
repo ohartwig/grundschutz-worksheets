@@ -157,7 +157,8 @@ const sourcePrefixes = [...sourceFilter].filter((s) => s.endsWith("*")).map((s) 
 // (standards/); up to 1.0 the NIS2 mapping said 21.2.a. The short form still
 // selects the same source, with a note, until 2.0.
 const short = (id) => id.replace(/^Art\./, "");
-const wants = (id) => sourceFilter.has(id) || sourcePrefixes.some((p) => id.startsWith(p));
+// An article selects its paragraphs: Art.9 is Art.9.1, Art.9.2, ...
+const wants = (id) => sourceFilter.has(id) || sourcePrefixes.some((p) => id.startsWith(p)) || [...sourceFilter].some((s) => id.startsWith(`${s}.`));
 const sourceWanted = (id) => !sourceFilter.size || wants(id) || (id !== short(id) && wants(short(id)));
 const legacy = [...sourceFilter].filter((s) => /^\d/.test(s));
 if (legacy.length) console.error(`--sources ${legacy.join(",")}: article IDs are written Art.${legacy[0]} now; the short form is accepted until 2.0.`);

@@ -3,8 +3,8 @@
     "uuid": "26e750dc-b255-5431-b2e9-359d4961d9f4",
     "metadata": {
       "title": "DORA (Regulation (EU) 2022/2554) Chapters II to V to Grundschutz++",
-      "last-modified": "2026-10-11T00:00:00Z",
-      "version": "0.1.0",
+      "last-modified": "2026-10-12T00:00:00Z",
+      "version": "0.2.0",
       "oscal-version": "1.2.2",
       "props": [
         {
@@ -42,7 +42,7 @@
         "uuid": "3c73796d-fb34-52fa-9702-ebe0af69436e",
         "source-resource": {
           "type": "catalog",
-          "href": "https://eur-lex.europa.eu/eli/reg/2022/2554/oj",
+          "href": "#2603b38e-3e45-5d5e-8248-3316e59606e6",
           "remarks": "Regulation (EU) 2022/2554 (DORA), Art. 5 to 30"
         },
         "target-resource": {
@@ -56,7 +56,19 @@
             "sources": [
               {
                 "type": "control",
-                "id-ref": "Art.5"
+                "id-ref": "Art.5.1"
+              },
+              {
+                "type": "control",
+                "id-ref": "Art.5.2"
+              },
+              {
+                "type": "control",
+                "id-ref": "Art.5.3"
+              },
+              {
+                "type": "control",
+                "id-ref": "Art.5.4"
               }
             ],
             "targets": [
@@ -85,7 +97,19 @@
             "sources": [
               {
                 "type": "control",
-                "id-ref": "Art.5"
+                "id-ref": "Art.5.1"
+              },
+              {
+                "type": "control",
+                "id-ref": "Art.5.2"
+              },
+              {
+                "type": "control",
+                "id-ref": "Art.5.3"
+              },
+              {
+                "type": "control",
+                "id-ref": "Art.5.4"
               }
             ],
             "targets": [
@@ -127,7 +151,43 @@
             "sources": [
               {
                 "type": "control",
-                "id-ref": "Art.6"
+                "id-ref": "Art.6.1"
+              },
+              {
+                "type": "control",
+                "id-ref": "Art.6.2"
+              },
+              {
+                "type": "control",
+                "id-ref": "Art.6.3"
+              },
+              {
+                "type": "control",
+                "id-ref": "Art.6.4"
+              },
+              {
+                "type": "control",
+                "id-ref": "Art.6.5"
+              },
+              {
+                "type": "control",
+                "id-ref": "Art.6.6"
+              },
+              {
+                "type": "control",
+                "id-ref": "Art.6.7"
+              },
+              {
+                "type": "control",
+                "id-ref": "Art.6.8"
+              },
+              {
+                "type": "control",
+                "id-ref": "Art.6.9"
+              },
+              {
+                "type": "control",
+                "id-ref": "Art.6.10"
               }
             ],
             "targets": [
@@ -156,7 +216,43 @@
             "sources": [
               {
                 "type": "control",
-                "id-ref": "Art.6"
+                "id-ref": "Art.6.1"
+              },
+              {
+                "type": "control",
+                "id-ref": "Art.6.2"
+              },
+              {
+                "type": "control",
+                "id-ref": "Art.6.3"
+              },
+              {
+                "type": "control",
+                "id-ref": "Art.6.4"
+              },
+              {
+                "type": "control",
+                "id-ref": "Art.6.5"
+              },
+              {
+                "type": "control",
+                "id-ref": "Art.6.6"
+              },
+              {
+                "type": "control",
+                "id-ref": "Art.6.7"
+              },
+              {
+                "type": "control",
+                "id-ref": "Art.6.8"
+              },
+              {
+                "type": "control",
+                "id-ref": "Art.6.9"
+              },
+              {
+                "type": "control",
+                "id-ref": "Art.6.10"
               }
             ],
             "targets": [
@@ -321,7 +417,31 @@
             "sources": [
               {
                 "type": "control",
-                "id-ref": "Art.8"
+                "id-ref": "Art.8.1"
+              },
+              {
+                "type": "control",
+                "id-ref": "Art.8.2"
+              },
+              {
+                "type": "control",
+                "id-ref": "Art.8.3"
+              },
+              {
+                "type": "control",
+                "id-ref": "Art.8.4"
+              },
+              {
+                "type": "control",
+                "id-ref": "Art.8.5"
+              },
+              {
+                "type": "control",
+                "id-ref": "Art.8.6"
+              },
+              {
+                "type": "control",
+                "id-ref": "Art.8.7"
               }
             ],
             "targets": [
@@ -342,7 +462,31 @@
             "sources": [
               {
                 "type": "control",
-                "id-ref": "Art.8"
+                "id-ref": "Art.8.1"
+              },
+              {
+                "type": "control",
+                "id-ref": "Art.8.2"
+              },
+              {
+                "type": "control",
+                "id-ref": "Art.8.3"
+              },
+              {
+                "type": "control",
+                "id-ref": "Art.8.4"
+              },
+              {
+                "type": "control",
+                "id-ref": "Art.8.5"
+              },
+              {
+                "type": "control",
+                "id-ref": "Art.8.6"
+              },
+              {
+                "type": "control",
+                "id-ref": "Art.8.7"
               }
             ],
             "targets": [
@@ -391,7 +535,19 @@
             "sources": [
               {
                 "type": "control",
-                "id-ref": "Art.9"
+                "id-ref": "Art.9.1"
+              },
+              {
+                "type": "control",
+                "id-ref": "Art.9.2"
+              },
+              {
+                "type": "control",
+                "id-ref": "Art.9.3"
+              },
+              {
+                "type": "control",
+                "id-ref": "Art.9.4"
               }
             ],
             "targets": [
@@ -696,7 +852,19 @@
             "sources": [
               {
                 "type": "control",
-                "id-ref": "Art.10"
+                "id-ref": "Art.10.1"
+              },
+              {
+                "type": "control",
+                "id-ref": "Art.10.2"
+              },
+              {
+                "type": "control",
+                "id-ref": "Art.10.3"
+              },
+              {
+                "type": "control",
+                "id-ref": "Art.10.4"
               }
             ],
             "targets": [
@@ -769,7 +937,43 @@
             "sources": [
               {
                 "type": "control",
-                "id-ref": "Art.11"
+                "id-ref": "Art.11.1"
+              },
+              {
+                "type": "control",
+                "id-ref": "Art.11.2"
+              },
+              {
+                "type": "control",
+                "id-ref": "Art.11.3"
+              },
+              {
+                "type": "control",
+                "id-ref": "Art.11.4"
+              },
+              {
+                "type": "control",
+                "id-ref": "Art.11.5"
+              },
+              {
+                "type": "control",
+                "id-ref": "Art.11.6"
+              },
+              {
+                "type": "control",
+                "id-ref": "Art.11.7"
+              },
+              {
+                "type": "control",
+                "id-ref": "Art.11.8"
+              },
+              {
+                "type": "control",
+                "id-ref": "Art.11.9"
+              },
+              {
+                "type": "control",
+                "id-ref": "Art.11.10"
               }
             ],
             "targets": [
@@ -790,7 +994,43 @@
             "sources": [
               {
                 "type": "control",
-                "id-ref": "Art.11"
+                "id-ref": "Art.11.1"
+              },
+              {
+                "type": "control",
+                "id-ref": "Art.11.2"
+              },
+              {
+                "type": "control",
+                "id-ref": "Art.11.3"
+              },
+              {
+                "type": "control",
+                "id-ref": "Art.11.4"
+              },
+              {
+                "type": "control",
+                "id-ref": "Art.11.5"
+              },
+              {
+                "type": "control",
+                "id-ref": "Art.11.6"
+              },
+              {
+                "type": "control",
+                "id-ref": "Art.11.7"
+              },
+              {
+                "type": "control",
+                "id-ref": "Art.11.8"
+              },
+              {
+                "type": "control",
+                "id-ref": "Art.11.9"
+              },
+              {
+                "type": "control",
+                "id-ref": "Art.11.10"
               }
             ],
             "targets": [
@@ -877,7 +1117,31 @@
             "sources": [
               {
                 "type": "control",
-                "id-ref": "Art.12"
+                "id-ref": "Art.12.1"
+              },
+              {
+                "type": "control",
+                "id-ref": "Art.12.2"
+              },
+              {
+                "type": "control",
+                "id-ref": "Art.12.3"
+              },
+              {
+                "type": "control",
+                "id-ref": "Art.12.4"
+              },
+              {
+                "type": "control",
+                "id-ref": "Art.12.5"
+              },
+              {
+                "type": "control",
+                "id-ref": "Art.12.6"
+              },
+              {
+                "type": "control",
+                "id-ref": "Art.12.7"
               }
             ],
             "targets": [
@@ -898,7 +1162,31 @@
             "sources": [
               {
                 "type": "control",
-                "id-ref": "Art.12"
+                "id-ref": "Art.12.1"
+              },
+              {
+                "type": "control",
+                "id-ref": "Art.12.2"
+              },
+              {
+                "type": "control",
+                "id-ref": "Art.12.3"
+              },
+              {
+                "type": "control",
+                "id-ref": "Art.12.4"
+              },
+              {
+                "type": "control",
+                "id-ref": "Art.12.5"
+              },
+              {
+                "type": "control",
+                "id-ref": "Art.12.6"
+              },
+              {
+                "type": "control",
+                "id-ref": "Art.12.7"
               }
             ],
             "targets": [
@@ -979,7 +1267,31 @@
             "sources": [
               {
                 "type": "control",
-                "id-ref": "Art.13"
+                "id-ref": "Art.13.1"
+              },
+              {
+                "type": "control",
+                "id-ref": "Art.13.2"
+              },
+              {
+                "type": "control",
+                "id-ref": "Art.13.3"
+              },
+              {
+                "type": "control",
+                "id-ref": "Art.13.4"
+              },
+              {
+                "type": "control",
+                "id-ref": "Art.13.5"
+              },
+              {
+                "type": "control",
+                "id-ref": "Art.13.6"
+              },
+              {
+                "type": "control",
+                "id-ref": "Art.13.7"
               }
             ],
             "targets": [
@@ -1000,7 +1312,31 @@
             "sources": [
               {
                 "type": "control",
-                "id-ref": "Art.13"
+                "id-ref": "Art.13.1"
+              },
+              {
+                "type": "control",
+                "id-ref": "Art.13.2"
+              },
+              {
+                "type": "control",
+                "id-ref": "Art.13.3"
+              },
+              {
+                "type": "control",
+                "id-ref": "Art.13.4"
+              },
+              {
+                "type": "control",
+                "id-ref": "Art.13.5"
+              },
+              {
+                "type": "control",
+                "id-ref": "Art.13.6"
+              },
+              {
+                "type": "control",
+                "id-ref": "Art.13.7"
               }
             ],
             "targets": [
@@ -1041,7 +1377,15 @@
             "sources": [
               {
                 "type": "control",
-                "id-ref": "Art.14"
+                "id-ref": "Art.14.1"
+              },
+              {
+                "type": "control",
+                "id-ref": "Art.14.2"
+              },
+              {
+                "type": "control",
+                "id-ref": "Art.14.3"
               }
             ],
             "targets": [
@@ -1074,7 +1418,15 @@
             "sources": [
               {
                 "type": "control",
-                "id-ref": "Art.17"
+                "id-ref": "Art.17.1"
+              },
+              {
+                "type": "control",
+                "id-ref": "Art.17.2"
+              },
+              {
+                "type": "control",
+                "id-ref": "Art.17.3"
               }
             ],
             "targets": [
@@ -1095,7 +1447,15 @@
             "sources": [
               {
                 "type": "control",
-                "id-ref": "Art.17"
+                "id-ref": "Art.17.1"
+              },
+              {
+                "type": "control",
+                "id-ref": "Art.17.2"
+              },
+              {
+                "type": "control",
+                "id-ref": "Art.17.3"
               }
             ],
             "targets": [
@@ -1154,7 +1514,11 @@
             "sources": [
               {
                 "type": "control",
-                "id-ref": "Art.18"
+                "id-ref": "Art.18.1"
+              },
+              {
+                "type": "control",
+                "id-ref": "Art.18.2"
               }
             ],
             "targets": [
@@ -1171,7 +1535,11 @@
             "sources": [
               {
                 "type": "control",
-                "id-ref": "Art.18"
+                "id-ref": "Art.18.1"
+              },
+              {
+                "type": "control",
+                "id-ref": "Art.18.2"
               }
             ],
             "targets": [
@@ -1195,7 +1563,27 @@
             "sources": [
               {
                 "type": "control",
-                "id-ref": "Art.24"
+                "id-ref": "Art.24.1"
+              },
+              {
+                "type": "control",
+                "id-ref": "Art.24.2"
+              },
+              {
+                "type": "control",
+                "id-ref": "Art.24.3"
+              },
+              {
+                "type": "control",
+                "id-ref": "Art.24.4"
+              },
+              {
+                "type": "control",
+                "id-ref": "Art.24.5"
+              },
+              {
+                "type": "control",
+                "id-ref": "Art.24.6"
               }
             ],
             "targets": [
@@ -1212,7 +1600,27 @@
             "sources": [
               {
                 "type": "control",
-                "id-ref": "Art.24"
+                "id-ref": "Art.24.1"
+              },
+              {
+                "type": "control",
+                "id-ref": "Art.24.2"
+              },
+              {
+                "type": "control",
+                "id-ref": "Art.24.3"
+              },
+              {
+                "type": "control",
+                "id-ref": "Art.24.4"
+              },
+              {
+                "type": "control",
+                "id-ref": "Art.24.5"
+              },
+              {
+                "type": "control",
+                "id-ref": "Art.24.6"
               }
             ],
             "targets": [
@@ -1273,7 +1681,15 @@
             "sources": [
               {
                 "type": "control",
-                "id-ref": "Art.25"
+                "id-ref": "Art.25.1"
+              },
+              {
+                "type": "control",
+                "id-ref": "Art.25.2"
+              },
+              {
+                "type": "control",
+                "id-ref": "Art.25.3"
               }
             ],
             "targets": [
@@ -1298,7 +1714,15 @@
             "sources": [
               {
                 "type": "control",
-                "id-ref": "Art.25"
+                "id-ref": "Art.25.1"
+              },
+              {
+                "type": "control",
+                "id-ref": "Art.25.2"
+              },
+              {
+                "type": "control",
+                "id-ref": "Art.25.3"
               }
             ],
             "targets": [
@@ -1367,7 +1791,35 @@
             "sources": [
               {
                 "type": "control",
-                "id-ref": "Art.26"
+                "id-ref": "Art.26.1"
+              },
+              {
+                "type": "control",
+                "id-ref": "Art.26.2"
+              },
+              {
+                "type": "control",
+                "id-ref": "Art.26.3"
+              },
+              {
+                "type": "control",
+                "id-ref": "Art.26.4"
+              },
+              {
+                "type": "control",
+                "id-ref": "Art.26.5"
+              },
+              {
+                "type": "control",
+                "id-ref": "Art.26.6"
+              },
+              {
+                "type": "control",
+                "id-ref": "Art.26.7"
+              },
+              {
+                "type": "control",
+                "id-ref": "Art.26.8"
               }
             ],
             "targets": [
@@ -1384,7 +1836,35 @@
             "sources": [
               {
                 "type": "control",
-                "id-ref": "Art.28"
+                "id-ref": "Art.28.1"
+              },
+              {
+                "type": "control",
+                "id-ref": "Art.28.2"
+              },
+              {
+                "type": "control",
+                "id-ref": "Art.28.3"
+              },
+              {
+                "type": "control",
+                "id-ref": "Art.28.4"
+              },
+              {
+                "type": "control",
+                "id-ref": "Art.28.5"
+              },
+              {
+                "type": "control",
+                "id-ref": "Art.28.6"
+              },
+              {
+                "type": "control",
+                "id-ref": "Art.28.7"
+              },
+              {
+                "type": "control",
+                "id-ref": "Art.28.8"
               }
             ],
             "targets": [
@@ -1409,7 +1889,35 @@
             "sources": [
               {
                 "type": "control",
-                "id-ref": "Art.28"
+                "id-ref": "Art.28.1"
+              },
+              {
+                "type": "control",
+                "id-ref": "Art.28.2"
+              },
+              {
+                "type": "control",
+                "id-ref": "Art.28.3"
+              },
+              {
+                "type": "control",
+                "id-ref": "Art.28.4"
+              },
+              {
+                "type": "control",
+                "id-ref": "Art.28.5"
+              },
+              {
+                "type": "control",
+                "id-ref": "Art.28.6"
+              },
+              {
+                "type": "control",
+                "id-ref": "Art.28.7"
+              },
+              {
+                "type": "control",
+                "id-ref": "Art.28.8"
               }
             ],
             "targets": [
@@ -1553,7 +2061,11 @@
             "sources": [
               {
                 "type": "control",
-                "id-ref": "Art.29"
+                "id-ref": "Art.29.1"
+              },
+              {
+                "type": "control",
+                "id-ref": "Art.29.2"
               }
             ],
             "targets": [
@@ -1585,7 +2097,19 @@
             "sources": [
               {
                 "type": "control",
-                "id-ref": "Art.30"
+                "id-ref": "Art.30.1"
+              },
+              {
+                "type": "control",
+                "id-ref": "Art.30.2"
+              },
+              {
+                "type": "control",
+                "id-ref": "Art.30.3"
+              },
+              {
+                "type": "control",
+                "id-ref": "Art.30.4"
               }
             ],
             "targets": [
@@ -1666,14 +2190,39 @@
           "unmapped-controls": [
             {
               "with-ids": [
-                "Art.16",
-                "Art.19"
+                "Art.16.1",
+                "Art.16.2",
+                "Art.19.1",
+                "Art.19.2",
+                "Art.19.3",
+                "Art.19.4",
+                "Art.19.5"
               ]
             }
           ]
         },
         "remarks": "Not mapped:\n\n- Art.16: Simplified ICT risk management framework for small entities, an alternative to Art. 5 to 15; map through those.\n- Art.19: Reporting of major incidents to the competent authority; Grundschutz++ has no requirement for reports to a supervisor."
       }
-    ]
+    ],
+    "back-matter": {
+      "resources": [
+        {
+          "uuid": "2603b38e-3e45-5d5e-8248-3316e59606e6",
+          "title": "DORA (Verordnung (EU) 2022/2554): IKT-Risikomanagement, Vorfälle, Tests, Drittparteienrisiko (Art. 5 bis 30)",
+          "rlinks": [
+            {
+              "href": "../standards/dora.json",
+              "media-type": "application/json",
+              "hashes": [
+                {
+                  "algorithm": "SHA-256",
+                  "value": "b856979a66bb3ac0a3216edeb0b65e3a31b1b6a37b4e7af404fcc8346976d57c"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
   }
 }

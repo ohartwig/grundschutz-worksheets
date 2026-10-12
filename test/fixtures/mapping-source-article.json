@@ -1,0 +1,36 @@
+{
+  "title": "Test mapping by article",
+  "version": "1",
+  "last-modified": "2026-10-12T00:00:00Z",
+  "status": "draft",
+  "method": "hybrid",
+  "description": "Fixture for the mapping.mjs tests: a source that is an article, which the catalog holds as a group of paragraphs.",
+  "source": {
+    "title": "DORA Art. 9",
+    "catalog": "standards/dora.json",
+    "ids": [
+      "Art.9",
+      "Art.16"
+    ]
+  },
+  "catalog": {
+    "path": "control_layer/Mindeststandard-TLS/Entwurf-Mindeststandard-TLS-catalog.json",
+    "commit": "367d775010abee641b258926bb482fcd05270059"
+  },
+  "maps": [
+    {
+      "source": "Art.9",
+      "relationship": "intersects-with",
+      "targets": [
+        "KONF.14.1"
+      ],
+      "remarks": "encryption in transit only"
+    }
+  ],
+  "unmapped": [
+    {
+      "source": "Art.16",
+      "reason": "not for this test"
+    }
+  ]
+}

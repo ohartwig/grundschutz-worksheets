@@ -423,7 +423,10 @@ for (const [file, want] of cases) {
       /^Meldungen, und zwar\n\ni\) binnen 24 Stunden,\n\nii\) binnen 72 Stunden\.$/.test(ctl("Art.1.2.b")?.parts[0].prose ?? "")],
     ["a subparagraph after the points keeps its place, labelled",
       ctl("Art.1.2")?.parts[0].parts?.[0]?.props[0].value === "Unterabsatz 2" && /12 Stunden/.test(ctl("Art.1.2")?.parts[0].parts[0].prose)],
-    ["what is left out is named with its reason", !ctl("Art.1.3") && /Art\.1\.3: Verpflichtet die Kommission/.test(cat.metadata?.remarks)],
+    ["what is left out is named with its reason, a paragraph or a whole article", !ctl("Art.1.3") && /Art\.1\.3: Verpflichtet die Kommission/.test(cat.metadata?.remarks)
+      && !ctl("Art.3") && !cat.groups?.some((g) => g.id === "Art.3") && /Art\.3: Verpflichtet die Behörden/.test(cat.metadata?.remarks)],
+    ["an article without numbered paragraphs is one control, its points below it",
+      ctl("Art.2")?.parts[0].prose === "Die Einrichtungen verwenden Systeme, die" && ctl("Art.2.b")?.parts[0].prose === "resilient sind." && ctl("Art.2.b")?.title === "Art. 2 Buchst. b"],
     ["other bytes than the pinned ones are refused", otherBytes.status === 1 && /not the pinned one/.test(otherBytes.stderr)],
     ["a paragraph neither taken nor left out is refused", untold.status === 1 && /Art\.1\.3: neither taken/.test(untold.stderr)],
     ["the committed NIS2 catalog has the ten measures of Art. 21(2)",
@@ -445,6 +448,11 @@ for (const [file, want] of cases) {
   const unknown = spawnSync(process.execPath, ["mapping.mjs", ".schema-cache/mapping-unknown-source.json"], { encoding: "utf8" });
   const ws = (sources) => spawnSync(process.execPath, ["worksheet.mjs", "control_layer/Mindeststandard-TLS/Entwurf-Mindeststandard-TLS-catalog.json",
     "--mapping-file", ".schema-cache/test-mapping-catalog.json", "--commit", "367d775010abee641b258926bb482fcd05270059", "--sources", sources, "--summary"], { encoding: "utf8" });
+  const art = spawnSync(process.execPath, ["mapping.mjs", "test/fixtures/mapping-source-article.json"], { encoding: "utf8" });
+  const am = art.status === 0 ? JSON.parse(art.stdout)["mapping-collection"].mappings[0] : {};
+  writeFileSync(".schema-cache/test-mapping-article.json", art.stdout);
+  const byArticle = spawnSync(process.execPath, ["worksheet.mjs", "control_layer/Mindeststandard-TLS/Entwurf-Mindeststandard-TLS-catalog.json",
+    "--mapping-file", ".schema-cache/test-mapping-article.json", "--commit", "367d775010abee641b258926bb482fcd05270059", "--sources", "Art.9", "--summary"], { encoding: "utf8" });
   const now = ws("Art.21.2.h");
   const then = ws("21.2.h");
   const count = (r) => r.stdout.match(/^(\d+) requirements$/m)?.[1];
@@ -452,13 +460,17 @@ for (const [file, want] of cases) {
     ["a mapping imports its source catalog with the catalog's SHA-256", m.status === 0 && mv.status === 0
       && imp.href === "../standards/nis2.json" && imp.sha256 === sha256(readFileSync("standards/nis2.json"))],
     ["its review sheet quotes the source's text", rv.status === 0 && /^Text: Konzepte und Verfahren für den Einsatz von Kryptografie/m.test(rv.stdout)],
-    ["a source ID the catalog does not have is refused", unknown.status === 1 && /Art\.99\.1: not a control of standards\/nis2\.json/.test(unknown.stderr)],
+    ["a source ID the catalog does not have is refused", unknown.status === 1 && /Art\.99\.1: neither a control nor an article of standards\/nis2\.json/.test(unknown.stderr)],
+    ["an article stands for all its paragraphs, mapped and unmapped", art.status === 0
+      && am.maps?.[0]?.sources.map((s) => s["id-ref"]).join() === "Art.9.1,Art.9.2,Art.9.3,Art.9.4"
+      && am["source-gap-summary"]?.["unmapped-controls"][0]["with-ids"].join() === "Art.16.1,Art.16.2"],
+    ["worksheet selects an article's paragraphs by the article", byArticle.status === 0 && /^1 requirements$/m.test(byArticle.stdout)],
     ["worksheet still takes the short ID of 1.0, with a note", now.status === 0 && count(now) === "1" && count(then) === "1"
       && /accepted until 2\.0/.test(then.stderr) && !/accepted until/.test(now.stderr)],
   ];
   for (const [name, ok] of mcases) {
     failed += !ok;
-    console.log(`${ok ? "ok  " : "FAIL"} mapping from a catalog: ${name}${ok ? "" : ": " + m.stderr + mv.stdout + unknown.stderr + now.stderr + then.stderr}`);
+    console.log(`${ok ? "ok  " : "FAIL"} mapping from a catalog: ${name}${ok ? "" : ": " + m.stderr + mv.stdout + unknown.stderr + art.stderr + byArticle.stderr + now.stderr + then.stderr}`);
   }
 }
 // --catalog-file: a catalog from disk, pinned by its hash; a preset that names

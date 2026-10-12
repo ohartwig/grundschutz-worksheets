@@ -185,31 +185,42 @@ node mapping.mjs mappings/src/nis2.json --review > mappings/review/nis2.md
 
 CI regenerates every mapping and fails if the committed file differs.
 
-### NIS2 in its own words: a catalog of the act
+### NIS2 and DORA in their own words: catalogs of the acts
 
-`standards/nis2.json` is an OSCAL catalog of the NIS2 directive itself, in the
-German text of the Official Journal (L 333, 27.12.2022): Art. 20 (governance),
-Art. 21 (1) to (4) (risk-management measures) and Art. 23 (1) to (4) and (7)
-(reporting). An article is a group, a paragraph a control, a lettered point a
-control of its paragraph: `Art.21.2.b` is "Bewältigung von
-Sicherheitsvorfällen". Paragraphs that bind only authorities or the
+`standards/` holds OSCAL catalogs of the acts themselves, in the German text of
+the Official Journal (L 333, 27.12.2022):
+
+| Catalog | Articles | Requirements |
+|---|---|---|
+| `nis2.json` | Art. 20 (governance), 21 (1) to (4) (risk-management measures), 23 (1) to (4) and (7) (reporting) | 28 |
+| `dora.json` | Art. 5 to 30 without 15 and 20 to 22: ICT risk management, incidents, testing, third-party risk | 216 |
+
+An article is a group, a paragraph a control, a lettered point a control of
+its paragraph: `Art.21.2.b` is "Bewältigung von Sicherheitsvorfällen". An
+article without numbered paragraphs (DORA Art. 7 and 23) is a single control.
+A subparagraph after a list of points is a labelled part of its paragraph's
+statement. Paragraphs and articles that bind only authorities, the ESAs or the
 Commission are left out, each with its reason in the catalog's remarks.
 
-`tools/eu-catalog.mjs` writes it from `standards/src/nis2.json`, which pins
-the document in the Publications Office's Cellar by address and SHA-256. Other
+`tools/eu-catalog.mjs` writes them from `standards/src/`, which pins
+each document in the Publications Office's Cellar by address and SHA-256. Other
 bytes are refused, every paragraph of a chosen article is either taken or left
 out with a reason, and the words are not touched beyond whitespace. CI
-regenerates the catalog from the live document and fails if the committed file
-differs; oscal-cli checks it with the other documents. Reuse of EU legal texts
+regenerates the catalogs from the live documents and fails if a committed file
+differs; oscal-cli checks them with the other documents. Reuse of EU legal texts
 is authorised with the source acknowledged (Commission Decision 2011/833/EU);
 only the text in the Official Journal is authentic.
 
-The NIS2 mapping takes this catalog as its source: its `source-resource`
-imports it through a back-matter resource with its SHA-256, every source ID
-must be one of its controls, and the review sheet quotes the text of each
-measure next to its targets. The IDs are those of the catalog now,
-`Art.21.2.b` where 1.0 had `21.2.b`; `--sources 21.2.b` still works until 2.0
-and says so on stderr. DORA follows the same way.
+The NIS2 and DORA mappings take these catalogs as their source: the
+`source-resource` imports the catalog through a back-matter resource with its
+SHA-256, every source ID must be one of its controls or articles, and the
+review sheet quotes the text next to the targets. DORA is mapped by article;
+an article is a group in the catalog, and a mapping names controls, so
+`mapping.mjs` writes the article's paragraphs as the source, all together and
+under the article's relationship -- no judgement is added. `--sources Art.9`
+selects them all. The NIS2 IDs are those of the catalog now, `Art.21.2.b`
+where 1.0 had `21.2.b`; `--sources 21.2.b` still works until 2.0 and says so
+on stderr.
 
 ## Your tailoring as an OSCAL profile
 

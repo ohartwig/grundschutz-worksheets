@@ -3,7 +3,8 @@
 // Official Journal: a group per article, a control per paragraph and a
 // sub-control per lettered point, each with the authentic wording as its
 // statement. An article has no words of its own beyond its title, and OSCAL
-// wants a statement in every control, so the article is the group.
+// wants a statement in every control, so the article is the group -- unless
+// it has no numbered paragraphs: then its text is one control, Art.7.
 //
 // The text comes from the Publications Office's Cellar, the repository behind
 // EUR-Lex that is meant to be read by programs (EUR-Lex itself answers scripts
@@ -22,7 +23,8 @@
 //     "document": { "href": "https://publications.europa.eu/resource/cellar/.../DOC_1",
 //                   "sha256": "<64 hex>" },
 //     "articles": { "20": "all", "21": [1, 2, 3, 4] },
-//     "left-out": { "Art.21.5": "why this paragraph is not in the catalog" }
+//     "left-out": { "Art.21.5": "why this paragraph is not in the catalog",
+//                   "Art.22": "why this whole article is not" }
 //   }
 //
 // IDs follow the act: Art.21 is the article, Art.21.2 its paragraph 2,
@@ -34,7 +36,8 @@
 //   - the document has exactly the pinned SHA-256
 //   - every article and paragraph asked for is in it
 //   - every paragraph of a chosen article is either in the catalog or listed
-//     in "left-out" with a reason, and "left-out" names nothing else
+//     in "left-out" with a reason; "left-out" names only such paragraphs and
+//     whole articles not chosen, each in the document
 //   - no text of a paragraph is lost: a subparagraph after its points becomes
 //     a labelled part of the statement, and anything else the catalog has no
 //     place for is an error
@@ -129,78 +132,96 @@ const errors = [];
 const label = (art, par, letter) => `Art. ${art}${par ? ` Abs. ${par}` : ""}${letter ? ` Buchst. ${letter}` : ""}`;
 const prop = (value) => ({ name: "label", value });
 
-const groups = Object.entries(src.articles)
-  .sort(([a], [b]) => Number(a) - Number(b))
-  .map(([art, wanted]) => {
-    const div = find(doc, (e) => e.attrs.id === `art_${art}`);
-    if (!div) return errors.push(`Art. ${art}: not in the document`), null;
-    const title = clean(text(find(div, (e) => e.attrs.class === "eli-title") ?? ""));
-    const pars = els(div).filter((e) => /^\d{3}\.\d{3}$/.test(e.attrs.id ?? ""));
-    if (!pars.length) errors.push(`Art. ${art}: no numbered paragraphs`);
-    const take = wanted === "all" ? pars.map((p) => Number(p.attrs.id.slice(4))) : wanted;
-    for (const n of take) if (!pars.some((p) => Number(p.attrs.id.slice(4)) === n)) errors.push(`Art. ${art}: no paragraph ${n}`);
-    const sub = [];
-    for (const p of pars) {
-      const n = Number(p.attrs.id.slice(4));
-      const id = `Art.${art}.${n}`;
-      if (!take.includes(n)) {
-        if (!left.has(id)) errors.push(`${id}: neither taken nor listed in "left-out" with a reason`);
-        continue;
-      }
-      if (left.has(id)) errors.push(`${id}: taken and also listed in "left-out"`);
-      // Subparagraphs before the points are the statement; one after them
-      // (an exception to a point, say) is a part of its own, labelled with
-      // its number, so it keeps its place after the points.
-      const prose = [];
-      const points = [];
-      const after = [];
-      for (const c of els(p)) {
-        if (c.tag === "p") (points.length ? after : prose).push(clean(text(c)));
-        else if (c.tag === "table" && !after.length) points.push(point(c));
-        else errors.push(`${id}: <${c.tag}> where the catalog has no place for it`);
-      }
-      // "(2)   Die in Absatz 1 ..." -- the number is the ID, not the text.
-      prose[0] = prose[0]?.replace(new RegExp(`^\\(${n}\\)\\s*`), "");
-      if (!prose[0]) errors.push(`${id}: no text`);
-      sub.push({
-        id,
-        class: "paragraph",
-        title: label(art, n),
-        props: [prop(label(art, n))],
-        parts: [
-          {
-            id: `${id}_smt`,
-            name: "statement",
-            prose: prose.join("\n\n"),
-            ...(after.length && {
-              parts: after.map((x, i) => ({
-                id: `${id}_smt.${prose.length + 1 + i}`,
-                name: "item",
-                props: [prop(`Unterabsatz ${prose.length + 1 + i}`)],
-                prose: x,
-              })),
-            }),
-          },
-        ],
-        ...(points.length && {
-          controls: points.map((x) => ({
-            id: `${id}.${x.letter}`,
-            class: "point",
-            title: label(art, n, x.letter),
-            props: [prop(label(art, n, x.letter))],
-            parts: [{ id: `${id}.${x.letter}_smt`, name: "statement", prose: x.prose }],
+// The words of a paragraph, or of an article that has no numbered ones:
+// subparagraphs before the points are the statement; one after them (an
+// exception to a point, say) is a part of its own, labelled with its number,
+// so it keeps its place after the points.
+const control = (el, id, n, title, labels, skip = () => false) => {
+  const prose = [];
+  const points = [];
+  const after = [];
+  for (const c of els(el).filter((c) => !skip(c))) {
+    if (c.tag === "p") (points.length ? after : prose).push(clean(text(c)));
+    else if (c.tag === "table" && !after.length) points.push(point(c));
+    else errors.push(`${id}: <${c.tag}> where the catalog has no place for it`);
+  }
+  // "(2)   Die in Absatz 1 ..." -- the number is the ID, not the text.
+  if (n) prose[0] = prose[0]?.replace(new RegExp(`^\\(${n}\\)\\s*`), "");
+  if (!prose[0]) errors.push(`${id}: no text`);
+  return {
+    id,
+    class: n ? "paragraph" : "article",
+    title,
+    props: [prop(labels())],
+    parts: [
+      {
+        id: `${id}_smt`,
+        name: "statement",
+        prose: prose.join("\n\n"),
+        ...(after.length && {
+          parts: after.map((x, i) => ({
+            id: `${id}_smt.${prose.length + 1 + i}`,
+            name: "item",
+            props: [prop(`Unterabsatz ${prose.length + 1 + i}`)],
+            prose: x,
           })),
         }),
-      });
+      },
+    ],
+    ...(points.length && {
+      controls: points.map((x) => ({
+        id: `${id}.${x.letter}`,
+        class: "point",
+        title: labels(x.letter),
+        props: [prop(labels(x.letter))],
+        parts: [{ id: `${id}.${x.letter}_smt`, name: "statement", prose: x.prose }],
+      })),
+    }),
+  };
+};
+
+// An article with numbered paragraphs is a group of them; one without is a
+// single control of its own, its text the statement.
+const groups = [];
+const controls = [];
+for (const [art, wanted] of Object.entries(src.articles).sort(([a], [b]) => Number(a) - Number(b))) {
+  const div = find(doc, (e) => e.attrs.id === `art_${art}`);
+  if (!div) {
+    errors.push(`Art. ${art}: not in the document`);
+    continue;
+  }
+  const title = clean(text(find(div, (e) => e.attrs.class === "eli-title") ?? "")) || label(art);
+  const pars = els(div).filter((e) => /^\d{3}\.\d{3}$/.test(e.attrs.id ?? ""));
+  if (left.has(`Art.${art}`)) errors.push(`Art.${art}: taken and also listed in "left-out"`);
+  if (!pars.length) {
+    if (wanted !== "all") errors.push(`Art. ${art}: has no numbered paragraphs, so only "all" can take it`);
+    const heading = (c) => c.attrs.class === "oj-ti-art" || c.attrs.class === "eli-title";
+    controls.push(control(div, `Art.${art}`, 0, title, (l) => label(art, 0, l), heading));
+    continue;
+  }
+  const take = wanted === "all" ? pars.map((p) => Number(p.attrs.id.slice(4))) : wanted;
+  for (const n of take) if (!pars.some((p) => Number(p.attrs.id.slice(4)) === n)) errors.push(`Art. ${art}: no paragraph ${n}`);
+  const sub = [];
+  for (const p of pars) {
+    const n = Number(p.attrs.id.slice(4));
+    const id = `Art.${art}.${n}`;
+    if (!take.includes(n)) {
+      if (!left.has(id)) errors.push(`${id}: neither taken nor listed in "left-out" with a reason`);
+      continue;
     }
-    return { id: `Art.${art}`, class: "article", title: title || label(art), props: [prop(label(art))], controls: sub };
-  })
-  .filter(Boolean);
+    if (left.has(id)) errors.push(`${id}: taken and also listed in "left-out"`);
+    sub.push(control(p, id, n, label(art, n), (l) => label(art, n, l)));
+  }
+  groups.push({ id: `Art.${art}`, class: "article", title, props: [prop(label(art))], controls: sub });
+}
+// "left-out" names a paragraph of a chosen article, or a whole article that is
+// not chosen; either must be in the document and carry its reason.
 for (const id of left.keys()) {
-  const [, art, n] = id.match(/^Art\.(\d+)\.(\d+)$/) ?? [];
-  if (!art || !(art in src.articles)) errors.push(`left-out ${id}: not a paragraph of a chosen article`);
+  const [, art, n] = id.match(/^Art\.(\d+)(?:\.(\d+))?$/) ?? [];
+  const where = n ? `${art.padStart(3, "0")}.${n.padStart(3, "0")}` : `art_${art}`;
+  if (!art || (n ? !(art in src.articles) : art in src.articles)) errors.push(`left-out ${id}: neither a paragraph of a chosen article nor an article not chosen`);
   else if (!left.get(id)) errors.push(`left-out ${id}: no reason`);
-  else if (!find(doc, (e) => e.attrs.id === `${art.padStart(3, "0")}.${n.padStart(3, "0")}`)) errors.push(`left-out ${id}: not in the document`);
+  else if (!find(doc, (e) => e.attrs.id === where)) errors.push(`left-out ${id}: not in the document`);
 }
 if (errors.length) fail(`${errors.length} error(s):\n  ${errors.join("\n  ")}`);
 
@@ -224,6 +245,7 @@ const out = {
         "is authentic. Reuse of EU legal texts is authorised provided the source is acknowledged (Commission Decision 2011/833/EU)." +
         (left.size ? `\n\nNot in this catalog:\n\n${[...left].map(([id, why]) => `- ${id}: ${why}`).join("\n")}` : ""),
     },
+    ...(controls.length && { controls }),
     groups,
     "back-matter": {
       resources: [
