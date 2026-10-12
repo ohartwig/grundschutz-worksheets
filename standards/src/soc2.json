@@ -1,0 +1,201 @@
+{
+  "title": "SOC 2: Trust Services Criteria (IDs only)",
+  "version": "TSC 2017, revised points of focus 2022",
+  "last-modified": "2026-10-12T00:00:00Z",
+  "owner": "the AICPA",
+  "source": {
+    "title": "AICPA, 2017 Trust Services Criteria for Security, Availability, Processing Integrity, Confidentiality, and Privacy (with revised points of focus, 2022)",
+    "href": "https://www.aicpa-cima.com/resources/download/2017-trust-services-criteria-with-revised-points-of-focus-2022"
+  },
+  "notice": "The Trust Services Criteria are copyright of the AICPA and are not reproduced here. This catalog holds only their IDs, to point at; the titles of categories, series and criteria are this repository's own short labels, not the AICPA's wording, and say no more than what a criterion is about. A SOC 2 report is the opinion of a CPA firm on a description of a system against these criteria; nothing here is one.",
+  "count": 61,
+  "criteria": [
+    {
+      "id": "security",
+      "title": "Security (common criteria)",
+      "groups": [
+        {
+          "id": "CC1",
+          "title": "Control environment",
+          "controls": [
+            ["CC1.1", "Integrity and ethical values"],
+            ["CC1.2", "Oversight by the board"],
+            ["CC1.3", "Structures, reporting lines, authority and responsibility"],
+            ["CC1.4", "Competent people"],
+            ["CC1.5", "Accountability for internal control"]
+          ]
+        },
+        {
+          "id": "CC2",
+          "title": "Information and communication",
+          "controls": [
+            ["CC2.1", "Information for internal control"],
+            ["CC2.2", "Internal communication"],
+            ["CC2.3", "External communication"]
+          ]
+        },
+        {
+          "id": "CC3",
+          "title": "Risk assessment",
+          "controls": [
+            ["CC3.1", "Objectives to assess risks against"],
+            ["CC3.2", "Identifying and analysing risks"],
+            ["CC3.3", "Fraud"],
+            ["CC3.4", "Changes that affect internal control"]
+          ]
+        },
+        {
+          "id": "CC4",
+          "title": "Monitoring activities",
+          "controls": [
+            ["CC4.1", "Evaluating controls"],
+            ["CC4.2", "Reporting deficiencies"]
+          ]
+        },
+        {
+          "id": "CC5",
+          "title": "Control activities",
+          "controls": [
+            ["CC5.1", "Choosing control activities"],
+            ["CC5.2", "General controls over technology"],
+            ["CC5.3", "Policies and procedures"]
+          ]
+        },
+        {
+          "id": "CC6",
+          "title": "Logical and physical access",
+          "controls": [
+            ["CC6.1", "Logical access security"],
+            ["CC6.2", "Registering and authorising users"],
+            ["CC6.3", "Role-based access, changes and removal"],
+            ["CC6.4", "Physical access"],
+            ["CC6.5", "Disposal of assets"],
+            ["CC6.6", "Threats from outside the system boundary"],
+            ["CC6.7", "Data in transmission and on the move"],
+            ["CC6.8", "Unauthorised and malicious software"]
+          ]
+        },
+        {
+          "id": "CC7",
+          "title": "System operations",
+          "controls": [
+            ["CC7.1", "Configuration changes and vulnerabilities"],
+            ["CC7.2", "Monitoring for anomalies"],
+            ["CC7.3", "Evaluating security events"],
+            ["CC7.4", "Responding to incidents"],
+            ["CC7.5", "Recovering from incidents"]
+          ]
+        },
+        {
+          "id": "CC8",
+          "title": "Change management",
+          "controls": [
+            ["CC8.1", "Changes to infrastructure, data, software and procedures"]
+          ]
+        },
+        {
+          "id": "CC9",
+          "title": "Risk mitigation",
+          "controls": [
+            ["CC9.1", "Business disruption"],
+            ["CC9.2", "Vendors and business partners"]
+          ]
+        }
+      ]
+    },
+    {
+      "id": "availability",
+      "title": "Availability",
+      "groups": [
+        {
+          "id": "A1",
+          "title": "Availability",
+          "controls": [
+            ["A1.1", "Capacity"],
+            ["A1.2", "Environmental protection, backup and recovery infrastructure"],
+            ["A1.3", "Testing recovery"]
+          ]
+        }
+      ]
+    },
+    {
+      "id": "confidentiality",
+      "title": "Confidentiality",
+      "groups": [
+        {
+          "id": "C1",
+          "title": "Confidentiality",
+          "controls": [
+            ["C1.1", "Identifying and keeping confidential information"],
+            ["C1.2", "Disposing of confidential information"]
+          ]
+        }
+      ]
+    },
+    {
+      "id": "processing-integrity",
+      "title": "Processing integrity",
+      "groups": [
+        {
+          "id": "PI1",
+          "title": "Processing integrity",
+          "controls": [
+            ["PI1.1", "Processing specifications"],
+            ["PI1.2", "Inputs"],
+            ["PI1.3", "Processing"],
+            ["PI1.4", "Outputs"],
+            ["PI1.5", "Storage of inputs, work in progress and outputs"]
+          ]
+        }
+      ]
+    },
+    {
+      "id": "privacy",
+      "title": "Privacy",
+      "groups": [
+        { "id": "P1", "title": "Notice", "controls": [["P1.1", "Privacy notice"]] },
+        { "id": "P2", "title": "Choice and consent", "controls": [["P2.1", "Choices and consent"]] },
+        {
+          "id": "P3",
+          "title": "Collection",
+          "controls": [
+            ["P3.1", "Collecting for the objectives"],
+            ["P3.2", "Explicit consent"]
+          ]
+        },
+        {
+          "id": "P4",
+          "title": "Use, retention and disposal",
+          "controls": [
+            ["P4.1", "Use"],
+            ["P4.2", "Retention"],
+            ["P4.3", "Disposal"]
+          ]
+        },
+        {
+          "id": "P5",
+          "title": "Access",
+          "controls": [
+            ["P5.1", "Access by data subjects"],
+            ["P5.2", "Correction"]
+          ]
+        },
+        {
+          "id": "P6",
+          "title": "Disclosure and notification",
+          "controls": [
+            ["P6.1", "Disclosure to third parties"],
+            ["P6.2", "Record of authorised disclosures"],
+            ["P6.3", "Record of unauthorised disclosures"],
+            ["P6.4", "Commitments of third parties"],
+            ["P6.5", "Notice of unauthorised disclosures by third parties"],
+            ["P6.6", "Notifying data subjects of breaches"],
+            ["P6.7", "Accounting of disclosures"]
+          ]
+        },
+        { "id": "P7", "title": "Quality", "controls": [["P7.1", "Accurate and complete personal information"]] },
+        { "id": "P8", "title": "Monitoring and enforcement", "controls": [["P8.1", "Inquiries, complaints and disputes"]] }
+      ]
+    }
+  ]
+}

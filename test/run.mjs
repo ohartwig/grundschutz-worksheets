@@ -563,6 +563,41 @@ for (const [file, want] of cases) {
     console.log(`${ok ? "ok  " : "FAIL"} mapping from a catalog: ${name}${ok ? "" : ": " + m.stderr + mv.stdout + unknown.stderr + art.stderr + byArticle.stderr + now.stderr + then.stderr}`);
   }
 }
+// tools/id-catalog.mjs: the IDs of a standard whose text may not be copied
+// (SOC 2), each with an own title and a statement that only points at the text.
+{
+  const { writeFileSync, readFileSync, mkdirSync } = await import("node:fs");
+  mkdirSync(".schema-cache", { recursive: true });
+  const idc = (src) => spawnSync(process.execPath, ["tools/id-catalog.mjs", src], { encoding: "utf8" });
+  const a = idc("standards/src/soc2.json");
+  writeFileSync(".schema-cache/test-id-catalog.json", a.stdout);
+  const v = spawnSync(process.execPath, ["validate.mjs", ".schema-cache/test-id-catalog.json"], { encoding: "utf8" });
+  const src = JSON.parse(readFileSync("standards/src/soc2.json", "utf8"));
+  const variant = (name, change) => {
+    const s = structuredClone(src);
+    change(s);
+    writeFileSync(`.schema-cache/${name}`, JSON.stringify(s));
+    return idc(`.schema-cache/${name}`);
+  };
+  const miscounted = variant("id-miscounted.json", (s) => (s.count = 60));
+  const twice = variant("id-twice.json", (s) => s.criteria[0].groups[0].controls.push(["CC1.1", "again"]));
+  const astray = variant("id-astray.json", (s) => s.criteria[0].groups[0].controls.push(["CC2.9", "astray"]));
+  const cat = a.status === 0 ? JSON.parse(a.stdout).catalog : {};
+  const all = [...everyControl(cat)];
+  const committed = readFileSync("standards/soc2.json", "utf8");
+  const cases = [
+    ["validates, is deterministic and is what is committed", a.status === 0 && v.status === 0 && a.stdout === idc("standards/src/soc2.json").stdout && a.stdout === committed],
+    ["61 criteria, 33 of them common criteria", all.length === 61 && all.filter((c) => c.id.startsWith("CC")).length === 33],
+    ["a statement says where the text is, and is no text", all.every((c) => c.parts[0].prose.startsWith(`The text of ${c.id} is not reproduced here`))],
+    ["a count other than the source's is refused", miscounted.status === 1 && /61 criteria, but the source has 60/.test(miscounted.stderr)],
+    ["an ID twice is refused", twice.status === 1 && /CC1\.1 occurs twice/.test(twice.stderr)],
+    ["a criterion outside its series is refused", astray.status === 1 && /CC2\.9: not in series CC1/.test(astray.stderr)],
+  ];
+  for (const [name, ok] of cases) {
+    failed += !ok;
+    console.log(`${ok ? "ok  " : "FAIL"} id-catalog: ${name}${ok ? "" : ": " + a.stderr + v.stdout + miscounted.stderr + twice.stderr + astray.stderr}`);
+  }
+}
 // --catalog-file: a catalog from disk, pinned by its hash; a preset that names
 // a file refuses another one, and refuses to run without it.
 {
