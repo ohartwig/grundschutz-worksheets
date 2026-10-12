@@ -340,6 +340,49 @@ for (const [file, want] of cases) {
     console.log(`${ok ? "ok  " : "FAIL"} poam: ${name}`);
   }
 }
+// Partial coverage: a check that shows only part of a requirement says so in
+// its finding, and the security plan keeps it -- unless another check shows
+// the requirement in full.
+{
+  const { writeFileSync, readFileSync, mkdirSync } = await import("node:fs");
+  mkdirSync(".schema-cache", { recursive: true });
+  const cat = ["--catalog", "test/fixtures/recheck-catalog.json"];
+  const res = (name, change) => {
+    const run = JSON.parse(readFileSync("test/fixtures/results-run.json", "utf8"));
+    change(run);
+    writeFileSync(`.schema-cache/${name}-run.json`, JSON.stringify(run));
+    const r = spawnSync(process.execPath, ["results.mjs", `.schema-cache/${name}-run.json`, ...cat], { encoding: "utf8" });
+    if (r.status === 0) writeFileSync(`.schema-cache/${name}.json`, r.stdout);
+    return r;
+  };
+  const part = res("partial", (r) => (r.partial = ["TEST.3.1.3", "DEV.4.3"]));
+  const one = res("partial-one", (r) => (r.partial = ["TEST.3.1.3"]));
+  const full = res("full", (r) => ((r.check = "full-check"), (r.requirements = ["DEV.4.3"])));
+  const wrong = res("partial-wrong", (r) => (r.partial = ["DET.5.3"]));
+  const findings = one.status === 0 ? JSON.parse(one.stdout)["assessment-results"].results[0].findings : [];
+  const cov = (id) => findings.find((f) => f.target["target-id"] === id)?.props?.find((p) => p.name === "coverage")?.value;
+  const v = spawnSync(process.execPath, ["validate.mjs", ".schema-cache/partial-one.json"], { encoding: "utf8" });
+  const sys = JSON.parse(readFileSync("test/fixtures/ssp/system.json", "utf8"));
+  sys.profile.file = "../test/fixtures/ssp/profile.json";
+  sys.components = [];
+  sys.reviews = undefined;
+  sys.results = ["partial.json", "full.json"];
+  writeFileSync(".schema-cache/ssp-partial.json", JSON.stringify(sys));
+  const ssp = spawnSync(process.execPath, ["ssp.mjs", ".schema-cache/ssp-partial.json"], { encoding: "utf8" });
+  const reqs = ssp.status === 0 ? Object.fromEntries(JSON.parse(ssp.stdout)["system-security-plan"]["control-implementation"]["implemented-requirements"].map((r) => [r["control-id"], r])) : {};
+  const sspCov = (id) => reqs[id]?.props.find((p) => p.name === "assessment-coverage")?.value;
+  const cases = [
+    ["a partial requirement is marked in its finding, the others are not", one.status === 0 && part.status === 0 && v.status === 0 && cov("TEST.3.1.3") === "partial" && !cov("DEV.4.3")
+      && /only part of this requirement/.test(findings.find((f) => f.target["target-id"] === "TEST.3.1.3").description)],
+    ["partial names only requirements of the run", wrong.status === 1 && /partial DET\.5\.3: not one of/.test(wrong.stderr)],
+    ["the plan keeps a partial pass partial", ssp.status === 0 && sspCov("TEST.3.1.3") === "partial"],
+    ["another check showing it in full makes it full", ssp.status === 0 && reqs["DEV.4.3"] && !sspCov("DEV.4.3")],
+  ];
+  for (const [name, ok] of cases) {
+    failed += !ok;
+    console.log(`${ok ? "ok  " : "FAIL"} partial coverage: ${name}${ok ? "" : ": " + part.stderr + wrong.stderr + ssp.stderr + v.stdout}`);
+  }
+}
 // mapping.mjs: deterministic, validates; an unknown target or a source left
 // out is refused, and worksheet.mjs reads the result from disk.
 {

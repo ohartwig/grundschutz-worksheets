@@ -17,6 +17,8 @@
 //     "catalog": { "path": "control_layer/Grundschutz++/Grundschutz++-resolved_catalog.json",
 //                  "commit": "<40-char sha of the BSI library>" },
 //     "requirements": ["TEST.1.3", "TEST.4.1"],
+//     "partial": ["TEST.4.1"],                optional: requirements the check
+//                                              evidences only in part
 //     "evidence": [{ "text": "pipeline 1234", "href": "https://ci.example.org/p/1234" }],
 //     "plan": { "href": "assessment-plan.json",    the assessment plan
 //               "file": "assessment-plan.json" }, (assessment-plan.mjs) this run
@@ -32,6 +34,13 @@
 //         "satisfied": true, "detail": "main protected, force push off" }
 //     ]
 //   }
+//
+// A check often shows only part of a requirement: that the default branch is
+// protected says nothing about the criteria by which changes are authorised.
+// Such a requirement is listed in "partial"; its finding carries the prop
+// coverage=partial and says so, satisfied or not. OSCAL's finding states are
+// satisfied and not-satisfied only, so the prop is how a reader -- ssp.mjs,
+// coverage per standard -- keeps a partial pass from reading as a full one.
 //
 // Every requirement is satisfied in this run when every subject is; a
 // requirement is not-satisfied as soon as one subject is not, and its
@@ -112,6 +121,9 @@ for (const c of everyControl(catalog)) {
 const unknown = r.requirements.filter((id) => !alt.has(id));
 if (unknown.length) fail(`not in the catalog at ${r.catalog.commit.slice(0, 7)}: ${unknown.join(", ")}`);
 if (new Set(r.requirements).size !== r.requirements.length) fail("a requirement is listed twice");
+const partial = new Set(r.partial ?? []);
+if (!Array.isArray(r.partial ?? [])) fail('"partial" must be a list of requirement IDs');
+for (const id of partial) if (!r.requirements.includes(id)) fail(`partial ${id}: not one of "requirements"`);
 
 const run = `${r.check}:${r.start}`;
 const b64 = (s) => Buffer.from(s, "utf8").toString("base64");
@@ -143,10 +155,15 @@ const failed = observations.filter((o) => !o._satisfied);
 const findings = [...r.requirements].sort(byId).map((id) => ({
   uuid: uuid5(`finding:${run}:${id}`),
   title: `${id}: ${failed.length ? "not satisfied" : "satisfied"}`,
-  description: failed.length
-    ? `${failed.length} of ${observations.length} subject(s) examined by "${r.title}" were not as required.`
-    : `All ${observations.length} subject(s) examined by "${r.title}" were as required.`,
-  props: alt.get(id) ? [{ name: "alt-identifier", ns: NS, value: alt.get(id) }] : undefined,
+  description:
+    (failed.length
+      ? `${failed.length} of ${observations.length} subject(s) examined by "${r.title}" were not as required.`
+      : `All ${observations.length} subject(s) examined by "${r.title}" were as required.`) +
+    (partial.has(id) ? " The check evidences only part of this requirement." : ""),
+  props: [
+    ...(alt.get(id) ? [{ name: "alt-identifier", ns: NS, value: alt.get(id) }] : []),
+    ...(partial.has(id) ? [{ name: "coverage", ns: NS, value: "partial" }] : []),
+  ],
   target: {
     type: "objective-id",
     "target-id": id,
@@ -154,7 +171,7 @@ const findings = [...r.requirements].sort(byId).map((id) => ({
   },
   "related-observations": (failed.length ? failed : observations).map((o) => ({ "observation-uuid": o.uuid })),
 }));
-for (const f of findings) if (!f.props) delete f.props;
+for (const f of findings) if (!f.props.length) delete f.props;
 for (const o of observations) delete o._satisfied;
 
 const apResource = importResource(

@@ -418,6 +418,13 @@ node validate.mjs results.json
   observations that were not as required.
 - **Nothing examined is an error, not a pass.** A check that looked at no
   subject has shown nothing.
+- **Part of a requirement is part.** A check that shows only part of a
+  requirement -- a protected branch says nothing about the criteria for
+  authorising a change -- lists it in `"partial"`. Its finding carries
+  `coverage=partial`, satisfied or not, and the security plan marks the
+  requirement `assessment-coverage=partial` unless another check shows it in
+  full. OSCAL's findings know only satisfied and not-satisfied; the prop keeps a
+  partial pass from reading as a full one.
 - **No plan, no results.** A run file names the assessment plan it follows
   (`"plan": { "href": ... }`, with `"file"` for its SHA-256); OSCAL's results
   import it, so without one the run is refused. Up to 0.2 the check's own

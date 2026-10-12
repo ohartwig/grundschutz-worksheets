@@ -169,7 +169,8 @@ for (const f of s.results ?? []) {
       if (!id || !state) continue;
       if (!perCheck.has(id)) perCheck.set(id, new Map());
       const prev = perCheck.get(id).get(check);
-      if (!prev || at > prev.at) perCheck.get(id).set(check, { state, at, title: r.title, description: fd.description });
+      const partial = (fd.props ?? []).some((p) => p.name === "coverage" && p.value === "partial");
+      if (!prev || at > prev.at) perCheck.get(id).set(check, { state, at, title: r.title, description: fd.description, partial });
     }
   }
 }
@@ -184,6 +185,8 @@ for (const [id, checks] of perCheck) {
     title: shown.map(([, m]) => m.title).join("; "),
     description: shown[0][1].description,
     check: all.map(([c]) => c).join(", "),
+    // Partial unless one check evidences the requirement in full.
+    partial: all.every(([, m]) => m.partial),
   });
 }
 
@@ -295,6 +298,7 @@ const requirements = [...applicable].sort(byId).map((id) => {
             { name: "assessed", ns: NS, value: m.at },
             { name: "assessment-state", ns: NS, value: m.state },
             { name: "assessment-check", ns: NS, value: m.check },
+            ...(m.partial ? [{ name: "assessment-coverage", ns: NS, value: "partial" }] : []),
           ]
         : []),
     ],
