@@ -6,6 +6,12 @@ tagged `vX.Y.Z` and written here by the release tool from the commit messages;
 **breaking**: what can change an existing call or a spreadsheet built on the
 output.
 
+## [1.1.0](https://github.com/ohartwig/grundschutz-worksheets/compare/v1.0.0...v1.1.0) (2026-10-12)
+
+### :sparkles: Features
+
+* **standards:** NIS2 as a catalog of its own, from the Official Journal
+
 ## [1.0.0](https://github.com/ohartwig/grundschutz-worksheets/compare/v0.2.1...v1.0.0) (2026-10-11)
 
 ### :boom: BREAKING CHANGES
