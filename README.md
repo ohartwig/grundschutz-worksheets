@@ -75,7 +75,7 @@ A Markdown row looks like this:
 > is for you to check against the original texts -- the regulation, the
 > standard, your Statement of Applicability. The BSI mappings (`iso27001`,
 > `itgs2023`) are the BSI's and carry their own status; the mappings of this
-> repository (`nis2`, `dora`, `c5`) are unreviewed drafts, and `a5` reads a
+> repository (`nis2`, `dora`, `c5`, `soc2`) are unreviewed drafts, and `a5` reads a
 > catalog that is itself a Community Draft. None of it is legal
 > advice, and a worksheet that comes out of a preset proves nothing until a
 > person has reviewed it. Every worksheet made from a preset repeats this in a
@@ -85,7 +85,7 @@ A preset names the catalog and the mapping if there is one, and runs at the
 library commit this repository is tested at (`tools/bsi-library.mjs`), so
 `--preset iso27001` replaces three arguments. Options on the command line win,
 `--commit` included; the header then says the preset was tested at another
-commit. An own mapping (`nis2`, `dora`, `c5`) is the
+commit. An own mapping (`nis2`, `dora`, `c5`, `soc2`) is the
 exception: it is derived from the catalog at one commit and refuses any other
 until it is regenerated there.
 
@@ -106,6 +106,7 @@ node worksheet.mjs --preset itgs2023 --sources 'APP.1.1*,OPS.1.1.3*'
 | `nis2` | NIS2 Art. 21(2), own draft mapping (below) | 187 |
 | `dora` | DORA Art. 5 to 30, own draft mapping (below) | 176 |
 | `c5` | BSI C5:2026, own draft mapping (below) | 384 |
+| `soc2` | SOC 2 common criteria CC1 to CC9, own draft mapping (below) | 207 |
 | `a5` | BSI A5 KI-Prüfkatalog, Basismodul, file supplied by you (below) | 57 |
 
 The profile presets read the resolved catalog the BSI publishes next to each
@@ -138,9 +139,9 @@ PRESET_FILES=path/to/dir npm run test:presets   # checks a5 too, where the file 
 Without the file, `test:presets` reports a5 as skipped; CI does not have it.
 The Cloudmodul of the same date only repeats GCS.2.5 and has no preset.
 
-### Own mappings: NIS2, DORA and C5, as drafts
+### Own mappings: NIS2, DORA, C5 and SOC 2, as drafts
 
-The library has no mappings for NIS2, DORA or C5:2026. `mapping.mjs` writes one
+The library has no mappings for NIS2, DORA, C5:2026 or SOC 2. `mapping.mjs` writes one
 from a small source file in `mappings/src/` into an OSCAL mapping collection
 in `mappings/`, which the presets name as `mapping-file` and `--mapping-file`
 reads from disk:
@@ -150,6 +151,7 @@ reads from disk:
 | `nis2` | Art. 21(2) (a) to (j) NIS2 = § 30 Abs. 2 Nr. 1 to 10 BSIG, `Art.21.2.a` to `Art.21.2.j` | 187 |
 | `dora` | DORA article, Art. 5 to 30 | 176 |
 | `c5` | C5:2026 criterion (168; the 6 report conditions GC are left out) | 384 |
+| `soc2` | Trust Services common criterion, `CC1.1` to `CC9.2` (33) | 207 |
 
 Most targets are **derived**: each source names the ISO/IEC 27001:2022 Annex A
 controls it corresponds to, and the Grundschutz++ targets come from the BSI's
@@ -167,13 +169,20 @@ licensed CC BY-ND 4.0: the mapping uses criterion IDs only, every remark is our
 own wording. INQ-01 to INQ-04 (requests from authorities for customer data)
 have no target.
 
-All three are **drafts**, written with AI assistance and not yet reviewed by a
+The SOC 2 Trust Services Criteria are the AICPA's and are not reproduced either:
+the mapping names criterion IDs, and its source is a catalog of IDs only
+(below). It maps the 33 common criteria every SOC 2 report covers; A1, C1, PI1
+and P1 to P8 are in the catalog and not mapped yet. Governance, risk
+assessment and monitoring (CC1 to CC5) are mostly ISMS clauses rather than
+Annex A, so they lean on direct targets.
+
+All four are **drafts**, written with AI assistance and not yet reviewed by a
 person. The worksheet says so in its header (`mapping draft`) and in a note
 above the rows; the CSV, which has no room for one, says it on stderr.
 
 The review has a sheet: `mapping.mjs --review` writes, per source, its remark,
 the step to ISO, every target with its title and the boxes a reviewer ticks.
-The sheets for the three drafts are in `mappings/review/` and regenerated
+The sheets for the drafts are in `mappings/review/` and regenerated
 with the mappings. A mapping whose sheet is ticked through changes `status` to
 `complete` in its source file -- and only then may it say `subset-of`.
 
@@ -221,6 +230,23 @@ under the article's relationship -- no judgement is added. `--sources Art.9`
 selects them all. The NIS2 IDs are those of the catalog now, `Art.21.2.b`
 where 1.0 had `21.2.b`; `--sources 21.2.b` still works until 2.0 and says so
 on stderr.
+
+### SOC 2: the IDs, not the text
+
+`standards/soc2.json` is a catalog of the 61 Trust Services Criteria (2017,
+revised points of focus 2022): security (the common criteria CC1 to CC9),
+availability, confidentiality, processing integrity and privacy, a group per
+category and series, a control per criterion. Each has its ID, a title in this
+repository's words, and a statement that only says where the text is -- the
+AICPA's document, free with registration. That is enough for what the chain
+does with a standard: a mapping, an assessment plan and results point at IDs.
+
+`tools/id-catalog.mjs` writes it from `standards/src/soc2.json` and refuses an
+ID twice, a criterion outside its series and a count other than the source's.
+A SOC 2 report is a CPA firm's opinion; nothing here is one. What the chain
+can give the firm is the evidence of Type II: dated results of the same checks
+over the period (`period.mjs`, below), per criterion through `coverage.mjs
+--preset soc2`.
 
 ## Your tailoring as an OSCAL profile
 
