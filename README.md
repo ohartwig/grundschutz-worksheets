@@ -106,7 +106,7 @@ node worksheet.mjs --preset itgs2023 --sources 'APP.1.1*,OPS.1.1.3*'
 | `nis2` | NIS2 Art. 21(2), own draft mapping (below) | 187 |
 | `dora` | DORA Art. 5 to 30, own draft mapping (below) | 176 |
 | `c5` | BSI C5:2026, own draft mapping (below) | 384 |
-| `soc2` | SOC 2 common criteria CC1 to CC9, own draft mapping (below) | 207 |
+| `soc2` | SOC 2 common criteria, availability and confidentiality, own draft mapping (below) | 231 |
 | `a5` | BSI A5 KI-Prüfkatalog, Basismodul, file supplied by you (below) | 57 |
 
 The profile presets read the resolved catalog the BSI publishes next to each
@@ -151,7 +151,7 @@ reads from disk:
 | `nis2` | Art. 21(2) (a) to (j) NIS2 = § 30 Abs. 2 Nr. 1 to 10 BSIG, `Art.21.2.a` to `Art.21.2.j` | 187 |
 | `dora` | DORA article, Art. 5 to 30 | 176 |
 | `c5` | C5:2026 criterion (168; the 6 report conditions GC are left out) | 384 |
-| `soc2` | Trust Services common criterion, `CC1.1` to `CC9.2` (33) | 207 |
+| `soc2` | Trust Services criterion: common criteria `CC1.1` to `CC9.2` (33), availability `A1.1` to `A1.3`, confidentiality `C1.1`, `C1.2` | 231 |
 
 Most targets are **derived**: each source names the ISO/IEC 27001:2022 Annex A
 controls it corresponds to, and the Grundschutz++ targets come from the BSI's
@@ -171,8 +171,9 @@ have no target.
 
 The SOC 2 Trust Services Criteria are the AICPA's and are not reproduced either:
 the mapping names criterion IDs, and its source is a catalog of IDs only
-(below). It maps the 33 common criteria every SOC 2 report covers; A1, C1, PI1
-and P1 to P8 are in the catalog and not mapped yet. Governance, risk
+(below). It maps the 33 common criteria every SOC 2 report covers, and availability
+and confidentiality, which most reports add; PI1 and P1 to P8 are in the
+catalog and not mapped yet. Governance, risk
 assessment and monitoring (CC1 to CC5) are mostly ISMS clauses rather than
 Annex A, so they lean on direct targets.
 

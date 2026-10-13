@@ -1,14 +1,14 @@
 {
-  "title": "SOC 2 common criteria (CC1 to CC9) to Grundschutz++",
-  "version": "0.1.0",
+  "title": "SOC 2 common criteria, availability and confidentiality to Grundschutz++",
+  "version": "0.2.0",
   "last-modified": "2026-10-12T00:00:00Z",
   "status": "draft",
   "method": "hybrid",
-  "description": "The 33 common criteria (CC1.1 to CC9.2) of the AICPA Trust Services Criteria 2017 with the revised points of focus of 2022, the part every SOC 2 report covers. Availability, confidentiality, processing integrity and privacy (A1, C1, PI1, P1 to P8) are in the catalog but not mapped yet. Each criterion names the ISO/IEC 27001:2022 Annex A controls it corresponds to; the Grundschutz++ targets of those controls come from the BSI's own mapping. Direct targets cover what Annex A lacks, notably governance and risk assessment (ISMS clauses 4 to 10). The step from each criterion to ISO and the direct targets are a draft written with AI assistance and not yet reviewed by a person; the AICPA's own mapping to ISO 27001 (2018) is for members only, predates ISO 27001:2022 and was not used. The criteria are the AICPA's: only their IDs are used here, every remark is our own wording.",
+  "description": "The 33 common criteria (CC1.1 to CC9.2) of the AICPA Trust Services Criteria 2017 with the revised points of focus of 2022, the part every SOC 2 report covers, and the two categories most reports add: availability (A1.1 to A1.3) and confidentiality (C1.1, C1.2). Processing integrity and privacy (PI1, P1 to P8) are in the catalog but not mapped yet. Each criterion names the ISO/IEC 27001:2022 Annex A controls it corresponds to; the Grundschutz++ targets of those controls come from the BSI's own mapping. Direct targets cover what Annex A lacks, notably governance and risk assessment (ISMS clauses 4 to 10). The step from each criterion to ISO and the direct targets are a draft written with AI assistance and not yet reviewed by a person; the AICPA's own mapping to ISO 27001 (2018) is for members only, predates ISO 27001:2022 and was not used. The criteria are the AICPA's: only their IDs are used here, every remark is our own wording.",
   "source": {
-    "title": "AICPA Trust Services Criteria 2017 (revised points of focus 2022), common criteria",
+    "title": "AICPA Trust Services Criteria 2017 (revised points of focus 2022): common criteria, availability, confidentiality",
     "catalog": "standards/soc2.json",
-    "ids": ["CC1.1", "CC1.2", "CC1.3", "CC1.4", "CC1.5", "CC2.1", "CC2.2", "CC2.3", "CC3.1", "CC3.2", "CC3.3", "CC3.4", "CC4.1", "CC4.2", "CC5.1", "CC5.2", "CC5.3", "CC6.1", "CC6.2", "CC6.3", "CC6.4", "CC6.5", "CC6.6", "CC6.7", "CC6.8", "CC7.1", "CC7.2", "CC7.3", "CC7.4", "CC7.5", "CC8.1", "CC9.1", "CC9.2"]
+    "ids": ["CC1.1", "CC1.2", "CC1.3", "CC1.4", "CC1.5", "CC2.1", "CC2.2", "CC2.3", "CC3.1", "CC3.2", "CC3.3", "CC3.4", "CC4.1", "CC4.2", "CC5.1", "CC5.2", "CC5.3", "CC6.1", "CC6.2", "CC6.3", "CC6.4", "CC6.5", "CC6.6", "CC6.7", "CC6.8", "CC7.1", "CC7.2", "CC7.3", "CC7.4", "CC7.5", "CC8.1", "CC9.1", "CC9.2", "A1.1", "A1.2", "A1.3", "C1.1", "C1.2"]
   },
   "catalog": {
     "path": "control_layer/Grundschutz++/Grundschutz++-resolved_catalog.json",
@@ -276,6 +276,49 @@
       },
       "relationship": "intersects-with",
       "targets": ["DLS.1.1", "DLS.3.1"]
+    },
+    {
+      "source": "A1.1",
+      "remarks": "Keeping capacity in line with demand, so that the availability commitments can be met.",
+      "via": {
+        "iso27001": ["8.6"]
+      },
+      "relationship": "intersects-with",
+      "targets": ["DET.3.4", "DET.4.17"]
+    },
+    {
+      "source": "A1.2",
+      "remarks": "Environmental protections, software, data backup and recovery infrastructure to meet the availability commitments.",
+      "via": {
+        "iso27001": ["7.5", "7.11", "8.13", "8.14"]
+      }
+    },
+    {
+      "source": "A1.3",
+      "remarks": "Testing the recovery plan procedures that support system recovery. Annex A has ICT readiness for continuity; the tests themselves are direct targets.",
+      "via": {
+        "iso27001": ["5.30"]
+      },
+      "relationship": "intersects-with",
+      "targets": ["NOT.3.4", "NOT.4.16"]
+    },
+    {
+      "source": "C1.1",
+      "remarks": "Identifying confidential information and keeping it protected for as long as it is confidential.",
+      "via": {
+        "iso27001": ["5.10", "5.12", "5.13", "8.12"]
+      },
+      "relationship": "intersects-with",
+      "targets": ["ASST.2.4"]
+    },
+    {
+      "source": "C1.2",
+      "remarks": "Disposing of confidential information when it is no longer needed. Annex A has deletion and disposal; retention periods are a direct target.",
+      "via": {
+        "iso27001": ["7.14", "8.10"]
+      },
+      "relationship": "intersects-with",
+      "targets": ["ASST.7.2", "ASST.7.3"]
     }
   ]
 }

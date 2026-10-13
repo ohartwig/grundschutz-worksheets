@@ -1,8 +1,8 @@
-# Review: SOC 2 common criteria (CC1 to CC9) to Grundschutz++
+# Review: SOC 2 common criteria, availability and confidentiality to Grundschutz++
 
-Version 0.1.0 · status draft · catalog Grundschutz++-resolved_catalog.json at a128311
+Version 0.2.0 · status draft · catalog Grundschutz++-resolved_catalog.json at a128311
 
-Source: AICPA Trust Services Criteria 2017 (revised points of focus 2022), common criteria (standards/soc2.json). Check every section against the original text, not against the remark.
+Source: AICPA Trust Services Criteria 2017 (revised points of focus 2022): common criteria, availability, confidentiality (standards/soc2.json). Check every section against the original text, not against the remark.
 Derived targets come from the BSI's own mapping and are only as right as the step to it; a direct target is this repository's judgement.
 
 ## CC1.1
@@ -359,6 +359,64 @@ Text: The text of CC9.2 is not reproduced here; it is the AICPA's. Read it, with
 - [ ] Step to ISO/IEC 27001:2022 Annex A: 5.19, 5.20, 5.21, 5.22 -- these and no others
   - derived, intersects-with: BES.1.3 Lieferanten- und Dienstleisterverzeichnis; BES.1.3.1 Gesamte Lieferkette; BES.3.1 Klassifizierung von Lieferantenbeziehungen; BES.4.4 Vertragsvorlage für Outsourcing; BES.4.5 Security by Design; BES.4.5.1 Entwicklung nach einem Sicherheitslebenszyklus; BES.4.8 Konformitätsnachweise; BES.5.2 Service Level Agreement; BES.5.3 Compliance-Verpflichtungen; BES.5.4 Informationssicherheitskontrollmechanismen; BES.5.6.3 Nachverfolgbarkeit der Lieferkette; BES.5.9 Umgang mit Änderungen; BES.5.11 Recht auf Audit; BES.5.12 Informationspflichten; BES.7.4.4.1 Software Bill of Materials (SBOM); BES.7.4.12 Software Bill of Materials (SBOM) - Cloud; DLS.3.2 Checkup
 - [ ] Direct targets, intersects-with: DLS.1.1 Verfahren und Regelungen; DLS.3.1 Einhaltung der Sicherheitsvorgaben
+- [ ] Relationship: intersects-with holds (or the targets cover all of the source: then subset-of)
+- [ ] The remark is our own wording, not the source's text
+
+## A1.1
+
+Text: The text of A1.1 is not reproduced here; it is the AICPA's. Read it, with its points of focus, in the source: AICPA, 2017 Trust Services Criteria for Security, Availability, Processing Integrity, Confidentiality, and Privacy (with revised points of focus, 2022).
+
+> Keeping capacity in line with demand, so that the availability commitments can be met.
+
+- [ ] Step to ISO/IEC 27001:2022 Annex A: 8.6 -- these and no others
+  - derived, intersects-with: ARCH.9.1 Dimensionierung der Netzanbindung; ARCH.9.2 Lastverteilung; ARCH.9.3 Automatische Skalierung; DET.4.15 Ressourcenauslastung von Hostsystemen; DET.4.16 Ressourcenauslastung der Server-Dienste; KONF.9.1 Speicherplatzbegrenzung; KONF.9.2 Begrenzung der Rechenleistung
+- [ ] Direct targets, intersects-with: DET.3.4 Speicherkapazität; DET.4.17 Anwendungsbasiertes Kapazitätsmanagement
+- [ ] Relationship: intersects-with holds (or the targets cover all of the source: then subset-of)
+- [ ] The remark is our own wording, not the source's text
+
+## A1.2
+
+Text: The text of A1.2 is not reproduced here; it is the AICPA's. Read it, with its points of focus, in the source: AICPA, 2017 Trust Services Criteria for Security, Availability, Processing Integrity, Confidentiality, and Privacy (with revised points of focus, 2022).
+
+> Environmental protections, software, data backup and recovery infrastructure to meet the availability commitments.
+
+- [ ] Step to ISO/IEC 27001:2022 Annex A: 7.5, 7.11, 8.13, 8.14 -- these and no others
+  - derived, intersects-with: ARCH.8.1 Redundanz im Kernnetz; ARCH.8.2 Redundante TK-Anbindung; ARCH.8.3 Redundante Server; GEB.8.3 Schutz der Datenträger vor Brandschäden; GEB.9.1 Normgerechte Stromversorgung; GEB.9.1.3 Redundante Stromversorgung; GEB.9.4 Überspannungsschutz; GEB.10.1 Klimatisierung; GEB.10.1.3 Redundante Klimatisierung; GEB.10.2 Brandschutz; GEB.10.3 Wasserschutz; GEB.10.4 Blitzschutzeinrichtungen; NOT.4.2 Sicherung des Systems; NOT.4.3 Sicherung der Anwendung; NOT.4.4 Automatische Datensicherung; NOT.4.6 Geschützte Aufbewahrung; NOT.4.7 Versionierte Datensicherung; NOT.4.8 Verschlüsselte Datensicherung; NOT.4.10 Getrennte Aufbewahrung; NOT.4.14 Offline-Kopie; NOT.4.15 Vorgehen zur Wiederherstellung; NOT.4.16 Test der Datensicherung
+- [ ] The remark is our own wording, not the source's text
+
+## A1.3
+
+Text: The text of A1.3 is not reproduced here; it is the AICPA's. Read it, with its points of focus, in the source: AICPA, 2017 Trust Services Criteria for Security, Availability, Processing Integrity, Confidentiality, and Privacy (with revised points of focus, 2022).
+
+> Testing the recovery plan procedures that support system recovery. Annex A has ICT readiness for continuity; the tests themselves are direct targets.
+
+- [ ] Step to ISO/IEC 27001:2022 Annex A: 5.30 -- these and no others
+  - derived, intersects-with: NOT.1.1.4 Business Continuity Management System; NOT.3.1 Wiederanlaufplan; NOT.4.2 Sicherung des Systems; NOT.4.3 Sicherung der Anwendung; NOT.4.15 Vorgehen zur Wiederherstellung
+- [ ] Direct targets, intersects-with: NOT.3.4 Funktionstest; NOT.4.16 Test der Datensicherung
+- [ ] Relationship: intersects-with holds (or the targets cover all of the source: then subset-of)
+- [ ] The remark is our own wording, not the source's text
+
+## C1.1
+
+Text: The text of C1.1 is not reproduced here; it is the AICPA's. Read it, with its points of focus, in the source: AICPA, 2017 Trust Services Criteria for Security, Availability, Processing Integrity, Confidentiality, and Privacy (with revised points of focus, 2022).
+
+> Identifying confidential information and keeping it protected for as long as it is confidential.
+
+- [ ] Step to ISO/IEC 27001:2022 Annex A: 5.10, 5.12, 5.13, 8.12 -- these and no others
+  - derived, intersects-with: ASST.2.1.1 Informationsverantwortung; ASST.3.1 Nutzungsvereinbarungen; ASST.3.3 Kennzeichnung; ASST.3.4 Kennzeichnung ohne vertrauliche Daten; ASST.3.10 Autorisierung von Datenlokationen; ASST.3.11 Autorisierung von Systemen; ASST.3.12 Autorisierung von Personen oder Institutionen; ASST.4.2 Vertraulichkeit und Integrität beim Transport; ASST.4.3 Autorisierung von Veröffentlichungen; DET.4.5 Unerwünschte Datenabflüsse
+- [ ] Direct targets, intersects-with: ASST.2.4 Klassifizierung
+- [ ] Relationship: intersects-with holds (or the targets cover all of the source: then subset-of)
+- [ ] The remark is our own wording, not the source's text
+
+## C1.2
+
+Text: The text of C1.2 is not reproduced here; it is the AICPA's. Read it, with its points of focus, in the source: AICPA, 2017 Trust Services Criteria for Security, Availability, Processing Integrity, Confidentiality, and Privacy (with revised points of focus, 2022).
+
+> Disposing of confidential information when it is no longer needed. Annex A has deletion and disposal; retention periods are a direct target.
+
+- [ ] Step to ISO/IEC 27001:2022 Annex A: 7.14, 8.10 -- these and no others
+  - derived, intersects-with: ASST.7.3.2 Löschverfahren; ASST.7.6 Autorisierung von Veräußerungen; ASST.7.7 Beschriftungen entfernen; BES.6.2 Löschung von Daten; BES.6.2.1 Löschverfahren
+- [ ] Direct targets, intersects-with: ASST.7.2 Aufbewahrungs- und Löschfristen; ASST.7.3 Geregeltes Löschen oder Vernichten
 - [ ] Relationship: intersects-with holds (or the targets cover all of the source: then subset-of)
 - [ ] The remark is our own wording, not the source's text
 

@@ -1,10 +1,10 @@
 {
   "mapping-collection": {
-    "uuid": "8a45eb4c-2452-5f36-afd8-821cf223e25c",
+    "uuid": "0903cc05-994e-5ea8-adcc-098b732f53a9",
     "metadata": {
-      "title": "SOC 2 common criteria (CC1 to CC9) to Grundschutz++",
+      "title": "SOC 2 common criteria, availability and confidentiality to Grundschutz++",
       "last-modified": "2026-10-12T00:00:00Z",
-      "version": "0.1.0",
+      "version": "0.2.0",
       "oscal-version": "1.2.2",
       "props": [
         {
@@ -15,7 +15,7 @@
         {
           "name": "source-ids",
           "ns": "https://github.com/ohartwig/grundschutz-worksheets/ns",
-          "value": "33"
+          "value": "38"
         },
         {
           "name": "unmapped",
@@ -35,15 +35,15 @@
       "method": "hybrid",
       "matching-rationale": "semantic",
       "status": "draft",
-      "mapping-description": "The 33 common criteria (CC1.1 to CC9.2) of the AICPA Trust Services Criteria 2017 with the revised points of focus of 2022, the part every SOC 2 report covers. Availability, confidentiality, processing integrity and privacy (A1, C1, PI1, P1 to P8) are in the catalog but not mapped yet. Each criterion names the ISO/IEC 27001:2022 Annex A controls it corresponds to; the Grundschutz++ targets of those controls come from the BSI's own mapping. Direct targets cover what Annex A lacks, notably governance and risk assessment (ISMS clauses 4 to 10). The step from each criterion to ISO and the direct targets are a draft written with AI assistance and not yet reviewed by a person; the AICPA's own mapping to ISO 27001 (2018) is for members only, predates ISO 27001:2022 and was not used. The criteria are the AICPA's: only their IDs are used here, every remark is our own wording."
+      "mapping-description": "The 33 common criteria (CC1.1 to CC9.2) of the AICPA Trust Services Criteria 2017 with the revised points of focus of 2022, the part every SOC 2 report covers, and the two categories most reports add: availability (A1.1 to A1.3) and confidentiality (C1.1, C1.2). Processing integrity and privacy (PI1, P1 to P8) are in the catalog but not mapped yet. Each criterion names the ISO/IEC 27001:2022 Annex A controls it corresponds to; the Grundschutz++ targets of those controls come from the BSI's own mapping. Direct targets cover what Annex A lacks, notably governance and risk assessment (ISMS clauses 4 to 10). The step from each criterion to ISO and the direct targets are a draft written with AI assistance and not yet reviewed by a person; the AICPA's own mapping to ISO 27001 (2018) is for members only, predates ISO 27001:2022 and was not used. The criteria are the AICPA's: only their IDs are used here, every remark is our own wording."
     },
     "mappings": [
       {
-        "uuid": "5e3b45c1-4b84-570d-b558-a5cb1f73c08d",
+        "uuid": "3cf33f97-5dfc-5330-8c33-d1c7253342a0",
         "source-resource": {
           "type": "catalog",
           "href": "#bd477870-ab8a-515e-a6ba-7d76c96e0d3e",
-          "remarks": "AICPA Trust Services Criteria 2017 (revised points of focus 2022), common criteria"
+          "remarks": "AICPA Trust Services Criteria 2017 (revised points of focus 2022): common criteria, availability, confidentiality"
         },
         "target-resource": {
           "type": "catalog",
@@ -51,7 +51,7 @@
         },
         "maps": [
           {
-            "uuid": "e9bc4523-d009-58a4-982c-57df9f4914a3",
+            "uuid": "9474ab66-572e-5163-b394-20a5dc62fb01",
             "relationship": "intersects-with",
             "sources": [
               {
@@ -114,7 +114,7 @@
             "remarks": "Tone at the top: a code of conduct, its acceptance in the terms of employment, and consequences for breaching it.\n\nDerived through the BSI mapping from ISO/IEC 27001:2022 Annex A 5.1, 5.4, 6.2, 6.4."
           },
           {
-            "uuid": "c9c66efd-ec5f-5199-b5d1-83fd272c4a4c",
+            "uuid": "a53aeb4d-0d4a-53c3-bd4a-3b4d2211c159",
             "relationship": "intersects-with",
             "sources": [
               {
@@ -135,7 +135,7 @@
             "remarks": "Oversight of internal control by a governing body independent of management. Annex A has the independent review; the governing body's approval and the report to it are ISMS clauses 5 and 9.3, direct targets."
           },
           {
-            "uuid": "be87b875-e654-5e53-a84d-00eeda936d75",
+            "uuid": "68107ed9-09bd-5c92-bbc0-a6b5b35e2d69",
             "relationship": "intersects-with",
             "sources": [
               {
@@ -163,7 +163,7 @@
             "remarks": "Oversight of internal control by a governing body independent of management. Annex A has the independent review; the governing body's approval and the report to it are ISMS clauses 5 and 9.3, direct targets.\n\nDerived through the BSI mapping from ISO/IEC 27001:2022 Annex A 5.35."
           },
           {
-            "uuid": "7e1c9ffb-d925-593d-85a8-2ccb785e8d64",
+            "uuid": "1307792f-e7f0-5d86-88c1-914d7ead6635",
             "relationship": "intersects-with",
             "sources": [
               {
@@ -184,7 +184,7 @@
             "remarks": "Structures, reporting lines, authority and responsibility, set by management under the board's oversight."
           },
           {
-            "uuid": "8555e2f9-803b-5a85-9d6b-689440ae3b5a",
+            "uuid": "49e6a411-6b77-5e4b-a92a-e30236bb8872",
             "relationship": "intersects-with",
             "sources": [
               {
@@ -222,7 +222,7 @@
             "remarks": "Structures, reporting lines, authority and responsibility, set by management under the board's oversight.\n\nDerived through the BSI mapping from ISO/IEC 27001:2022 Annex A 5.2, 5.3, 5.4."
           },
           {
-            "uuid": "e7e1907b-0b2c-53c0-bc80-4f5613c20d2c",
+            "uuid": "fbdc8c56-dc70-552d-af56-007fb028bd0e",
             "relationship": "intersects-with",
             "sources": [
               {
@@ -239,7 +239,7 @@
             "remarks": "Attracting, developing and keeping competent people: screening, terms, awareness and training."
           },
           {
-            "uuid": "42a5509c-bf15-547a-87b0-2d9dd1e6159b",
+            "uuid": "89ea1132-4be5-50ad-b391-a9f16b406120",
             "relationship": "intersects-with",
             "sources": [
               {
@@ -305,7 +305,7 @@
             "remarks": "Attracting, developing and keeping competent people: screening, terms, awareness and training.\n\nDerived through the BSI mapping from ISO/IEC 27001:2022 Annex A 6.1, 6.2, 6.3."
           },
           {
-            "uuid": "21ff07d7-cbf2-5d3f-8c7d-40c165daa236",
+            "uuid": "863689fd-12e6-5a6a-85ce-49ee1b2dfa20",
             "relationship": "intersects-with",
             "sources": [
               {
@@ -322,7 +322,7 @@
             "remarks": "Holding people accountable for their internal-control responsibilities."
           },
           {
-            "uuid": "0f997ed2-b1b1-583b-97cb-b36326b25b75",
+            "uuid": "02bc184e-fd4a-547a-ba21-139b6273e198",
             "relationship": "intersects-with",
             "sources": [
               {
@@ -359,7 +359,7 @@
             "remarks": "Holding people accountable for their internal-control responsibilities.\n\nDerived through the BSI mapping from ISO/IEC 27001:2022 Annex A 5.4, 6.4."
           },
           {
-            "uuid": "110e4802-d464-5211-a758-d2dd7e6bd9d3",
+            "uuid": "07c6019a-39c3-537e-a835-cc43b5693f23",
             "relationship": "intersects-with",
             "sources": [
               {
@@ -376,7 +376,7 @@
             "remarks": "Relevant, quality information to support internal control. Annex A has documented operating procedures; controlled documented information is ISMS clause 7.5."
           },
           {
-            "uuid": "0a95723d-0105-54eb-bb4f-a4c7b5e52aaa",
+            "uuid": "a9680c2a-0aac-561d-9b21-100a727794ba",
             "relationship": "intersects-with",
             "sources": [
               {
@@ -400,7 +400,7 @@
             "remarks": "Relevant, quality information to support internal control. Annex A has documented operating procedures; controlled documented information is ISMS clause 7.5.\n\nDerived through the BSI mapping from ISO/IEC 27001:2022 Annex A 5.37."
           },
           {
-            "uuid": "78892830-390c-5263-9629-c73b9661813f",
+            "uuid": "b22f0447-a9cc-5465-8e0e-8e54a7ca919d",
             "relationship": "intersects-with",
             "sources": [
               {
@@ -417,7 +417,7 @@
             "remarks": "Communicating objectives and responsibilities for internal control inside the organisation."
           },
           {
-            "uuid": "7dde6966-6047-53d3-a842-09a5b8a8472e",
+            "uuid": "c92e74bb-a326-51bd-8b40-b5be8c760109",
             "relationship": "intersects-with",
             "sources": [
               {
@@ -467,7 +467,7 @@
             "remarks": "Communicating objectives and responsibilities for internal control inside the organisation.\n\nDerived through the BSI mapping from ISO/IEC 27001:2022 Annex A 5.1, 5.2, 6.3."
           },
           {
-            "uuid": "8812bc31-8d0e-5ef9-9171-a12e634d32d7",
+            "uuid": "3c89f375-2192-5efe-a5fb-96421b5bf9c7",
             "relationship": "intersects-with",
             "sources": [
               {
@@ -484,7 +484,7 @@
             "remarks": "Communicating with external parties about matters that affect internal control."
           },
           {
-            "uuid": "59142d96-c793-553e-9a5b-419e5cb2de1d",
+            "uuid": "f8919de2-df91-5f20-ae8f-7da05c6419c2",
             "relationship": "intersects-with",
             "sources": [
               {
@@ -534,7 +534,7 @@
             "remarks": "Communicating with external parties about matters that affect internal control.\n\nDerived through the BSI mapping from ISO/IEC 27001:2022 Annex A 5.5, 5.6, 5.14."
           },
           {
-            "uuid": "835c9425-9671-5f92-8838-605df94657f7",
+            "uuid": "e2bd633e-4639-5027-bc09-db7c6f38a965",
             "relationship": "intersects-with",
             "sources": [
               {
@@ -555,7 +555,7 @@
             "remarks": "Objectives specified clearly enough to identify and assess the risks to them. ISMS clauses 4.3 and 6.2, not Annex A."
           },
           {
-            "uuid": "249251df-8969-548a-ae81-9490066b52d8",
+            "uuid": "96871e73-bbe3-53c0-9ea3-620518418fa9",
             "relationship": "intersects-with",
             "sources": [
               {
@@ -580,7 +580,7 @@
             "remarks": "Identifying and analysing risks to the objectives across the organisation. Risk assessment is ISMS clause 6.1; Annex A adds threat intelligence."
           },
           {
-            "uuid": "6111d403-aa80-5dfa-a301-4d817dee83e9",
+            "uuid": "2d4c3272-034a-5022-b8e2-0790b44162e6",
             "relationship": "intersects-with",
             "sources": [
               {
@@ -608,7 +608,7 @@
             "remarks": "Identifying and analysing risks to the objectives across the organisation. Risk assessment is ISMS clause 6.1; Annex A adds threat intelligence.\n\nDerived through the BSI mapping from ISO/IEC 27001:2022 Annex A 5.7."
           },
           {
-            "uuid": "22f85ceb-100e-567b-9cdf-acca4032af71",
+            "uuid": "5f5d0998-3572-57ff-96b6-0b6638b3bec7",
             "relationship": "intersects-with",
             "sources": [
               {
@@ -629,7 +629,7 @@
             "remarks": "Considering the potential for fraud. Annex A has segregation of duties; insiders are a direct target."
           },
           {
-            "uuid": "07594fd9-36b6-5775-867b-f8b7820a9461",
+            "uuid": "b968b0ff-93cc-5242-80ae-c8e5fab4de8b",
             "relationship": "intersects-with",
             "sources": [
               {
@@ -654,7 +654,7 @@
             "remarks": "Identifying and assessing changes, inside and outside, that could affect internal control. The context is ISMS clause 4."
           },
           {
-            "uuid": "54de95bd-9c3c-5448-9bc9-ee992534d340",
+            "uuid": "62433e86-69ce-5c2d-ac6f-baaf5dac0a82",
             "relationship": "intersects-with",
             "sources": [
               {
@@ -682,7 +682,7 @@
             "remarks": "Identifying and assessing changes, inside and outside, that could affect internal control. The context is ISMS clause 4.\n\nDerived through the BSI mapping from ISO/IEC 27001:2022 Annex A 5.7."
           },
           {
-            "uuid": "1dcf0b55-3181-507b-ab9e-59abec687c68",
+            "uuid": "2c701d84-12ea-510b-9487-8fd6aa74fc04",
             "relationship": "intersects-with",
             "sources": [
               {
@@ -703,7 +703,7 @@
             "remarks": "Ongoing and separate evaluations of whether the controls are present and work. Annex A has the reviews; the audit programme is ISMS clause 9.2."
           },
           {
-            "uuid": "3a8ed6ba-e4c0-5a8d-bca5-d10b5a7d5e97",
+            "uuid": "10a78c0d-7ca4-5d84-b9dd-db0942ab2222",
             "relationship": "intersects-with",
             "sources": [
               {
@@ -740,7 +740,7 @@
             "remarks": "Ongoing and separate evaluations of whether the controls are present and work. Annex A has the reviews; the audit programme is ISMS clause 9.2.\n\nDerived through the BSI mapping from ISO/IEC 27001:2022 Annex A 5.35, 5.36."
           },
           {
-            "uuid": "7d5d651e-5850-5eba-953e-fe241984de34",
+            "uuid": "de1535e9-ea6e-5b37-abe2-9ea887af21bb",
             "relationship": "intersects-with",
             "sources": [
               {
@@ -765,7 +765,7 @@
             "remarks": "Evaluating deficiencies and reporting them in time to those who can correct them. ISMS clauses 9.3 and 10."
           },
           {
-            "uuid": "be1447d1-ea18-5cdc-bd43-08d385063ce3",
+            "uuid": "7ef589f5-0643-5963-9ccc-a526479bade3",
             "relationship": "intersects-with",
             "sources": [
               {
@@ -790,7 +790,7 @@
             "remarks": "Choosing and developing control activities that bring risks down to an acceptable level: risk treatment, ISMS clause 6.1.3."
           },
           {
-            "uuid": "af25e481-00e8-5d9d-b2e0-aad6d065c24d",
+            "uuid": "3be4a370-e429-5dcd-a7ad-935f53a92969",
             "relationship": "intersects-with",
             "sources": [
               {
@@ -909,7 +909,7 @@
             "remarks": "General control activities over technology: access, configuration, development and change.\n\nDerived through the BSI mapping from ISO/IEC 27001:2022 Annex A 5.15, 8.9, 8.25, 8.32."
           },
           {
-            "uuid": "7c97d2bf-d4c3-507a-b058-3d0c6b51cd51",
+            "uuid": "67e2324a-5b9d-5130-9ebb-f30003f8427b",
             "relationship": "intersects-with",
             "sources": [
               {
@@ -926,7 +926,7 @@
             "remarks": "Control activities put in place through policies and procedures."
           },
           {
-            "uuid": "12f67db9-3dae-5a20-ba6e-da8a5860d16e",
+            "uuid": "f9ef86ce-1cad-5cec-81b0-4c5a459982e8",
             "relationship": "intersects-with",
             "sources": [
               {
@@ -959,7 +959,7 @@
             "remarks": "Control activities put in place through policies and procedures.\n\nDerived through the BSI mapping from ISO/IEC 27001:2022 Annex A 5.1, 5.37."
           },
           {
-            "uuid": "883cdfe8-8a09-583f-9a25-f114e2972cc1",
+            "uuid": "bcf0a275-f5ac-54d0-b3ab-980374f3783b",
             "relationship": "intersects-with",
             "sources": [
               {
@@ -1104,7 +1104,7 @@
             "remarks": "Logical access security over protected information assets: inventory, access control, privileged rights, authentication and encryption.\n\nDerived through the BSI mapping from ISO/IEC 27001:2022 Annex A 5.9, 5.15, 8.2, 8.3, 8.5, 8.24."
           },
           {
-            "uuid": "9f836a80-ee54-50fd-aaab-ac48b4391237",
+            "uuid": "d73439be-0b08-563d-9a57-935b75fca582",
             "relationship": "intersects-with",
             "sources": [
               {
@@ -1169,7 +1169,7 @@
             "remarks": "Registering, authorising and deregistering users before credentials are issued.\n\nDerived through the BSI mapping from ISO/IEC 27001:2022 Annex A 5.16, 5.18."
           },
           {
-            "uuid": "0bcb8d58-a9f9-5bd2-94be-721fe1c38eb4",
+            "uuid": "a9e6e6ff-5c0f-55ba-92b7-f5331390da9e",
             "relationship": "intersects-with",
             "sources": [
               {
@@ -1240,7 +1240,7 @@
             "remarks": "Granting, changing and removing access by role, least privilege and segregation of duties.\n\nDerived through the BSI mapping from ISO/IEC 27001:2022 Annex A 5.3, 5.15, 5.18, 8.2."
           },
           {
-            "uuid": "61e36543-4280-520f-9547-f09fff2cecb5",
+            "uuid": "9100e5f3-5c39-58d2-8b39-5d93ed329644",
             "relationship": "intersects-with",
             "sources": [
               {
@@ -1307,7 +1307,7 @@
             "remarks": "Restricting physical access to facilities and protected assets.\n\nDerived through the BSI mapping from ISO/IEC 27001:2022 Annex A 7.1, 7.2, 7.3, 7.4."
           },
           {
-            "uuid": "75356469-aec8-5166-8ee6-0660ff25e1ba",
+            "uuid": "01f89d43-a20f-5ff1-ba32-0105531ab1eb",
             "relationship": "intersects-with",
             "sources": [
               {
@@ -1360,7 +1360,7 @@
             "remarks": "Discontinuing protection only when assets are disposed of and data can no longer be recovered.\n\nDerived through the BSI mapping from ISO/IEC 27001:2022 Annex A 7.14, 8.10."
           },
           {
-            "uuid": "3956aa52-5ab1-52d8-99c6-cb2423312747",
+            "uuid": "b66baab6-9486-5d20-960c-eb1d1d3838ce",
             "relationship": "intersects-with",
             "sources": [
               {
@@ -1447,7 +1447,7 @@
             "remarks": "Protecting against threats from outside the system boundary: network controls and authentication of outside access.\n\nDerived through the BSI mapping from ISO/IEC 27001:2022 Annex A 8.5, 8.20, 8.21, 8.22."
           },
           {
-            "uuid": "b709d54d-1b55-57e1-a5b9-069d1cb4dcd3",
+            "uuid": "5392effb-8446-563b-9b8f-00524b7c1dbb",
             "relationship": "intersects-with",
             "sources": [
               {
@@ -1570,7 +1570,7 @@
             "remarks": "Restricting and protecting information in transmission, movement and removal.\n\nDerived through the BSI mapping from ISO/IEC 27001:2022 Annex A 5.14, 7.10, 8.12, 8.24."
           },
           {
-            "uuid": "94e4d27b-64e0-569a-a424-78328c66b130",
+            "uuid": "bfe10980-f715-5118-bb99-14bd888d1644",
             "relationship": "intersects-with",
             "sources": [
               {
@@ -1631,7 +1631,7 @@
             "remarks": "Preventing or detecting unauthorised and malicious software.\n\nDerived through the BSI mapping from ISO/IEC 27001:2022 Annex A 8.7, 8.19."
           },
           {
-            "uuid": "9e5c2137-1bb1-5330-a93d-60a169ae25f5",
+            "uuid": "48e2cf5b-dc94-5521-95f0-ede8b8e6cf49",
             "relationship": "intersects-with",
             "sources": [
               {
@@ -1700,7 +1700,7 @@
             "remarks": "Detecting configuration changes that introduce vulnerabilities, and new vulnerabilities.\n\nDerived through the BSI mapping from ISO/IEC 27001:2022 Annex A 8.8, 8.9."
           },
           {
-            "uuid": "f4591ae4-47bc-543a-8838-69860204cfc4",
+            "uuid": "7a9ddda8-e74b-5554-8308-0aa8fd576423",
             "relationship": "intersects-with",
             "sources": [
               {
@@ -1773,7 +1773,7 @@
             "remarks": "Monitoring components for anomalies that indicate malicious acts, disasters or errors.\n\nDerived through the BSI mapping from ISO/IEC 27001:2022 Annex A 8.15, 8.16."
           },
           {
-            "uuid": "9034d2d0-f2ff-547a-bcec-28181361f93a",
+            "uuid": "80b3b713-a64e-5e9a-85f3-b8c232162a7b",
             "relationship": "intersects-with",
             "sources": [
               {
@@ -1810,7 +1810,7 @@
             "remarks": "Evaluating security events to decide whether they are incidents.\n\nDerived through the BSI mapping from ISO/IEC 27001:2022 Annex A 5.25, 6.8."
           },
           {
-            "uuid": "b73fa73c-36d4-5c57-9661-8f500d13dd4c",
+            "uuid": "87d68810-76cc-5e8d-bab4-48c760c5f9ed",
             "relationship": "intersects-with",
             "sources": [
               {
@@ -1885,7 +1885,7 @@
             "remarks": "Responding to identified incidents: containment, remediation and communication.\n\nDerived through the BSI mapping from ISO/IEC 27001:2022 Annex A 5.24, 5.26, 5.27, 5.28."
           },
           {
-            "uuid": "7692c48a-3d85-5c9d-98a5-9fee7d1054ad",
+            "uuid": "37cbcf38-ada1-5267-9d36-7ec321220b0b",
             "relationship": "intersects-with",
             "sources": [
               {
@@ -1971,7 +1971,7 @@
             "remarks": "Recovering from identified incidents.\n\nDerived through the BSI mapping from ISO/IEC 27001:2022 Annex A 5.26, 5.27, 8.13."
           },
           {
-            "uuid": "4ca8baaa-1515-59d8-a8e4-fa649baa3c9a",
+            "uuid": "c6de7985-58da-55c4-ad59-d6907102b3d9",
             "relationship": "intersects-with",
             "sources": [
               {
@@ -2115,7 +2115,7 @@
             "remarks": "Authorising, designing, developing, testing, approving and implementing changes.\n\nDerived through the BSI mapping from ISO/IEC 27001:2022 Annex A 8.9, 8.25, 8.29, 8.31, 8.32."
           },
           {
-            "uuid": "3145561c-4835-5070-bc9f-157220a6bc29",
+            "uuid": "c1f717fe-c8db-53a7-a755-2e28cb6f1bfa",
             "relationship": "intersects-with",
             "sources": [
               {
@@ -2132,7 +2132,7 @@
             "remarks": "Identifying and developing risk-mitigation activities for business disruption."
           },
           {
-            "uuid": "38a02984-9346-5598-9a22-5f83cb828e24",
+            "uuid": "e56d71fc-9c3c-59ad-82ca-c4210946eec1",
             "relationship": "intersects-with",
             "sources": [
               {
@@ -2189,7 +2189,7 @@
             "remarks": "Identifying and developing risk-mitigation activities for business disruption.\n\nDerived through the BSI mapping from ISO/IEC 27001:2022 Annex A 5.29, 5.30."
           },
           {
-            "uuid": "a5d7a657-7d4f-5fd9-8f57-23c13b0a2f11",
+            "uuid": "9eb02e8e-857d-5011-a537-288a58e7f415",
             "relationship": "intersects-with",
             "sources": [
               {
@@ -2210,7 +2210,7 @@
             "remarks": "Assessing and managing risks from vendors and business partners."
           },
           {
-            "uuid": "3522ab1c-e9cd-5ee9-a6ae-9a2758354ce9",
+            "uuid": "eef75ea7-0b08-5afb-ab06-05863b6061fd",
             "relationship": "intersects-with",
             "sources": [
               {
@@ -2311,6 +2311,417 @@
               }
             ],
             "remarks": "Assessing and managing risks from vendors and business partners.\n\nDerived through the BSI mapping from ISO/IEC 27001:2022 Annex A 5.19, 5.20, 5.21, 5.22."
+          },
+          {
+            "uuid": "cd1f1a0b-6422-5787-a8df-26c8485386fb",
+            "relationship": "intersects-with",
+            "sources": [
+              {
+                "type": "control",
+                "id-ref": "A1.1"
+              }
+            ],
+            "targets": [
+              {
+                "type": "control",
+                "id-ref": "DET.3.4"
+              },
+              {
+                "type": "control",
+                "id-ref": "DET.4.17"
+              }
+            ],
+            "remarks": "Keeping capacity in line with demand, so that the availability commitments can be met."
+          },
+          {
+            "uuid": "f9069a0d-e705-5187-9c69-3938191bdc4f",
+            "relationship": "intersects-with",
+            "sources": [
+              {
+                "type": "control",
+                "id-ref": "A1.1"
+              }
+            ],
+            "targets": [
+              {
+                "type": "control",
+                "id-ref": "ARCH.9.1"
+              },
+              {
+                "type": "control",
+                "id-ref": "ARCH.9.2"
+              },
+              {
+                "type": "control",
+                "id-ref": "ARCH.9.3"
+              },
+              {
+                "type": "control",
+                "id-ref": "DET.4.15"
+              },
+              {
+                "type": "control",
+                "id-ref": "DET.4.16"
+              },
+              {
+                "type": "control",
+                "id-ref": "KONF.9.1"
+              },
+              {
+                "type": "control",
+                "id-ref": "KONF.9.2"
+              }
+            ],
+            "props": [
+              {
+                "name": "via",
+                "ns": "https://github.com/ohartwig/grundschutz-worksheets/ns",
+                "value": "iso27001:8.6"
+              }
+            ],
+            "remarks": "Keeping capacity in line with demand, so that the availability commitments can be met.\n\nDerived through the BSI mapping from ISO/IEC 27001:2022 Annex A 8.6."
+          },
+          {
+            "uuid": "1093374e-bf10-59d3-babf-74c606a79532",
+            "relationship": "intersects-with",
+            "sources": [
+              {
+                "type": "control",
+                "id-ref": "A1.2"
+              }
+            ],
+            "targets": [
+              {
+                "type": "control",
+                "id-ref": "ARCH.8.1"
+              },
+              {
+                "type": "control",
+                "id-ref": "ARCH.8.2"
+              },
+              {
+                "type": "control",
+                "id-ref": "ARCH.8.3"
+              },
+              {
+                "type": "control",
+                "id-ref": "GEB.8.3"
+              },
+              {
+                "type": "control",
+                "id-ref": "GEB.9.1"
+              },
+              {
+                "type": "control",
+                "id-ref": "GEB.9.1.3"
+              },
+              {
+                "type": "control",
+                "id-ref": "GEB.9.4"
+              },
+              {
+                "type": "control",
+                "id-ref": "GEB.10.1"
+              },
+              {
+                "type": "control",
+                "id-ref": "GEB.10.1.3"
+              },
+              {
+                "type": "control",
+                "id-ref": "GEB.10.2"
+              },
+              {
+                "type": "control",
+                "id-ref": "GEB.10.3"
+              },
+              {
+                "type": "control",
+                "id-ref": "GEB.10.4"
+              },
+              {
+                "type": "control",
+                "id-ref": "NOT.4.2"
+              },
+              {
+                "type": "control",
+                "id-ref": "NOT.4.3"
+              },
+              {
+                "type": "control",
+                "id-ref": "NOT.4.4"
+              },
+              {
+                "type": "control",
+                "id-ref": "NOT.4.6"
+              },
+              {
+                "type": "control",
+                "id-ref": "NOT.4.7"
+              },
+              {
+                "type": "control",
+                "id-ref": "NOT.4.8"
+              },
+              {
+                "type": "control",
+                "id-ref": "NOT.4.10"
+              },
+              {
+                "type": "control",
+                "id-ref": "NOT.4.14"
+              },
+              {
+                "type": "control",
+                "id-ref": "NOT.4.15"
+              },
+              {
+                "type": "control",
+                "id-ref": "NOT.4.16"
+              }
+            ],
+            "props": [
+              {
+                "name": "via",
+                "ns": "https://github.com/ohartwig/grundschutz-worksheets/ns",
+                "value": "iso27001:7.5"
+              },
+              {
+                "name": "via",
+                "ns": "https://github.com/ohartwig/grundschutz-worksheets/ns",
+                "value": "iso27001:7.11"
+              },
+              {
+                "name": "via",
+                "ns": "https://github.com/ohartwig/grundschutz-worksheets/ns",
+                "value": "iso27001:8.13"
+              },
+              {
+                "name": "via",
+                "ns": "https://github.com/ohartwig/grundschutz-worksheets/ns",
+                "value": "iso27001:8.14"
+              }
+            ],
+            "remarks": "Environmental protections, software, data backup and recovery infrastructure to meet the availability commitments.\n\nDerived through the BSI mapping from ISO/IEC 27001:2022 Annex A 7.5, 7.11, 8.13, 8.14."
+          },
+          {
+            "uuid": "a865ef20-ed8e-5d3d-9ab1-33c05064a7bc",
+            "relationship": "intersects-with",
+            "sources": [
+              {
+                "type": "control",
+                "id-ref": "A1.3"
+              }
+            ],
+            "targets": [
+              {
+                "type": "control",
+                "id-ref": "NOT.3.4"
+              },
+              {
+                "type": "control",
+                "id-ref": "NOT.4.16"
+              }
+            ],
+            "remarks": "Testing the recovery plan procedures that support system recovery. Annex A has ICT readiness for continuity; the tests themselves are direct targets."
+          },
+          {
+            "uuid": "0c1128d9-6b5a-5d3b-bf49-931daf50a14e",
+            "relationship": "intersects-with",
+            "sources": [
+              {
+                "type": "control",
+                "id-ref": "A1.3"
+              }
+            ],
+            "targets": [
+              {
+                "type": "control",
+                "id-ref": "NOT.1.1.4"
+              },
+              {
+                "type": "control",
+                "id-ref": "NOT.3.1"
+              },
+              {
+                "type": "control",
+                "id-ref": "NOT.4.2"
+              },
+              {
+                "type": "control",
+                "id-ref": "NOT.4.3"
+              },
+              {
+                "type": "control",
+                "id-ref": "NOT.4.15"
+              }
+            ],
+            "props": [
+              {
+                "name": "via",
+                "ns": "https://github.com/ohartwig/grundschutz-worksheets/ns",
+                "value": "iso27001:5.30"
+              }
+            ],
+            "remarks": "Testing the recovery plan procedures that support system recovery. Annex A has ICT readiness for continuity; the tests themselves are direct targets.\n\nDerived through the BSI mapping from ISO/IEC 27001:2022 Annex A 5.30."
+          },
+          {
+            "uuid": "6982f316-8b0f-5b4f-b13f-d50c0da2354a",
+            "relationship": "intersects-with",
+            "sources": [
+              {
+                "type": "control",
+                "id-ref": "C1.1"
+              }
+            ],
+            "targets": [
+              {
+                "type": "control",
+                "id-ref": "ASST.2.4"
+              }
+            ],
+            "remarks": "Identifying confidential information and keeping it protected for as long as it is confidential."
+          },
+          {
+            "uuid": "1d08bb14-b4f8-56e5-a3c0-92c6fae5e4d1",
+            "relationship": "intersects-with",
+            "sources": [
+              {
+                "type": "control",
+                "id-ref": "C1.1"
+              }
+            ],
+            "targets": [
+              {
+                "type": "control",
+                "id-ref": "ASST.2.1.1"
+              },
+              {
+                "type": "control",
+                "id-ref": "ASST.3.1"
+              },
+              {
+                "type": "control",
+                "id-ref": "ASST.3.3"
+              },
+              {
+                "type": "control",
+                "id-ref": "ASST.3.4"
+              },
+              {
+                "type": "control",
+                "id-ref": "ASST.3.10"
+              },
+              {
+                "type": "control",
+                "id-ref": "ASST.3.11"
+              },
+              {
+                "type": "control",
+                "id-ref": "ASST.3.12"
+              },
+              {
+                "type": "control",
+                "id-ref": "ASST.4.2"
+              },
+              {
+                "type": "control",
+                "id-ref": "ASST.4.3"
+              },
+              {
+                "type": "control",
+                "id-ref": "DET.4.5"
+              }
+            ],
+            "props": [
+              {
+                "name": "via",
+                "ns": "https://github.com/ohartwig/grundschutz-worksheets/ns",
+                "value": "iso27001:5.10"
+              },
+              {
+                "name": "via",
+                "ns": "https://github.com/ohartwig/grundschutz-worksheets/ns",
+                "value": "iso27001:5.12"
+              },
+              {
+                "name": "via",
+                "ns": "https://github.com/ohartwig/grundschutz-worksheets/ns",
+                "value": "iso27001:5.13"
+              },
+              {
+                "name": "via",
+                "ns": "https://github.com/ohartwig/grundschutz-worksheets/ns",
+                "value": "iso27001:8.12"
+              }
+            ],
+            "remarks": "Identifying confidential information and keeping it protected for as long as it is confidential.\n\nDerived through the BSI mapping from ISO/IEC 27001:2022 Annex A 5.10, 5.12, 5.13, 8.12."
+          },
+          {
+            "uuid": "812c0ba2-eda1-54a4-ad8c-b895837b27bf",
+            "relationship": "intersects-with",
+            "sources": [
+              {
+                "type": "control",
+                "id-ref": "C1.2"
+              }
+            ],
+            "targets": [
+              {
+                "type": "control",
+                "id-ref": "ASST.7.2"
+              },
+              {
+                "type": "control",
+                "id-ref": "ASST.7.3"
+              }
+            ],
+            "remarks": "Disposing of confidential information when it is no longer needed. Annex A has deletion and disposal; retention periods are a direct target."
+          },
+          {
+            "uuid": "82c449b1-3f49-5761-aa43-ea31400cd288",
+            "relationship": "intersects-with",
+            "sources": [
+              {
+                "type": "control",
+                "id-ref": "C1.2"
+              }
+            ],
+            "targets": [
+              {
+                "type": "control",
+                "id-ref": "ASST.7.3.2"
+              },
+              {
+                "type": "control",
+                "id-ref": "ASST.7.6"
+              },
+              {
+                "type": "control",
+                "id-ref": "ASST.7.7"
+              },
+              {
+                "type": "control",
+                "id-ref": "BES.6.2"
+              },
+              {
+                "type": "control",
+                "id-ref": "BES.6.2.1"
+              }
+            ],
+            "props": [
+              {
+                "name": "via",
+                "ns": "https://github.com/ohartwig/grundschutz-worksheets/ns",
+                "value": "iso27001:7.14"
+              },
+              {
+                "name": "via",
+                "ns": "https://github.com/ohartwig/grundschutz-worksheets/ns",
+                "value": "iso27001:8.10"
+              }
+            ],
+            "remarks": "Disposing of confidential information when it is no longer needed. Annex A has deletion and disposal; retention periods are a direct target.\n\nDerived through the BSI mapping from ISO/IEC 27001:2022 Annex A 7.14, 8.10."
           }
         ]
       }
