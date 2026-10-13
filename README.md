@@ -75,7 +75,7 @@ A Markdown row looks like this:
 > is for you to check against the original texts -- the regulation, the
 > standard, your Statement of Applicability. The BSI mappings (`iso27001`,
 > `itgs2023`) are the BSI's and carry their own status; the mappings of this
-> repository (`nis2`, `dora`, `c5`, `soc2`) are unreviewed drafts, and `a5` reads a
+> repository (`nis2`, `nis2-ir`, `dora`, `c5`, `soc2`) are unreviewed drafts, and `a5` reads a
 > catalog that is itself a Community Draft. None of it is legal
 > advice, and a worksheet that comes out of a preset proves nothing until a
 > person has reviewed it. Every worksheet made from a preset repeats this in a
@@ -85,7 +85,7 @@ A preset names the catalog and the mapping if there is one, and runs at the
 library commit this repository is tested at (`tools/bsi-library.mjs`), so
 `--preset iso27001` replaces three arguments. Options on the command line win,
 `--commit` included; the header then says the preset was tested at another
-commit. An own mapping (`nis2`, `dora`, `c5`, `soc2`) is the
+commit. An own mapping (`nis2`, `nis2-ir`, `dora`, `c5`, `soc2`) is the
 exception: it is derived from the catalog at one commit and refuses any other
 until it is regenerated there.
 
@@ -104,6 +104,7 @@ node worksheet.mjs --preset itgs2023 --sources 'APP.1.1*,OPS.1.1.3*'
 | `lieferkette` | Lieferkettensicherheit profile, resolved | 146 |
 | `wlan` | WLAN profile, resolved | 48 |
 | `nis2` | NIS2 Art. 21(2), own draft mapping (below) | 187 |
+| `nis2-ir` | NIS2 Implementing Regulation (EU) 2024/2690, Annex, step to ISO by ENISA, draft (below) | 223 |
 | `dora` | DORA Art. 5 to 30, own draft mapping (below) | 176 |
 | `c5` | BSI C5:2026, own draft mapping (below) | 384 |
 | `soc2` | SOC 2 common criteria, availability and confidentiality, own draft mapping (below) | 231 |
@@ -149,6 +150,7 @@ reads from disk:
 | Preset | Source, one entry per | Requirements at `a128311` |
 |---|---|---|
 | `nis2` | Art. 21(2) (a) to (j) NIS2 = § 30 Abs. 2 Nr. 1 to 10 BSIG, `Art.21.2.a` to `Art.21.2.j` | 187 |
+| `nis2-ir` | numbered heading of the Annex of Implementing Regulation (EU) 2024/2690, `Nr.1.1` to `Nr.13.3` (49, as in ENISA's table), each for all its points | 223 |
 | `dora` | DORA article, Art. 5 to 30 | 176 |
 | `c5` | C5:2026 criterion (168; the 6 report conditions GC are left out) | 384 |
 | `soc2` | Trust Services criterion: common criteria `CC1.1` to `CC9.2` (33), availability `A1.1` to `A1.3`, confidentiality `C1.1`, `C1.2` | 231 |
@@ -177,8 +179,32 @@ catalog and not mapped yet. Governance, risk
 assessment and monitoring (CC1 to CC5) are mostly ISMS clauses rather than
 Annex A, so they lean on direct targets.
 
-All four are **drafts**, written with AI assistance and not yet reviewed by a
-person. The worksheet says so in its header (`mapping draft`) and in a note
+**NIS2 Implementing Regulation: the step to ISO by ENISA.** For DNS and TLD
+providers, cloud, data centre and CDN providers, managed (security) service
+providers, marketplaces, search engines, social networks and trust services,
+Art. 21(2) is made concrete by the Annex of Implementing Regulation (EU)
+2024/2690: 13 sections, 161 numbered requirements. `nis2-ir` maps that Annex,
+and here the step to ISO is not this repository's judgement. ENISA's
+[NIS2 Technical Implementation Guidance](https://www.enisa.europa.eu/publications/nis2-technical-implementation-guidance)
+comes with a mapping table that names, for each of its 49 headings, the
+ISO/IEC 27001:2022 clauses and Annex A controls; the source file takes ENISA's
+Annex A controls as they are, and `tools/enisa-iso.mjs` holds it to the table,
+pinned by SHA-256. ENISA's column is typed by hand, so the tool reads it by
+stated rules -- a Greek alpha that looks like an A is an A, `A5.7` is `A.5.7`,
+a bare number is a management-system clause -- and refuses an entry that is no
+Annex A control of the 2022 edition. Clauses have no Annex A control and give
+no target; the remarks name them. Where ENISA names only clauses for the core of
+a heading (risk management, effectiveness assessment), the direct targets of the
+`nis2` draft are taken over and say so. ENISA's table is advisory, and the
+mapping is a draft like the others until a person has reviewed it.
+
+```bash
+node tools/enisa-iso.mjs mappings/src/nis2-ir.json           # check against the table
+node tools/enisa-iso.mjs mappings/src/nis2-ir.json --write   # take the table's step to ISO
+```
+
+All five are **drafts**, written with AI assistance and not yet reviewed by a
+person (in `nis2-ir`, the step to ISO is ENISA's, the rest is ours). The worksheet says so in its header (`mapping draft`) and in a note
 above the rows; the CSV, which has no room for one, says it on stderr.
 
 The review has a sheet: `mapping.mjs --review` writes, per source, its remark,
@@ -204,12 +230,18 @@ the Official Journal (L 333, 27.12.2022):
 |---|---|---|
 | `nis2.json` | Art. 20 (governance), 21 (1) to (4) (risk-management measures), 23 (1) to (4) and (7) (reporting) | 28 |
 | `dora.json` | Art. 5 to 30 without 15 and 20 to 22: ICT risk management, incidents, testing, third-party risk | 216 |
+| `nis2-ir.json` | Implementing Regulation (EU) 2024/2690, the Annex (ABl. L, 2024/2690, 18.10.2024) | 161 |
 
 An article is a group, a paragraph a control, a lettered point a control of
 its paragraph: `Art.21.2.b` is "Bewältigung von Sicherheitsvorfällen". An
 article without numbered paragraphs (DORA Art. 7 and 23) is a single control.
 A subparagraph after a list of points is a labelled part of its paragraph's
-statement. Paragraphs and articles that bind only authorities, the ESAs or the
+statement. An annex has numbered headings instead of articles: they become
+groups `Nr.6` and `Nr.6.6`, the points controls `Anh.6.6.1`, their lettered
+points controls `Anh.6.6.1.a`. A subsection with words of its own instead of
+points (5.2 and 12.5 of 2024/2690) is one control under its own number,
+`Anh.5.2`. A mapping can name a heading at any depth and means every point
+beneath it; `--sources Anh.11` selects them. Paragraphs and articles that bind only authorities, the ESAs or the
 Commission are left out, each with its reason in the catalog's remarks.
 
 `tools/eu-catalog.mjs` writes them from `standards/src/`, which pins
@@ -653,3 +685,11 @@ The catalogs it reads are © Bundesamt für Sicherheit in der Informationstechni
 The script fetches them at run time; this repository contains none of their
 content. If you publish worksheets it produces, they contain BSI text and carry
 that licence — or cite requirement IDs and write your assessment in your own words.
+
+The step to ISO of the `nis2-ir` mapping is taken from the mapping table of
+ENISA's NIS2 Technical Implementation Guidance, version 1.2,
+© European Union Agency for Cybersecurity (ENISA), 2025, licensed
+[CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). Changes: only the
+Annex A entries of its ISO 27001 column are used, normalised as described in
+`tools/enisa-iso.mjs`; the clauses are named in the remarks. The table is
+advisory and not legally binding.

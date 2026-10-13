@@ -3,8 +3,8 @@
     "uuid": "78b3fc86-502c-56d5-8677-b56bca41d752",
     "metadata": {
       "title": "NIS2 Art. 21(2) (§ 30 Abs. 2 BSIG) to Grundschutz++",
-      "last-modified": "2026-10-12T00:00:00Z",
-      "version": "0.2.0",
+      "last-modified": "2026-10-13T00:00:00Z",
+      "version": "0.2.1",
       "oscal-version": "1.2.2",
       "props": [
         {
@@ -35,7 +35,7 @@
       "method": "hybrid",
       "matching-rationale": "semantic",
       "status": "draft",
-      "mapping-description": "The ten risk-management measures of Directive (EU) 2022/2555 Art. 21(2) (a) to (j), which § 30 Abs. 2 Nr. 1 to 10 BSIG (NIS2UmsuCG) transposes one to one. Each measure names the ISO/IEC 27001:2022 Annex A controls it corresponds to; the Grundschutz++ targets of those controls come from the BSI's own mapping. Direct targets cover what Annex A lacks. The step from each measure to ISO is a draft written with AI assistance and not yet reviewed by a person. Not covered at this granularity: the Implementing Regulation (EU) 2024/2690 for digital infrastructure providers, and the reporting obligations of Art. 23 / § 32 BSIG."
+      "mapping-description": "The ten risk-management measures of Directive (EU) 2022/2555 Art. 21(2) (a) to (j), which § 30 Abs. 2 Nr. 1 to 10 BSIG (NIS2UmsuCG) transposes one to one. Each measure names the ISO/IEC 27001:2022 Annex A controls it corresponds to; the Grundschutz++ targets of those controls come from the BSI's own mapping. Direct targets cover what Annex A lacks. The step from each measure to ISO is a draft written with AI assistance and not yet reviewed by a person. The Implementing Regulation (EU) 2024/2690, which makes Art. 21(2) concrete for digital infrastructure and digital providers, has a mapping of its own (mappings/src/nis2-ir.json, step to ISO by ENISA). Not covered: the reporting obligations of Art. 23 / § 32 BSIG."
     },
     "mappings": [
       {

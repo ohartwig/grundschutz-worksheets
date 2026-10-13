@@ -1,0 +1,36 @@
+{
+  "title": "Test mapping by annex heading",
+  "version": "1",
+  "last-modified": "2026-10-13T00:00:00Z",
+  "status": "draft",
+  "method": "hybrid",
+  "description": "Fixture for the mapping.mjs tests: a source that is a section of an annex, which holds subsections, which hold points.",
+  "source": {
+    "title": "NIS2 Implementing Regulation, Annex Nr. 11 and Nr. 12.5",
+    "catalog": "standards/nis2-ir.json",
+    "ids": [
+      "Nr.11",
+      "Nr.12.5"
+    ]
+  },
+  "catalog": {
+    "path": "control_layer/Mindeststandard-TLS/Entwurf-Mindeststandard-TLS-catalog.json",
+    "commit": "367d775010abee641b258926bb482fcd05270059"
+  },
+  "maps": [
+    {
+      "source": "Nr.11",
+      "relationship": "intersects-with",
+      "targets": [
+        "KONF.14.1"
+      ],
+      "remarks": "encrypted administration only"
+    }
+  ],
+  "unmapped": [
+    {
+      "source": "Nr.12.5",
+      "reason": "not for this test"
+    }
+  ]
+}

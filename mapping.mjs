@@ -46,7 +46,8 @@
 // documents here import theirs: a back-matter resource with the catalog's
 // SHA-256, its link relative to mappings/, where the output goes. A source can
 // be an article that the catalog holds as a group of paragraphs (DORA is
-// mapped by article); the mapping then names all its paragraphs as the source.
+// mapped by article), or a numbered heading of an annex (Nr.1.1 of the NIS2
+// Implementing Regulation); the mapping then names every control beneath it.
 //
 // Output: an OSCAL 1.2.2 mapping collection on stdout, the version of the
 // library's own mappings. Source texts are not copied, only their IDs: the
@@ -131,7 +132,14 @@ if (m.source.catalog) {
     const after = (st?.parts ?? []).map((x) => `${x.props?.find((p) => p.name === "label")?.value ?? x.id}: ${x.prose}`);
     sourceText.set(c.id, { prose: st?.prose ?? "", after });
   }
-  for (const g of sc.groups ?? []) members.set(g.id, (g.controls ?? []).map((c) => c.id));
+  // A group stands for every control beneath it, in its subgroups too: a
+  // section of an annex holds subsections, and those hold the points.
+  const collect = (g) => {
+    const below = [...(g.controls ?? []).map((c) => c.id), ...(g.groups ?? []).flatMap(collect)];
+    members.set(g.id, below);
+    return below;
+  };
+  for (const g of sc.groups ?? []) collect(g);
   sourceResource = importResource(uuid5(`source:${m.source.catalog}`), sc.metadata.title, `../${m.source.catalog}`, bytes);
 }
 

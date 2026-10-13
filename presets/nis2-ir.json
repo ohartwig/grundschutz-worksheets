@@ -1,0 +1,9 @@
+{
+  "id": "nis2-ir",
+  "title": "NIS2 Implementing Regulation (EU) 2024/2690, Annex, to Grundschutz++ (step to ISO by ENISA, draft mapping of this repository)",
+  "catalog": "control_layer/Grundschutz++/Grundschutz++-resolved_catalog.json",
+  "mapping-file": "mappings/nis2-ir-to-gspp.json",
+  "sources-hint": "Points Anh.1.1.1 to Anh.13.3.3, by heading as well, e.g. Anh.6.6 or Anh.11.*",
+  "expect": { "requirements": 223, "orphans": 0 },
+  "notes": "For DNS, TLD, cloud, data centre, CDN, managed (security) service providers, marketplaces, search engines, social networks and trust services. The step to ISO 27001 is ENISA's mapping table 1.2 (CC BY 4.0); the mapping is a draft until reviewed. Other entities: preset nis2."
+}

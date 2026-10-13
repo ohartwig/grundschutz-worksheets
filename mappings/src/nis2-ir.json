@@ -1,0 +1,583 @@
+{
+  "title": "NIS2 Implementing Regulation (EU) 2024/2690, Annex, to Grundschutz++",
+  "version": "0.1.0",
+  "last-modified": "2026-10-13T00:00:00Z",
+  "status": "draft",
+  "method": "hybrid",
+  "description": "The technical and methodological requirements in the Annex of Commission Implementing Regulation (EU) 2024/2690, which apply to DNS service providers, TLD name registries, cloud computing, data centre and content delivery network providers, managed service and managed security service providers, online marketplaces, online search engines, social networking platforms and trust service providers. One source per numbered heading (subsection, or section where it has none), as in ENISA's mapping table. The step to ISO/IEC 27001:2022 is ENISA's, from the mapping table of its NIS2 Technical Implementation Guidance (CC BY 4.0, © European Union Agency for Cybersecurity), read and checked by tools/enisa-iso.mjs; the Grundschutz++ targets of those Annex A controls come from the BSI's own mapping. ISO clauses that ENISA names are recorded in the remarks; they have no Annex A control and give no target. Direct targets are taken over from the Art. 21(2) draft where ENISA names only clauses for the core of a point. Status draft: no person has reviewed the mapping yet. For entities outside the regulation's scope, Art. 21(2) (preset nis2) is the source.",
+  "iso-step": {
+    "title": "ENISA NIS2 Technical Implementation Guidance, mapping table",
+    "version": "1.2",
+    "href": "https://www.enisa.europa.eu/sites/default/files/2025-09/ENISA_Technical_Implementation_Guidance_Mapping_table_version_1.2.xlsx",
+    "sha256": "b34ce42c46bd643dd3e5bc4aa03c2704fa006fc798946e36753914521d2be59b",
+    "licence": "CC BY 4.0",
+    "sheet": "Mapping table",
+    "column": "ISO standard 27001:2022",
+    "points": {
+      "7.1": "Nr.7",
+      "9.1": "Nr.9"
+    }
+  },
+  "source": {
+    "title": "Implementing Regulation (EU) 2024/2690, Annex",
+    "catalog": "standards/nis2-ir.json",
+    "ids": [
+      "Nr.1.1",
+      "Nr.1.2",
+      "Nr.2.1",
+      "Nr.2.2",
+      "Nr.2.3",
+      "Nr.3.1",
+      "Nr.3.2",
+      "Nr.3.3",
+      "Nr.3.4",
+      "Nr.3.5",
+      "Nr.3.6",
+      "Nr.4.1",
+      "Nr.4.2",
+      "Nr.4.3",
+      "Nr.5.1",
+      "Nr.5.2",
+      "Nr.6.1",
+      "Nr.6.2",
+      "Nr.6.3",
+      "Nr.6.4",
+      "Nr.6.5",
+      "Nr.6.6",
+      "Nr.6.7",
+      "Nr.6.8",
+      "Nr.6.9",
+      "Nr.6.10",
+      "Nr.7",
+      "Nr.8.1",
+      "Nr.8.2",
+      "Nr.9",
+      "Nr.10.1",
+      "Nr.10.2",
+      "Nr.10.3",
+      "Nr.10.4",
+      "Nr.11.1",
+      "Nr.11.2",
+      "Nr.11.3",
+      "Nr.11.4",
+      "Nr.11.5",
+      "Nr.11.6",
+      "Nr.11.7",
+      "Nr.12.1",
+      "Nr.12.2",
+      "Nr.12.3",
+      "Nr.12.4",
+      "Nr.12.5",
+      "Nr.13.1",
+      "Nr.13.2",
+      "Nr.13.3"
+    ]
+  },
+  "catalog": {
+    "path": "control_layer/Grundschutz++/Grundschutz++-resolved_catalog.json",
+    "commit": "a12831136f4122a4c43854622180a24f2576a41e"
+  },
+  "via": {
+    "iso27001": {
+      "title": "ISO/IEC 27001:2022 Annex A",
+      "path": "control_layer/Mappings/ISO-27001-zu-GSpp/ISO27001-AnnexA-to-GS++-mapping_collection.json"
+    }
+  },
+  "maps": [
+    {
+      "source": "Nr.1.1",
+      "remarks": "Konzept für die Sicherheit von Netz- und Informationssystemen (Anhang Nr. 1.1). ENISA also names ISO 27001 clauses 5.2, 9.3: management-system clauses without an Annex A control, so no derived target.",
+      "via": {
+        "iso27001": [
+          "5.1",
+          "5.36",
+          "5.4"
+        ]
+      }
+    },
+    {
+      "source": "Nr.1.2",
+      "remarks": "Rollen, Verantwortlichkeiten und Weisungsbefugnisse (Anhang Nr. 1.2). ENISA also names ISO 27001 clause 5.3: a management-system clause without an Annex A control, so no derived target.",
+      "via": {
+        "iso27001": [
+          "5.2",
+          "5.3",
+          "5.4"
+        ]
+      }
+    },
+    {
+      "source": "Nr.2.1",
+      "remarks": "Risikomanagementrahmen (Anhang Nr. 2.1). ENISA also names ISO 27001 clauses 6.1, 6.1.2, 6.1.3, 6.2, 8.2, 8.3: management-system clauses without an Annex A control, so no derived target. Risk analysis itself is ISO clause 6.1, not Annex A; its targets are taken over as direct targets from the Art. 21(2)(a) draft (mappings/src/nis2.json).",
+      "relationship": "intersects-with",
+      "targets": [
+        "RISK.1.1",
+        "RISK.1.3",
+        "RISK.1.5"
+      ],
+      "via": {
+        "iso27001": [
+          "5.7",
+          "5.19",
+          "5.20",
+          "5.21"
+        ]
+      }
+    },
+    {
+      "source": "Nr.2.2",
+      "remarks": "Überwachung der Einhaltung (Anhang Nr. 2.2). ENISA also names ISO 27001 clause 9.2: a management-system clause without an Annex A control, so no derived target.",
+      "via": {
+        "iso27001": [
+          "5.31",
+          "5.35",
+          "5.36"
+        ]
+      }
+    },
+    {
+      "source": "Nr.2.3",
+      "remarks": "Unabhängige Überprüfung der Netz- und Informationssicherheit (Anhang Nr. 2.3). ENISA also names ISO 27001 clauses 9.2, 10.1: management-system clauses without an Annex A control, so no derived target.",
+      "via": {
+        "iso27001": [
+          "5.35",
+          "8.34"
+        ]
+      }
+    },
+    {
+      "source": "Nr.3.1",
+      "remarks": "Konzept für die Bewältigung von Sicherheitsvorfällen (Anhang Nr. 3.1).",
+      "via": {
+        "iso27001": [
+          "5.24"
+        ]
+      }
+    },
+    {
+      "source": "Nr.3.2",
+      "remarks": "Überwachung und Protokollierung (Anhang Nr. 3.2).",
+      "via": {
+        "iso27001": [
+          "5.28",
+          "8.15",
+          "8.16",
+          "8.17"
+        ]
+      }
+    },
+    {
+      "source": "Nr.3.3",
+      "remarks": "Meldung von Ereignissen (Anhang Nr. 3.3).",
+      "via": {
+        "iso27001": [
+          "6.8"
+        ]
+      }
+    },
+    {
+      "source": "Nr.3.4",
+      "remarks": "Bewertung und Klassifizierung von Ereignissen (Anhang Nr. 3.4).",
+      "via": {
+        "iso27001": [
+          "5.25"
+        ]
+      }
+    },
+    {
+      "source": "Nr.3.5",
+      "remarks": "Reaktion auf Sicherheitsvorfälle (Anhang Nr. 3.5).",
+      "via": {
+        "iso27001": [
+          "5.26"
+        ]
+      }
+    },
+    {
+      "source": "Nr.3.6",
+      "remarks": "Überprüfungen nach Sicherheitsvorfällen (Anhang Nr. 3.6).",
+      "via": {
+        "iso27001": [
+          "5.27"
+        ]
+      }
+    },
+    {
+      "source": "Nr.4.1",
+      "remarks": "Notfallplan für die Aufrechterhaltung und Wiederherstellung des Betriebs (Anhang Nr. 4.1).",
+      "via": {
+        "iso27001": [
+          "5.29",
+          "5.30"
+        ]
+      }
+    },
+    {
+      "source": "Nr.4.2",
+      "remarks": "Backup-Sicherungs- und Redundanzmanagement (Anhang Nr. 4.2).",
+      "via": {
+        "iso27001": [
+          "8.13",
+          "8.14"
+        ]
+      }
+    },
+    {
+      "source": "Nr.4.3",
+      "remarks": "Krisenmanagement (Anhang Nr. 4.3).",
+      "via": {
+        "iso27001": [
+          "5.26",
+          "5.29",
+          "5.30"
+        ]
+      }
+    },
+    {
+      "source": "Nr.5.1",
+      "remarks": "Konzept für die Sicherheit der Lieferkette (Anhang Nr. 5.1).",
+      "via": {
+        "iso27001": [
+          "5.19",
+          "5.20",
+          "5.21",
+          "8.30"
+        ]
+      }
+    },
+    {
+      "source": "Nr.5.2",
+      "remarks": "Verzeichnis der Anbieter und Diensteanbieter (Anhang Nr. 5.2).",
+      "via": {
+        "iso27001": [
+          "5.22"
+        ]
+      }
+    },
+    {
+      "source": "Nr.6.1",
+      "remarks": "Sicherheitsmaßnahmen beim Erwerb von IKT-Diensten oder IKT-Produkten (Anhang Nr. 6.1).",
+      "via": {
+        "iso27001": [
+          "5.21",
+          "5.23"
+        ]
+      }
+    },
+    {
+      "source": "Nr.6.2",
+      "remarks": "Sicherer Entwicklungszyklus (Anhang Nr. 6.2).",
+      "via": {
+        "iso27001": [
+          "8.25",
+          "8.31"
+        ]
+      }
+    },
+    {
+      "source": "Nr.6.3",
+      "remarks": "Konfigurationsmanagement (Anhang Nr. 6.3).",
+      "via": {
+        "iso27001": [
+          "8.9"
+        ]
+      }
+    },
+    {
+      "source": "Nr.6.4",
+      "remarks": "Änderungsmanagement, Reparatur und Wartung (Anhang Nr. 6.4). ENISA also names ISO 27001 clauses 6.3, 8.1: management-system clauses without an Annex A control, so no derived target.",
+      "via": {
+        "iso27001": [
+          "7.13",
+          "8.32"
+        ]
+      }
+    },
+    {
+      "source": "Nr.6.5",
+      "remarks": "Sicherheitsprüfung (Anhang Nr. 6.5).",
+      "via": {
+        "iso27001": [
+          "8.29",
+          "8.33",
+          "8.34"
+        ]
+      }
+    },
+    {
+      "source": "Nr.6.6",
+      "remarks": "Sicherheitspatch-Management (Anhang Nr. 6.6).",
+      "via": {
+        "iso27001": [
+          "8.31",
+          "8.32"
+        ]
+      }
+    },
+    {
+      "source": "Nr.6.7",
+      "remarks": "Netzsicherheit (Anhang Nr. 6.7).",
+      "via": {
+        "iso27001": [
+          "8.16",
+          "8.20"
+        ]
+      }
+    },
+    {
+      "source": "Nr.6.8",
+      "remarks": "Netzsegmentierung (Anhang Nr. 6.8).",
+      "via": {
+        "iso27001": [
+          "8.22"
+        ]
+      }
+    },
+    {
+      "source": "Nr.6.9",
+      "remarks": "Schutz gegen Schadsoftware und nicht genehmigte Software (Anhang Nr. 6.9).",
+      "via": {
+        "iso27001": [
+          "5.32",
+          "8.7"
+        ]
+      }
+    },
+    {
+      "source": "Nr.6.10",
+      "remarks": "Behandlung und Offenlegung von Schwachstellen (Anhang Nr. 6.10).",
+      "via": {
+        "iso27001": [
+          "8.8"
+        ]
+      }
+    },
+    {
+      "source": "Nr.7",
+      "remarks": "Konzepte und Verfahren zur Bewertung der Wirksamkeit von Risikomanagementmaßnahmen im Bereich der Cybersicherheit (Artikel 21 Absatz 2 Buchstabe f der Richtlinie (EU) 2022/2555) (Anhang Nr. 7). ENISA also names ISO 27001 clauses 6.2, 9.1, 9.3: management-system clauses without an Annex A control, so no derived target. ENISA names no Annex A control here; the direct targets are taken over from the Art. 21(2)(f) draft (mappings/src/nis2.json).",
+      "relationship": "intersects-with",
+      "targets": [
+        "PERF.4.1",
+        "VRB.6.1"
+      ]
+    },
+    {
+      "source": "Nr.8.1",
+      "remarks": "Sensibilisierungsmaßnahmen und grundlegende Verfahren im Bereich der Cyberhygiene (Anhang Nr. 8.1). ENISA also names ISO 27001 clause 7.3: a management-system clause without an Annex A control, so no derived target.",
+      "via": {
+        "iso27001": [
+          "6.3",
+          "8.7"
+        ]
+      }
+    },
+    {
+      "source": "Nr.8.2",
+      "remarks": "Sicherheitsschulungen (Anhang Nr. 8.2). ENISA also names ISO 27001 clause 7.2: a management-system clause without an Annex A control, so no derived target.",
+      "via": {
+        "iso27001": [
+          "6.3"
+        ]
+      }
+    },
+    {
+      "source": "Nr.9",
+      "remarks": "Kryptografie (Artikel 21 Absatz 2 Buchstabe h der Richtlinie (EU) 2022/2555) (Anhang Nr. 9).",
+      "via": {
+        "iso27001": [
+          "5.31",
+          "8.24"
+        ]
+      }
+    },
+    {
+      "source": "Nr.10.1",
+      "remarks": "Sicherheit des Personals (Anhang Nr. 10.1). ENISA also names ISO 27001 clauses 7.1, 7.2: management-system clauses without an Annex A control, so no derived target.",
+      "via": {
+        "iso27001": [
+          "6.2",
+          "6.3"
+        ]
+      }
+    },
+    {
+      "source": "Nr.10.2",
+      "remarks": "Zuverlässigkeitsüberprüfung (Anhang Nr. 10.2).",
+      "via": {
+        "iso27001": [
+          "6.1"
+        ]
+      }
+    },
+    {
+      "source": "Nr.10.3",
+      "remarks": "Verfahren zur Beendigung oder Änderung des Beschäftigungsverhältnisses (Anhang Nr. 10.3).",
+      "via": {
+        "iso27001": [
+          "6.5"
+        ]
+      }
+    },
+    {
+      "source": "Nr.10.4",
+      "remarks": "Disziplinarverfahren (Anhang Nr. 10.4). ENISA also names ISO 27001 clause 5.28: a management-system clause without an Annex A control, so no derived target.",
+      "via": {
+        "iso27001": [
+          "6.4"
+        ]
+      }
+    },
+    {
+      "source": "Nr.11.1",
+      "remarks": "Konzept für die Zugriffskontrolle (Anhang Nr. 11.1).",
+      "via": {
+        "iso27001": [
+          "5.15",
+          "7.2",
+          "8.3",
+          "8.21"
+        ]
+      }
+    },
+    {
+      "source": "Nr.11.2",
+      "remarks": "Management von Zugangs- und Zugriffsrechten (Anhang Nr. 11.2).",
+      "via": {
+        "iso27001": [
+          "5.3",
+          "5.18"
+        ]
+      }
+    },
+    {
+      "source": "Nr.11.3",
+      "remarks": "Privilegierte Konten und Systemverwaltungskonten (Anhang Nr. 11.3).",
+      "via": {
+        "iso27001": [
+          "8.2",
+          "8.18"
+        ]
+      }
+    },
+    {
+      "source": "Nr.11.4",
+      "remarks": "Systemverwaltungssysteme (Anhang Nr. 11.4).",
+      "via": {
+        "iso27001": [
+          "8.2",
+          "8.18"
+        ]
+      }
+    },
+    {
+      "source": "Nr.11.5",
+      "remarks": "Identifizierung (Anhang Nr. 11.5).",
+      "via": {
+        "iso27001": [
+          "5.16"
+        ]
+      }
+    },
+    {
+      "source": "Nr.11.6",
+      "remarks": "Authentifizierung (Anhang Nr. 11.6).",
+      "via": {
+        "iso27001": [
+          "5.17"
+        ]
+      }
+    },
+    {
+      "source": "Nr.11.7",
+      "remarks": "Multifaktor-Authentifizierung (Anhang Nr. 11.7).",
+      "via": {
+        "iso27001": [
+          "8.5"
+        ]
+      }
+    },
+    {
+      "source": "Nr.12.1",
+      "remarks": "Anlagen- und Werteklassifizierung (Anhang Nr. 12.1).",
+      "via": {
+        "iso27001": [
+          "5.9",
+          "5.12",
+          "5.13"
+        ]
+      }
+    },
+    {
+      "source": "Nr.12.2",
+      "remarks": "Behandlung von Anlagen und Werten (Anhang Nr. 12.2).",
+      "via": {
+        "iso27001": [
+          "5.9",
+          "5.10",
+          "5.14",
+          "7.10"
+        ]
+      }
+    },
+    {
+      "source": "Nr.12.3",
+      "remarks": "Konzept für Wechseldatenträger (Anhang Nr. 12.3).",
+      "via": {
+        "iso27001": [
+          "7.7",
+          "7.10"
+        ]
+      }
+    },
+    {
+      "source": "Nr.12.4",
+      "remarks": "Anlagen- und Werteinventar (Anhang Nr. 12.4).",
+      "via": {
+        "iso27001": [
+          "5.9"
+        ]
+      }
+    },
+    {
+      "source": "Nr.12.5",
+      "remarks": "Abgabe, Rückgabe oder Löschung von Anlagen und Werten bei Beendigung des Beschäftigungsverhältnisses (Anhang Nr. 12.5).",
+      "via": {
+        "iso27001": [
+          "5.11",
+          "5.18",
+          "8.24"
+        ]
+      }
+    },
+    {
+      "source": "Nr.13.1",
+      "remarks": "Unterstützende Versorgungsleistungen (Anhang Nr. 13.1).",
+      "via": {
+        "iso27001": [
+          "7.11"
+        ]
+      }
+    },
+    {
+      "source": "Nr.13.2",
+      "remarks": "Schutz vor physischen Bedrohungen und Bedrohungen des Umfelds (Anhang Nr. 13.2).",
+      "via": {
+        "iso27001": [
+          "7.3",
+          "7.5"
+        ]
+      }
+    },
+    {
+      "source": "Nr.13.3",
+      "remarks": "Perimeter und physische Zutrittskontrolle (Anhang Nr. 13.3).",
+      "via": {
+        "iso27001": [
+          "7.1",
+          "7.2",
+          "7.4"
+        ]
+      }
+    }
+  ]
+}
