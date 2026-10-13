@@ -6,6 +6,16 @@ tagged `vX.Y.Z` and written here by the release tool from the commit messages;
 **breaking**: what can change an existing call or a spreadsheet built on the
 output.
 
+## [1.6.0](https://github.com/ohartwig/grundschutz-worksheets/compare/v1.5.0...v1.6.0) (2026-10-13)
+
+### :sparkles: Features
+
+* **soc2:** map availability and confidentiality too
+
+### :repeat: Continuous Integrations
+
+* **deps:** update registry.ole-hartwig.eu/devops/images/python:3.14 docker digest to 0d8e29b
+
 ## [1.5.0](https://github.com/ohartwig/grundschutz-worksheets/compare/v1.4.0...v1.5.0) (2026-10-12)
 
 ### :sparkles: Features
