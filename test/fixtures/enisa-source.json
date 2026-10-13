@@ -1,0 +1,63 @@
+{
+  "title": "Test mapping with ENISA's step to ISO",
+  "version": "1",
+  "last-modified": "2026-10-13T00:00:00Z",
+  "status": "draft",
+  "method": "hybrid",
+  "description": "Fixture for tools/enisa-iso.mjs.",
+  "iso-step": {
+    "title": "ENISA mapping table (fixture)",
+    "version": "0",
+    "href": "https://example.org/enisa-table.xlsx",
+    "sha256": "1f1d303edefe70e8e4764ae9dc499511605f649693a3422e35c47c01d51aa2f8",
+    "licence": "CC BY 4.0",
+    "sheet": "Mapping table",
+    "column": "ISO standard 27001:2022",
+    "points": {
+      "7.1": "Nr.7"
+    }
+  },
+  "source": {
+    "title": "Test annex",
+    "catalog": "standards/nis2-ir.json",
+    "ids": [
+      "Nr.1.1",
+      "Nr.1.2",
+      "Nr.7"
+    ]
+  },
+  "catalog": {
+    "path": "control_layer/Mindeststandard-TLS/Entwurf-Mindeststandard-TLS-catalog.json",
+    "commit": "367d775010abee641b258926bb482fcd05270059"
+  },
+  "maps": [
+    {
+      "source": "Nr.1.1",
+      "remarks": "Policy; ENISA also names clause 5.2.",
+      "via": {
+        "iso27001": [
+          "5.1",
+          "5.36"
+        ]
+      }
+    },
+    {
+      "source": "Nr.1.2",
+      "remarks": "Roles.",
+      "via": {
+        "iso27001": [
+          "5.3",
+          "5.4"
+        ]
+      }
+    },
+    {
+      "source": "Nr.7",
+      "remarks": "Effectiveness; clauses 9.1 and 9.3.",
+      "relationship": "intersects-with",
+      "targets": [
+        "KONF.14.1"
+      ]
+    }
+  ]
+}

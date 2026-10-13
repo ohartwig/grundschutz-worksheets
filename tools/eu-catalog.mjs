@@ -24,13 +24,24 @@
 //                   "sha256": "<64 hex>" },
 //     "articles": { "20": "all", "21": [1, 2, 3, 4] },
 //     "left-out": { "Art.21.5": "why this paragraph is not in the catalog",
-//                   "Art.22": "why this whole article is not" }
+//                   "Art.22": "why this whole article is not" },
+//     "annex": "all"                     // optional: the act's annex as well
 //   }
 //
 // IDs follow the act: Art.21 is the article, Art.21.2 its paragraph 2,
 // Art.21.2.a point (a) of it. OSCAL wants an ID to begin with a letter, hence
 // "Art."; the label prop carries the form a lawyer writes ("Art. 21 Abs. 2
 // Buchst. a").
+//
+// An annex is numbered, not divided into articles. The Implementing Regulation
+// (EU) 2024/2690 puts its technical requirements there: a heading "1." opens a
+// section, "1.1." a subsection, and each point "1.1.1." is a one-row table of
+// three cells (an empty one, the number, the words). Headings become groups,
+// Nr.1 and Nr.1.1; words become controls, Anh.1.1.1 for a point and
+// Anh.1.1.1.a for its lettered point ("Anhang Nr. 1.1.1 Buchst. a"). A group
+// and a control cannot share an ID, hence two prefixes. A section without
+// subsections (7. and 9. in 2024/2690) holds its points directly. The whole
+// annex is taken or none of it.
 //
 // Checked, and an error otherwise -- nothing is dropped silently:
 //   - the document has exactly the pinned SHA-256
@@ -41,6 +52,8 @@
 //   - no text of a paragraph is lost: a subparagraph after its points becomes
 //     a labelled part of the statement, and anything else the catalog has no
 //     place for is an error
+//   - in an annex, every point sits under the heading its number belongs to,
+//     and nothing but headings and points is in it
 //
 // Output: an OSCAL 1.2.3 catalog on stdout. Deterministic: same input, same
 // bytes. Whitespace is normalised (the Journal's non-breaking spaces become
@@ -70,6 +83,7 @@ const fail = (msg) => {
 const src = JSON.parse(readFileSync(file, "utf8"));
 for (const k of ["title", "act", "version", "last-modified", "eli", "language", "articles"]) if (!src[k]) fail(`missing "${k}"`);
 if (!src.document?.href || !/^[0-9a-f]{64}$/.test(src.document?.sha256 ?? "")) fail("document needs href and a 64-hex sha256");
+if (src.annex !== undefined && src.annex !== "all") fail('annex can only be "all"');
 
 let bytes;
 if (local) bytes = readFileSync(local);
@@ -141,7 +155,8 @@ const control = (el, id, n, title, labels, skip = () => false) => {
   const points = [];
   const after = [];
   for (const c of els(el).filter((c) => !skip(c))) {
-    if (c.tag === "p") (points.length ? after : prose).push(clean(text(c)));
+    // An annex point opens with a bare <span>, a paragraph with a <p>.
+    if (c.tag === "p" || c.tag === "span") (points.length ? after : prose).push(clean(text(c)));
     else if (c.tag === "table" && !after.length) points.push(point(c));
     else errors.push(`${id}: <${c.tag}> where the catalog has no place for it`);
   }
@@ -222,6 +237,71 @@ for (const id of left.keys()) {
   if (!art || (n ? !(art in src.articles) : art in src.articles)) errors.push(`left-out ${id}: neither a paragraph of a chosen article nor an article not chosen`);
   else if (!left.get(id)) errors.push(`left-out ${id}: no reason`);
   else if (!find(doc, (e) => e.attrs.id === where)) errors.push(`left-out ${id}: not in the document`);
+}
+
+// The annex, in document order: headings open a section or a subsection, and
+// every point must belong to the last heading by its number.
+if (src.annex) {
+  const anx = find(doc, (e) => e.attrs.id === "anx_1");
+  if (!anx) errors.push("annex: not in the document");
+  const annexLabel = (n, letter) => `Anhang Nr. ${n}${letter ? ` Buchst. ${letter}` : ""}`;
+  let section = null;
+  let sub = null;
+  // A subsection with words of its own instead of numbered points (5.2 and 12.5
+  // in 2024/2690) is one requirement: a control under its own number, Anh.5.2,
+  // in its group Nr.5.2, its lettered points below it.
+  const num = (g) => g.id.slice(3);
+  const close = () => {
+    if (!sub?.direct) return;
+    const n = num(sub);
+    sub.controls = [{ ...control({ children: sub.direct }, `Anh.${n}`, 0, sub.title, (l) => annexLabel(n, l)), class: "point" }];
+    delete sub.direct;
+  };
+  for (const c of anx ? els(anx) : []) {
+    const cls = c.attrs.class ?? "";
+    if (c.tag === "p" && cls === "oj-doc-ti") continue;
+    const parent = sub ?? section;
+    // Words between points: after a point, a further subparagraph of it ("Für
+    // die Zwecke von Buchstabe b ..."); before any point, the subsection's own.
+    if ((c.tag === "p" && cls === "oj-normal") || (c.tag === "table" && sub?.direct)) {
+      const last = parent?.controls?.at(-1);
+      if (c.tag === "p" && last && !sub?.direct) {
+        const st = last.parts[0];
+        const k = 2 + (st.parts?.length ?? 0);
+        (st.parts ??= []).push({ id: `${last.id}_smt.${k}`, name: "item", props: [prop(`Unterabsatz ${k}`)], prose: clean(text(c)) });
+      } else if (sub && !sub.controls) (sub.direct ??= []).push(c);
+      else errors.push(`annex: words outside a point in ${parent?.id ?? "no section"}`);
+      continue;
+    }
+    if (c.tag === "p" && cls === "oj-ti-grseq-1") {
+      close();
+      const [, n, title] = clean(text(c)).match(/^(\d+(?:\.\d+)?)\.\s+(.+)$/) ?? [];
+      if (!n) {
+        errors.push(`annex: a heading without a number: ${clean(text(c)).slice(0, 60)}`);
+        continue;
+      }
+      const g = { id: `Nr.${n}`, class: n.includes(".") ? "subsection" : "section", title, props: [prop(annexLabel(n))] };
+      if (!n.includes(".")) {
+        section = g;
+        sub = null;
+        groups.push(section);
+      } else if (section && n.startsWith(`${num(section)}.`)) {
+        sub = g;
+        (section.groups ??= []).push(sub);
+      } else errors.push(`annex: subsection ${n} outside its section`);
+      continue;
+    }
+    if (c.tag === "table") {
+      const cells = els(find(c, (e) => e.tag === "tr") ?? { children: [] }).filter((e) => e.tag === "td");
+      const n = clean(text(cells[1] ?? "")).replace(/\.$/, "");
+      if (cells.length !== 3 || !/^\d+(\.\d+)+$/.test(n)) errors.push(`annex: a table that is not a numbered point (${n || "no number"})`);
+      else if (!parent || n.slice(0, n.lastIndexOf(".")) !== num(parent)) errors.push(`annex: point ${n} outside ${parent?.id ?? "any section"}`);
+      else (parent.controls ??= []).push({ ...control(cells[2], `Anh.${n}`, 0, annexLabel(n), (l) => annexLabel(n, l)), class: "point" });
+      continue;
+    }
+    errors.push(`annex: <${c.tag}${cls ? ` class="${cls}"` : ""}> where the catalog has no place for it`);
+  }
+  close();
 }
 if (errors.length) fail(`${errors.length} error(s):\n  ${errors.join("\n  ")}`);
 

@@ -1,6 +1,6 @@
 # Review: NIS2 Art. 21(2) (§ 30 Abs. 2 BSIG) to Grundschutz++
 
-Version 0.2.0 · status draft · catalog Grundschutz++-resolved_catalog.json at a128311
+Version 0.2.1 · status draft · catalog Grundschutz++-resolved_catalog.json at a128311
 
 Source: Directive (EU) 2022/2555 (NIS2), Art. 21(2); § 30 Abs. 2 BSIG (standards/nis2.json). Check every section against the original text, not against the remark.
 Derived targets come from the BSI's own mapping and are only as right as the step to it; a direct target is this repository's judgement.

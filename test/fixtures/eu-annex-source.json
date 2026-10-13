@@ -1,0 +1,14 @@
+{
+  "title": "Test act: annex",
+  "act": "Durchführungsverordnung (EU) 0000/0 (Testfall)",
+  "version": "ABl. L, 0000/0, 01.01.2000",
+  "last-modified": "2026-10-13T00:00:00Z",
+  "eli": "http://data.europa.eu/eli/reg_impl/0000/0/oj",
+  "language": "de",
+  "document": {
+    "href": "https://example.org/eu-annex.xhtml",
+    "sha256": "e04198305622b44b5c3df255e00318f7960dfcf445befed953a87862ed9fa9b5"
+  },
+  "articles": {},
+  "annex": "all"
+}

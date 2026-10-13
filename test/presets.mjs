@@ -51,5 +51,11 @@ for (const f of readdirSync("mappings/src").filter((f) => f.endsWith(".json")).s
   const same = rv.status === 0 && rv.stdout === readFileSync(sheet, "utf8");
   failed += !same;
   console.log(`${same ? "ok  " : "FAIL"} ${sheet} is generated from mappings/src/${f}${same ? "" : ": run node mapping.mjs --review and commit the result. " + rv.stderr}`);
+  // A step to ISO taken from ENISA must still be ENISA's, against the pinned table.
+  if (JSON.parse(readFileSync(`mappings/src/${f}`, "utf8"))["iso-step"]) {
+    const e = spawnSync(process.execPath, ["tools/enisa-iso.mjs", `mappings/src/${f}`], { encoding: "utf8" });
+    failed += e.status !== 0;
+    console.log(`${e.status === 0 ? "ok  " : "FAIL"} mappings/src/${f} takes its step to ISO from ENISA${e.status === 0 ? "" : ": " + e.stderr}`);
+  }
 }
 process.exit(failed ? 1 : 0);

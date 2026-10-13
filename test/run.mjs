@@ -563,6 +563,86 @@ for (const [file, want] of cases) {
     console.log(`${ok ? "ok  " : "FAIL"} mapping from a catalog: ${name}${ok ? "" : ": " + m.stderr + mv.stdout + unknown.stderr + art.stderr + byArticle.stderr + now.stderr + then.stderr}`);
   }
 }
+// tools/eu-catalog.mjs on an annex: numbered headings are groups, points and
+// a subsection's own words are controls, nothing is lost; mapping.mjs takes a
+// heading at any depth as a source.
+{
+  const { writeFileSync, readFileSync, mkdirSync } = await import("node:fs");
+  mkdirSync(".schema-cache", { recursive: true });
+  const eu = (src, xhtml = "test/fixtures/eu-annex.xhtml") => spawnSync(process.execPath, ["tools/eu-catalog.mjs", src, "--file", xhtml], { encoding: "utf8" });
+  const a = eu("test/fixtures/eu-annex-source.json");
+  writeFileSync(".schema-cache/test-eu-annex.json", a.stdout);
+  const v = spawnSync(process.execPath, ["validate.mjs", ".schema-cache/test-eu-annex.json"], { encoding: "utf8" });
+  const cat = a.status === 0 ? JSON.parse(a.stdout).catalog : {};
+  const ctl = (id) => [...everyControl(cat)].find((c) => c.id === id);
+  // The same annex with a point under the wrong heading.
+  const astray = readFileSync("test/fixtures/eu-annex.xhtml", "utf8").replace("<p class=\"oj-normal\">2.1.</p>", "<p class=\"oj-normal\">3.1.</p>");
+  writeFileSync(".schema-cache/eu-annex-astray.xhtml", astray);
+  const src = JSON.parse(readFileSync("test/fixtures/eu-annex-source.json", "utf8"));
+  src.document.sha256 = sha256(Buffer.from(astray));
+  writeFileSync(".schema-cache/eu-annex-astray.json", JSON.stringify(src));
+  const wrong = eu(".schema-cache/eu-annex-astray.json", ".schema-cache/eu-annex-astray.xhtml");
+  const m = spawnSync(process.execPath, ["mapping.mjs", "test/fixtures/mapping-source-annex.json"], { encoding: "utf8" });
+  const mm = m.status === 0 ? JSON.parse(m.stdout)["mapping-collection"].mappings[0] : {};
+  const ir = JSON.parse(readFileSync("standards/nis2-ir.json", "utf8")).catalog;
+  const pointsOf11 = ir.groups.find((g) => g.id === "Nr.11").groups.flatMap((g) => g.controls.map((c) => c.id));
+  const cases = [
+    ["validates and is deterministic", a.status === 0 && v.status === 0 && a.stdout === eu("test/fixtures/eu-annex-source.json").stdout],
+    ["a section is a group of subsections, a subsection a group of points",
+      cat.groups?.[0]?.id === "Nr.1" && cat.groups[0].groups.map((g) => g.id).join() === "Nr.1.1,Nr.1.2,Nr.1.3" && ctl("Anh.1.1.1")?.title === "Anhang Nr. 1.1.1"],
+    ["a point keeps its words and its lettered points", ctl("Anh.1.1.1")?.parts[0].prose === "Das Konzept muss" && ctl("Anh.1.1.1.b")?.parts[0].prose === "mitgeteilt werden."],
+    ["words after a point stay with it, labelled",
+      ctl("Anh.1.1.1")?.parts[0].parts?.[0]?.props[0].value === "Unterabsatz 2" && /auch Behörden/.test(ctl("Anh.1.1.1").parts[0].parts[0].prose)],
+    ["a subsection with words of its own is one control under its number", ctl("Anh.1.2")?.parts[0].prose === "Die Einrichtungen führen ein Verzeichnis, das Folgendes umfasst:"
+      && ctl("Anh.1.2.b")?.parts[0].prose === "eine Liste der Dienste." && ctl("Anh.1.3")?.parts[0].prose === "Die Einrichtungen regeln die Rückgabe von Werten."],
+    ["a section without subsections holds its points", cat.groups?.[1]?.id === "Nr.2" && cat.groups[1].controls?.[0]?.id === "Anh.2.1" && !cat.groups[1].groups],
+    ["a point under the wrong heading is refused", wrong.status === 1 && /point 3\.1 outside Nr\.2/.test(wrong.stderr)],
+    ["the committed NIS2 Implementing Regulation catalog has its 13 sections", ir.groups.length === 13 && ir.groups.every((g, i) => g.id === `Nr.${i + 1}`)],
+    ["a mapping source that is a section stands for every point of its subsections", m.status === 0
+      && mm.maps?.[0]?.sources.map((s) => s["id-ref"]).join() === pointsOf11.join() && pointsOf11.length > 0
+      && mm["source-gap-summary"]?.["unmapped-controls"][0]["with-ids"].join() === "Anh.12.5"],
+  ];
+  for (const [name, ok] of cases) {
+    failed += !ok;
+    console.log(`${ok ? "ok  " : "FAIL"} eu-catalog annex: ${name}${ok ? "" : ": " + a.stderr + v.stdout + wrong.stderr + m.stderr}`);
+  }
+}
+// tools/enisa-iso.mjs: ENISA's step to ISO, read by its rules from the pinned
+// table, and the mapping source held to it.
+{
+  const { writeFileSync, readFileSync, mkdirSync } = await import("node:fs");
+  mkdirSync(".schema-cache", { recursive: true });
+  const run = (src, table = "test/fixtures/enisa-table.xlsx", ...more) =>
+    spawnSync(process.execPath, ["tools/enisa-iso.mjs", src, "--file", table, ...more], { encoding: "utf8" });
+  const src = JSON.parse(readFileSync("test/fixtures/enisa-source.json", "utf8"));
+  const variant = (name, change) => {
+    const s = structuredClone(src);
+    change(s);
+    writeFileSync(`.schema-cache/${name}`, JSON.stringify(s, null, 2) + "\n");
+    return `.schema-cache/${name}`;
+  };
+  const same = run("test/fixtures/enisa-source.json");
+  const differs = run(variant("enisa-differs.json", (s) => (s.maps[1].via.iso27001 = ["5.3"])));
+  const untold = run(variant("enisa-untold.json", (s) => (s.maps[0].remarks = "Policy.")));
+  const pinned = run("test/fixtures/enisa-source.json", "test/fixtures/enisa-table-old-iso.xlsx");
+  const oldIso = run(variant("enisa-old-iso.json", (s) => (s["iso-step"].sha256 = sha256(readFileSync("test/fixtures/enisa-table-old-iso.xlsx")))), "test/fixtures/enisa-table-old-iso.xlsx");
+  const blank = variant("enisa-blank.json", (s) => s.maps.forEach((x) => delete x.via));
+  const wrote = run(blank, undefined, "--write");
+  const written = JSON.parse(readFileSync(blank, "utf8")).maps;
+  const cases = [
+    ["a mapping source that follows the table passes", same.status === 0 && /all 3 points/.test(same.stdout)],
+    ["a step to ISO other than ENISA's is reported", differs.status === 1 && /Nr\.1\.2: via\.iso27001 is \[5\.3\], ENISA 1\.2 says \[5\.3, 5\.4\]/.test(differs.stderr)],
+    ["a clause ENISA names must be in the remarks", untold.status === 1 && /Nr\.1\.1: ENISA names ISO clause\(s\) 5\.2/.test(untold.stderr)],
+    ["another table than the pinned one is refused", pinned.status === 1 && /not the pinned one/.test(pinned.stderr)],
+    ["an entry that is no Annex A control of 2022 is refused", oldIso.status === 1 && /A\.9\.2 is not an Annex A control/.test(oldIso.stderr)],
+    ["--write reads ENISA's spelling: a Greek alpha, a missing dot, a space", wrote.status === 0
+      && written[0].via?.iso27001.join() === "5.1,5.36" && written[1].via?.iso27001.join() === "5.3,5.4" && !written[2].via?.iso27001],
+  ];
+  for (const [name, ok] of cases) {
+    failed += !ok;
+    console.log(`${ok ? "ok  " : "FAIL"} enisa-iso: ${name}${ok ? "" : ": " + same.stderr + differs.stderr + untold.stderr + pinned.stderr + oldIso.stderr + wrote.stderr}`);
+  }
+}
 // tools/id-catalog.mjs: the IDs of a standard whose text may not be copied
 // (SOC 2), each with an own title and a statement that only points at the text.
 {
