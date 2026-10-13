@@ -6,6 +6,17 @@ tagged `vX.Y.Z` and written here by the release tool from the commit messages;
 **breaking**: what can change an existing call or a spreadsheet built on the
 output.
 
+## [1.7.0](https://github.com/ohartwig/grundschutz-worksheets/compare/v1.6.0...v1.7.0) (2026-10-13)
+
+### :sparkles: Features
+
+* NIS2 Implementing Regulation preset with ENISA's step to ISO
+
+### :repeat: Continuous Integrations
+
+* **deps:** update dependency devops/ci-cd-components/test-tools to v4.1.69
+* **deps:** update dependency devops/ci-cd-components/test-tools to v4.1.68
+
 ## [1.6.0](https://github.com/ohartwig/grundschutz-worksheets/compare/v1.5.0...v1.6.0) (2026-10-13)
 
 ### :sparkles: Features
