@@ -6,6 +6,57 @@ tagged `vX.Y.Z` and written here by the release tool from the commit messages;
 **breaking**: what can change an existing call or a spreadsheet built on the
 output.
 
+## [1.7.2](https://github.com/ohartwig/grundschutz-worksheets/compare/v1.7.1...v1.7.2) (2026-10-22)
+
+### :repeat: Continuous Integrations
+
+* **deps:** update ci components
+* **deps:** update ci components
+* **deps:** update dependency devops/ci-cd-components/test-tools to v4.4.42
+* **deps:** update dependency devops/ci-cd-components/test-tools to v4.4.41
+* **deps:** update dependency devops/ci-cd-components/test-tools to v4.4.40
+* **deps:** update registry.ole-hartwig.eu/devops/images/python:3.14 docker digest to 76b2fe8
+* **deps:** update dependency devops/ci-cd-components/test-tools to v4.4.38
+* **deps:** update dependency devops/ci-cd-components/test-tools to v4.4.37
+* **deps:** update dependency devops/ci-cd-components/test-tools to v4.4.36
+* **deps:** update dependency devops/ci-cd-components/test-tools to v4.4.35
+* **deps:** update registry.ole-hartwig.eu/devops/images/python:3.14 docker digest to bbed02a
+* **deps:** update dependency devops/ci-cd-components/test-tools to v4.4.34
+* **deps:** update dependency devops/ci-cd-components/test-tools to v4.4.33
+* **deps:** update dependency devops/ci-cd-components/test-tools to v4.4.32
+* **deps:** update dependency devops/ci-cd-components/test-tools to v4.4.31
+* **deps:** update dependency devops/ci-cd-components/test-tools to v4.4.30
+* **deps:** update dependency devops/ci-cd-components/test-tools to v4.4.29
+* **deps:** update dependency devops/ci-cd-components/test-tools to v4.4.28
+* **deps:** update dependency devops/ci-cd-components/test-tools to v4.4.27
+* **deps:** update dependency devops/ci-cd-components/test-tools to v4.4.26
+* **deps:** update dependency devops/ci-cd-components/test-tools to v4.4.25
+* **deps:** update dependency devops/ci-cd-components/test-tools to v4.4.24
+* **deps:** update dependency devops/ci-cd-components/test-tools to v4.4.23
+* **deps:** update registry.ole-hartwig.eu/devops/images/python:3.14 docker digest to 07b365a
+* **deps:** update dependency devops/ci-cd-components/test-tools to v4.4.22
+* **deps:** update dependency devops/ci-cd-components/test-tools to v4.4.21
+* **deps:** update dependency devops/ci-cd-components/test-tools to v4.4.20
+* **deps:** update registry.ole-hartwig.eu/devops/images/python:3.14 docker digest to 90e53a1
+* **deps:** update dependency devops/ci-cd-components/test-tools to v4.4.19
+* **deps:** update dependency devops/ci-cd-components/test-tools to v4.4.18
+* **deps:** update registry.ole-hartwig.eu/devops/images/python:3.14 docker digest to 8849565
+* **deps:** update dependency devops/ci-cd-components/test-tools to v4.4.17
+* **deps:** update dependency devops/ci-cd-components/test-tools to v4.4.14
+* **deps:** update registry.ole-hartwig.eu/devops/images/python:3.14 docker digest to 8f67599
+* **deps:** update dependency devops/ci-cd-components/test-tools to v4.4.13
+* **deps:** update dependency devops/ci-cd-components/test-tools to v4.4.12
+* **deps:** update dependency devops/ci-cd-components/test-tools to v4.4.11
+* **deps:** update registry.ole-hartwig.eu/devops/images/python:3.14 docker digest to 790c41d
+* **deps:** update registry.ole-hartwig.eu/devops/images/python:3.14 docker digest to ff2ddea
+* **deps:** update dependency devops/ci-cd-components/test-tools to v4.4.10
+* **deps:** update dependency devops/ci-cd-components/test-tools to v4.4.9
+* **deps:** update dependency devops/ci-cd-components/test-tools to v4.4.8
+
+### :repeat: Chores
+
+* **deps:** update dependency registry.ole-hartwig.eu/devops/images/franken-php/ci to v3.1.172
+
 ## [1.7.1](https://github.com/ohartwig/grundschutz-worksheets/compare/v1.7.0...v1.7.1) (2026-10-19)
 
 ### :repeat: Continuous Integrations
