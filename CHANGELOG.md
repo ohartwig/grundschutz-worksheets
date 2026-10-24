@@ -6,6 +6,12 @@ tagged `vX.Y.Z` and written here by the release tool from the commit messages;
 **breaking**: what can change an existing call or a spreadsheet built on the
 output.
 
+## [1.7.20](https://github.com/ohartwig/grundschutz-worksheets/compare/v1.7.19...v1.7.20) (2026-10-24)
+
+### :repeat: Chores
+
+* **deps:** raise the BSI library to 160c177, with the mappings regenerated there
+
 ## [1.7.19](https://github.com/ohartwig/grundschutz-worksheets/compare/v1.7.18...v1.7.19) (2026-10-24)
 
 ### :repeat: Continuous Integrations
