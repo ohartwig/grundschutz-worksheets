@@ -96,7 +96,7 @@ node worksheet.mjs --preset gspp --levels normal-SdT --summary
 node worksheet.mjs --preset itgs2023 --sources 'APP.1.1*,OPS.1.1.3*'
 ```
 
-| Preset | Scope | Requirements at `a128311` |
+| Preset | Scope | Requirements at `160c177` |
 |---|---|---|
 | `gspp` | Grundschutz++, the whole catalog | 1000 (773 normal-SdT) |
 | `iso27001` | ISO/IEC 27001:2022 Annex A through the BSI mapping | 280, 19 targets not in the catalog |
@@ -147,7 +147,7 @@ from a small source file in `mappings/src/` into an OSCAL mapping collection
 in `mappings/`, which the presets name as `mapping-file` and `--mapping-file`
 reads from disk:
 
-| Preset | Source, one entry per | Requirements at `a128311` |
+| Preset | Source, one entry per | Requirements at `160c177` |
 |---|---|---|
 | `nis2` | Art. 21(2) (a) to (j) NIS2 = § 30 Abs. 2 Nr. 1 to 10 BSIG, `Art.21.2.a` to `Art.21.2.j` | 187 |
 | `nis2-ir` | numbered heading of the Annex of Implementing Regulation (EU) 2024/2690, `Nr.1.1` to `Nr.13.3` (49, as in ENISA's table), each for all its points | 223 |
