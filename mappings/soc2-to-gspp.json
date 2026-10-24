@@ -10,7 +10,7 @@
         {
           "name": "catalog-commit",
           "ns": "https://github.com/ohartwig/grundschutz-worksheets/ns",
-          "value": "a12831136f4122a4c43854622180a24f2576a41e"
+          "value": "160c177db6c84d3c621fff614559943b1de8c600"
         },
         {
           "name": "source-ids",
@@ -25,7 +25,7 @@
         {
           "name": "derived-via",
           "ns": "https://github.com/ohartwig/grundschutz-worksheets/ns",
-          "value": "https://raw.githubusercontent.com/BSI-Bund/Stand-der-Technik-Bibliothek/a12831136f4122a4c43854622180a24f2576a41e/control_layer/Mappings/ISO-27001-zu-GSpp/ISO27001-AnnexA-to-GS%2B%2B-mapping_collection.json",
+          "value": "https://raw.githubusercontent.com/BSI-Bund/Stand-der-Technik-Bibliothek/160c177db6c84d3c621fff614559943b1de8c600/control_layer/Mappings/ISO-27001-zu-GSpp/ISO27001-AnnexA-to-GS%2B%2B-mapping_collection.json",
           "remarks": "iso27001: ISO/IEC 27001:2022 Annex A"
         }
       ],
@@ -47,7 +47,7 @@
         },
         "target-resource": {
           "type": "catalog",
-          "href": "https://raw.githubusercontent.com/BSI-Bund/Stand-der-Technik-Bibliothek/a12831136f4122a4c43854622180a24f2576a41e/control_layer/Grundschutz%2B%2B/Grundschutz%2B%2B-resolved_catalog.json"
+          "href": "https://raw.githubusercontent.com/BSI-Bund/Stand-der-Technik-Bibliothek/160c177db6c84d3c621fff614559943b1de8c600/control_layer/Grundschutz%2B%2B/Grundschutz%2B%2B-resolved_catalog.json"
         },
         "maps": [
           {

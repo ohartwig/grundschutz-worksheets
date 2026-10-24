@@ -16,7 +16,7 @@ import { fileURLToPath } from "node:url";
 export const LIBRARY = {
   repository: "BSI-Bund/Stand-der-Technik-Bibliothek",
   // renovate: datasource=git-refs depName=BSI-Bund/Stand-der-Technik-Bibliothek packageName=https://github.com/BSI-Bund/Stand-der-Technik-Bibliothek branch=main
-  commit: "a12831136f4122a4c43854622180a24f2576a41e",
+  commit: "160c177db6c84d3c621fff614559943b1de8c600",
 };
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) console.log(LIBRARY.commit);
