@@ -1,6 +1,6 @@
 # Review: NIS2 Implementing Regulation (EU) 2024/2690, Annex, to Grundschutz++
 
-Version 0.1.0 · status draft · catalog Grundschutz++-resolved_catalog.json at a128311
+Version 0.1.0 · status draft · catalog Grundschutz++-resolved_catalog.json at 160c177
 
 Source: Implementing Regulation (EU) 2024/2690, Annex (standards/nis2-ir.json). Check every section against the original text, not against the remark.
 Derived targets come from the BSI's own mapping and are only as right as the step to it; a direct target is this repository's judgement.
@@ -598,7 +598,7 @@ Derived targets come from the BSI's own mapping and are only as right as the ste
 > Konzept für die Zugriffskontrolle (Anhang Nr. 11.1).
 
 - [ ] Step to ISO/IEC 27001:2022 Annex A: 5.15, 7.2, 8.3, 8.21 -- these and no others
-  - derived, intersects-with: ARCH.4.1 Netzzugangskontrolle; BER.5.1 Vorgehensweise zur Ausgabe; BER.5.2 Vorgehensweise zur Zurücksetzung; BER.5.3 Vorgehensweise zum Widerruf; BES.5.2 Service Level Agreement; DLS.3.1.1 Audit oder Zertifikat; GEB.3.3 Authentifizierung vor Zutritt; GEB.3.3.1 Zugangskontrollanlage; GEB.3.3.3 Besucheranmeldung; KONF.6.5 Dynamische Zugriffskontrolle im System; KONF.6.13 Dynamische Zugriffskontrolle in der Anwendung
+  - derived, intersects-with: ARCH.4.1 Netzzugangskontrolle; BER.5.1 Ausgabe, Registrierung und Zuordnung; BER.5.2 Zurücksetzung und Ersetzung von Authentifizierungsmitteln; BER.5.3 Vorgehensweise zum Widerruf; BES.5.2 Service Level Agreement; DLS.3.1.1 Audit oder Zertifikat; GEB.3.3 Authentifizierung vor Zutritt; GEB.3.3.1 Zugangskontrollanlage; GEB.3.3.3 Besucheranmeldung; KONF.6.5 Dynamische Zugriffskontrolle im System; KONF.6.13 Dynamische Zugriffskontrolle in der Anwendung
 - [ ] The remark is our own wording, not the source's text
 
 ## Nr.11.2
@@ -616,7 +616,7 @@ Derived targets come from the BSI's own mapping and are only as right as the ste
 > Management von Zugangs- und Zugriffsrechten (Anhang Nr. 11.2).
 
 - [ ] Step to ISO/IEC 27001:2022 Annex A: 5.3, 5.18 -- these and no others
-  - derived, intersects-with: BER.5.1 Vorgehensweise zur Ausgabe; BER.5.2 Vorgehensweise zur Zurücksetzung; BER.5.3 Vorgehensweise zum Widerruf; BER.5.8 Mehr-Faktor-Authentisierung am Perimeter
+  - derived, intersects-with: BER.5.1 Ausgabe, Registrierung und Zuordnung; BER.5.2 Zurücksetzung und Ersetzung von Authentifizierungsmitteln; BER.5.3 Vorgehensweise zum Widerruf; BER.5.8 Mehr-Faktor-Authentisierung am Perimeter
 - [ ] The remark is our own wording, not the source's text
 
 ## Nr.11.3
@@ -763,7 +763,7 @@ Derived targets come from the BSI's own mapping and are only as right as the ste
 > Abgabe, Rückgabe oder Löschung von Anlagen und Werten bei Beendigung des Beschäftigungsverhältnisses (Anhang Nr. 12.5).
 
 - [ ] Step to ISO/IEC 27001:2022 Annex A: 5.11, 5.18, 8.24 -- these and no others
-  - derived, intersects-with: BER.5.1 Vorgehensweise zur Ausgabe; BER.5.2 Vorgehensweise zur Zurücksetzung; BER.5.3 Vorgehensweise zum Widerruf; BER.5.8 Mehr-Faktor-Authentisierung am Perimeter; BER.7.1 Etablierte Algorithmen bei der Schlüsselerzeugung; BER.7.6 Etablierte Algorithmen beim Transport; BER.7.8 Etablierte Algorithmen bei der Schlüsselnutzung; BER.7.15 Vorgehensweise nach Nutzung; BES.6.6 Rückgewähr von Assets; KONF.2.2 Kryptographische Verfahren in IT-Systemen; KONF.10.2 Kryptographische Verfahren in Anwendungen; KONF.14.1 Verschlüsselung beim Transport; PERS.6.1 Vorgehensweise für den Weggang; SENS.8.6 Begleitung Externer
+  - derived, intersects-with: BER.5.1 Ausgabe, Registrierung und Zuordnung; BER.5.2 Zurücksetzung und Ersetzung von Authentifizierungsmitteln; BER.5.3 Vorgehensweise zum Widerruf; BER.5.8 Mehr-Faktor-Authentisierung am Perimeter; BER.7.1 Etablierte Algorithmen bei der Schlüsselerzeugung; BER.7.6 Etablierte Algorithmen beim Transport; BER.7.8 Etablierte Algorithmen bei der Schlüsselnutzung; BER.7.15 Vorgehensweise nach Nutzung; BES.6.6 Rückgewähr von Assets; KONF.2.2 Kryptographische Verfahren in IT-Systemen; KONF.10.2 Kryptographische Verfahren in Anwendungen; KONF.14.1 Verschlüsselung beim Transport; PERS.6.1 Vorgehensweise für den Weggang; SENS.8.6 Begleitung Externer
 - [ ] The remark is our own wording, not the source's text
 
 ## Nr.13.1

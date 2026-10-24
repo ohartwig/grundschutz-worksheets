@@ -1,6 +1,6 @@
 # Review: SOC 2 common criteria, availability and confidentiality to Grundschutz++
 
-Version 0.2.0 · status draft · catalog Grundschutz++-resolved_catalog.json at a128311
+Version 0.2.0 · status draft · catalog Grundschutz++-resolved_catalog.json at 160c177
 
 Source: AICPA Trust Services Criteria 2017 (revised points of focus 2022): common criteria, availability, confidentiality (standards/soc2.json). Check every section against the original text, not against the remark.
 Derived targets come from the BSI's own mapping and are only as right as the step to it; a direct target is this repository's judgement.
@@ -183,7 +183,7 @@ Text: The text of CC5.2 is not reproduced here; it is the AICPA's. Read it, with
 > General control activities over technology: access, configuration, development and change.
 
 - [ ] Step to ISO/IEC 27001:2022 Annex A: 5.15, 8.9, 8.25, 8.32 -- these and no others
-  - derived, intersects-with: ARCH.4.1 Netzzugangskontrolle; BER.5.1 Vorgehensweise zur Ausgabe; BER.5.3 Vorgehensweise zum Widerruf; BES.4.5.1 Entwicklung nach einem Sicherheitslebenszyklus; DEV.1.1 Verfahren und Regelungen; DEV.2.1 Security by Design Architektur; DEV.6.1 Freigabe nach Änderungen und Tests; GEB.3.3 Authentifizierung vor Zutritt; KONF.2.1 Grundkonfiguration für Systeme; KONF.2.1.1 Versionierung der Systemkonfiguration; KONF.2.5 Überprüfung der Konfiguration; KONF.10.1 Grundkonfiguration für Anwendungen; KONF.10.5 Überprüfung der Konfiguration; TEST.1.1 Verfahren und Regelungen; TEST.1.3 Einschränkung von Änderungen; TEST.2.1 Versionshistorie; TEST.2.2 Folgenabschätzung; TEST.4.1 Autorisierung von Änderungen; TEST.4.3 Rückfallösung; TEST.4.4 Geregelte Notfalländerungen; TEST.5.5 Rückblick
+  - derived, intersects-with: ARCH.4.1 Netzzugangskontrolle; BER.5.1 Ausgabe, Registrierung und Zuordnung; BER.5.3 Vorgehensweise zum Widerruf; BES.4.5.1 Entwicklung nach einem Sicherheitslebenszyklus; DEV.1.1 Verfahren und Regelungen; DEV.2.1 Security by Design Architektur; DEV.6.1 Freigabe nach Änderungen und Tests; GEB.3.3 Authentifizierung vor Zutritt; KONF.2.1 Grundkonfiguration für Systeme; KONF.2.1.1 Versionierung der Systemkonfiguration; KONF.2.5 Überprüfung der Konfiguration; KONF.10.1 Grundkonfiguration für Anwendungen; KONF.10.5 Überprüfung der Konfiguration; TEST.1.1 Verfahren und Regelungen; TEST.1.3 Einschränkung von Änderungen; TEST.2.1 Versionshistorie; TEST.2.2 Folgenabschätzung; TEST.4.1 Autorisierung von Änderungen; TEST.4.3 Rückfallösung; TEST.4.4 Geregelte Notfalländerungen; TEST.5.5 Rückblick
 - [ ] The remark is our own wording, not the source's text
 
 ## CC5.3
@@ -205,7 +205,7 @@ Text: The text of CC6.1 is not reproduced here; it is the AICPA's. Read it, with
 > Logical access security over protected information assets: inventory, access control, privileged rights, authentication and encryption.
 
 - [ ] Step to ISO/IEC 27001:2022 Annex A: 5.9, 5.15, 8.2, 8.3, 8.5, 8.24 -- these and no others
-  - derived, intersects-with: ARCH.2.4 Inventar der Netze; ARCH.4.1 Netzzugangskontrolle; ASST.2.1 Inventar der Informationen; ASST.2.1.1 Informationsverantwortung; ASST.2.2 Inventar der Systeme; ASST.2.3 Inventar der Anwendungen; BER.3.5 Identität-Zugangskonto; BER.5.1 Vorgehensweise zur Ausgabe; BER.5.2 Vorgehensweise zur Zurücksetzung; BER.5.3 Vorgehensweise zum Widerruf; BER.6.4 Kriterien für die Qualität von Passwörtern; BER.6.5 Anlassbezogene Passwortwechsel; BER.7.1 Etablierte Algorithmen bei der Schlüsselerzeugung; BER.7.6 Etablierte Algorithmen beim Transport; BER.7.8 Etablierte Algorithmen bei der Schlüsselnutzung; BER.7.15 Vorgehensweise nach Nutzung; GEB.3.3 Authentifizierung vor Zutritt; KONF.2.2 Kryptographische Verfahren in IT-Systemen; KONF.5.1 Authentifizierung am System; KONF.6.5 Dynamische Zugriffskontrolle im System; KONF.6.13 Dynamische Zugriffskontrolle in der Anwendung; KONF.10.2 Kryptographische Verfahren in Anwendungen; KONF.11.1 Authentifizierung vor dem Zugriff; KONF.14.1 Verschlüsselung beim Transport; SENS.10.2 Umgang mit privilegierten Berechtigungen
+  - derived, intersects-with: ARCH.2.4 Inventar der Netze; ARCH.4.1 Netzzugangskontrolle; ASST.2.1 Inventar der Informationen; ASST.2.1.1 Informationsverantwortung; ASST.2.2 Inventar der Systeme; ASST.2.3 Inventar der Anwendungen; BER.3.5 Identität-Zugangskonto; BER.5.1 Ausgabe, Registrierung und Zuordnung; BER.5.2 Zurücksetzung und Ersetzung von Authentifizierungsmitteln; BER.5.3 Vorgehensweise zum Widerruf; BER.6.4 Kriterien für die Qualität von Passwörtern; BER.6.5 Anlassbezogene Passwortwechsel; BER.7.1 Etablierte Algorithmen bei der Schlüsselerzeugung; BER.7.6 Etablierte Algorithmen beim Transport; BER.7.8 Etablierte Algorithmen bei der Schlüsselnutzung; BER.7.15 Vorgehensweise nach Nutzung; GEB.3.3 Authentifizierung vor Zutritt; KONF.2.2 Kryptographische Verfahren in IT-Systemen; KONF.5.1 Authentifizierung am System; KONF.6.5 Dynamische Zugriffskontrolle im System; KONF.6.13 Dynamische Zugriffskontrolle in der Anwendung; KONF.10.2 Kryptographische Verfahren in Anwendungen; KONF.11.1 Authentifizierung vor dem Zugriff; KONF.14.1 Verschlüsselung beim Transport; SENS.10.2 Umgang mit privilegierten Berechtigungen
 - [ ] The remark is our own wording, not the source's text
 
 ## CC6.2
@@ -215,7 +215,7 @@ Text: The text of CC6.2 is not reproduced here; it is the AICPA's. Read it, with
 > Registering, authorising and deregistering users before credentials are issued.
 
 - [ ] Step to ISO/IEC 27001:2022 Annex A: 5.16, 5.18 -- these and no others
-  - derived, intersects-with: BER.2.1 Person-Identität; BER.2.5 Deaktivierung bei Weggang; BER.3.1 Zentrales Management; BER.3.4 Protokollierung von Änderungen; BER.3.13 Sperre der Anwendung bei Inaktivität; BER.5.1 Vorgehensweise zur Ausgabe; BER.5.2 Vorgehensweise zur Zurücksetzung; BER.5.3 Vorgehensweise zum Widerruf; BER.5.8 Mehr-Faktor-Authentisierung am Perimeter; PERS.6.1 Vorgehensweise für den Weggang
+  - derived, intersects-with: BER.2.1 Person-Identität; BER.2.5 Deaktivierung bei Weggang; BER.3.1 Zentrales Management; BER.3.4 Protokollierung von Änderungen; BER.3.13 Sperre der Anwendung bei Inaktivität; BER.5.1 Ausgabe, Registrierung und Zuordnung; BER.5.2 Zurücksetzung und Ersetzung von Authentifizierungsmitteln; BER.5.3 Vorgehensweise zum Widerruf; BER.5.8 Mehr-Faktor-Authentisierung am Perimeter; PERS.6.1 Vorgehensweise für den Weggang
 - [ ] The remark is our own wording, not the source's text
 
 ## CC6.3
@@ -225,7 +225,7 @@ Text: The text of CC6.3 is not reproduced here; it is the AICPA's. Read it, with
 > Granting, changing and removing access by role, least privilege and segregation of duties.
 
 - [ ] Step to ISO/IEC 27001:2022 Annex A: 5.3, 5.15, 5.18, 8.2 -- these and no others
-  - derived, intersects-with: ARCH.4.1 Netzzugangskontrolle; BER.3.5 Identität-Zugangskonto; BER.5.1 Vorgehensweise zur Ausgabe; BER.5.2 Vorgehensweise zur Zurücksetzung; BER.5.3 Vorgehensweise zum Widerruf; BER.5.8 Mehr-Faktor-Authentisierung am Perimeter; BER.6.5 Anlassbezogene Passwortwechsel; GEB.3.3 Authentifizierung vor Zutritt; SENS.10.2 Umgang mit privilegierten Berechtigungen
+  - derived, intersects-with: ARCH.4.1 Netzzugangskontrolle; BER.3.5 Identität-Zugangskonto; BER.5.1 Ausgabe, Registrierung und Zuordnung; BER.5.2 Zurücksetzung und Ersetzung von Authentifizierungsmitteln; BER.5.3 Vorgehensweise zum Widerruf; BER.5.8 Mehr-Faktor-Authentisierung am Perimeter; BER.6.5 Anlassbezogene Passwortwechsel; GEB.3.3 Authentifizierung vor Zutritt; SENS.10.2 Umgang mit privilegierten Berechtigungen
 - [ ] The remark is our own wording, not the source's text
 
 ## CC6.4
