@@ -6,6 +6,13 @@ tagged `vX.Y.Z` and written here by the release tool from the commit messages;
 **breaking**: what can change an existing call or a spreadsheet built on the
 output.
 
+## [1.7.23](https://github.com/ohartwig/grundschutz-worksheets/compare/v1.7.22...v1.7.23) (2026-10-25)
+
+### :bug: Fixes
+
+* **ci:** oscal-cli reaches the imported catalog through the egress proxy
+* **ci:** oscal-cli prints its error before the job fails
+
 ## [1.7.22](https://github.com/ohartwig/grundschutz-worksheets/compare/v1.7.21...v1.7.22) (2026-10-24)
 
 ### :repeat: Chores
