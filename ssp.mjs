@@ -53,8 +53,14 @@
 // becomes the plan's inventory-items, so the plan lists what exists by code,
 // not by memory.
 // reviews.json (optional): { "date": "2026-09-26", "source": "SoA check",
+//   "by": "J. Doe",                                       optional
 //   "requirements": [{ "id": "KONF.3.2", "state": "implemented|partial|planned",
-//                      "note": "evidence in your own words" }] }
+//                      "note": "evidence in your own words",
+//                      "date": "2026-10-02", "by": "A. Roe" }] }   optional
+// BSI-Standard 300-1 (4.3) asks of every check its date and the person who
+// documented or checked it: the file's, or the requirement's own where it
+// differs. The plan carries them as props `reviewed` and `reviewed-by`, and
+// stderr counts the reviews that name no one.
 // Paths are relative to the system file. `profile.href` is what the plan
 // imports; `file` is the local copy read to learn which requirements apply.
 //
@@ -71,8 +77,11 @@
 //   { "id": "TEST.4.1", "state": "planned", "note": "...",
 //     "nonfulfilment": "permanent", "risk": "R-021",
 //     "approved": { "by": "Management", "date": "2026-10-27" } }
-// The plan carries it as props of the requirement, and poam.mjs turns an
-// approved permanent nonfulfilment into an approved deviation. To refuse a
+// A temporary one takes "approved" as well: the risk of what is still in the
+// plan is the leadership's to bear (4.1.1), and stderr counts the temporary
+// ones without it. The plan carries it as props of the requirement, and
+// poam.mjs turns an approved permanent nonfulfilment into an approved
+// deviation. To refuse a
 // permanent MUSS, the catalog is read -- from the profile's import, checked
 // against its SHA-256, or from --catalog <file> (tests, offline use) -- but
 // only when a review declares a permanent nonfulfilment.
@@ -195,13 +204,16 @@ if (s.inventory) {
 }
 
 // --- What a person reviewed, dated. ----------------------------------------
-const reviewed = new Map(); // id -> { state, note, nonfulfilment, risk, approved }
+const reviewed = new Map(); // id -> { state, note, date, by, nonfulfilment, risk, approved }
 let review = null;
 if (s.reviews) {
   review = read(s.reviews, "reviews");
   if (!review.date || !review.source) fail('reviews need "date" and "source"');
+  if (review.by !== undefined && (typeof review.by !== "string" || !review.by.trim())) fail('reviews: "by" must be a non-empty string');
   for (const r of review.requirements ?? []) {
     if (!["implemented", "partial", "planned"].includes(r.state)) fail(`review ${r.id}: state must be implemented, partial or planned`);
+    if (r.date !== undefined && !/^\d{4}-\d\d-\d\d$/.test(r.date)) fail(`review ${r.id}: date must be YYYY-MM-DD`);
+    if (r.by !== undefined && (typeof r.by !== "string" || !r.by.trim())) fail(`review ${r.id}: "by" must be a non-empty string`);
     const nf = r.nonfulfilment;
     if (nf !== undefined) {
       if (r.state === "implemented") fail(`review ${r.id}: an implemented requirement has no nonfulfilment`);
@@ -210,7 +222,15 @@ if (s.reviews) {
       if (r.approved !== undefined && (!r.approved?.by || !/^\d{4}-\d\d-\d\d$/.test(r.approved?.date ?? "")))
         fail(`review ${r.id}: approved needs "by" and a "date" as YYYY-MM-DD`);
     }
-    reviewed.set(r.id, { state: r.state, note: r.note || "", nonfulfilment: nf, risk: r.risk || "", approved: r.approved });
+    reviewed.set(r.id, {
+      state: r.state,
+      note: r.note || "",
+      date: r.date || review.date,
+      by: (r.by || review.by || "").trim(),
+      nonfulfilment: nf,
+      risk: r.risk || "",
+      approved: r.approved,
+    });
   }
 }
 
@@ -311,7 +331,7 @@ const requirements = [...applicable].sort(byId).map((id) => {
     props: [{ name: "basis", ns: NS, value: basis }],
     "implementation-status": {
       state,
-      ...(rv && { remarks: `Reviewed ${review.date} (${review.source}).` }),
+      ...(rv && { remarks: `Reviewed ${rv.date}${rv.by ? ` by ${rv.by}` : ""} (${review.source}).` }),
     },
   });
   const alt = claimants.map((c) => c.claims.get(id).alt).find(Boolean);
@@ -322,6 +342,8 @@ const requirements = [...applicable].sort(byId).map((id) => {
       { name: "implementation-status", ns: NS, value: state },
       { name: "basis", ns: NS, value: basis },
       ...(alt ? [{ name: "alt-identifier", ns: NS, value: alt }] : []),
+      ...(rv ? [{ name: "reviewed", ns: NS, value: rv.date }] : []),
+      ...(rv?.by ? [{ name: "reviewed-by", ns: NS, value: rv.by }] : []),
       ...(rv?.nonfulfilment ? [{ name: "nonfulfilment", ns: NS, value: rv.nonfulfilment }] : []),
       ...(rv?.nonfulfilment && rv.risk ? [{ name: "risk-analysis", ns: NS, value: rv.risk }] : []),
       ...(rv?.nonfulfilment && rv.approved
@@ -455,5 +477,8 @@ console.error(`ssp: assessed -- ${assessedIn} of ${applicable.size}, ${notSatisf
 const unfulfilled = counts.partial + counts.planned;
 const said = [...reviewed].filter(([id, r]) => applicable.has(id) && r.nonfulfilment).map(([, r]) => r);
 console.error(`ssp: not fulfilled (BSI-Standard 300-1) -- ${unfulfilled}: ${said.filter((r) => r.nonfulfilment === "temporary").length} temporary, ` +
-  `${said.filter((r) => r.nonfulfilment === "permanent").length} permanent, ${unfulfilled - said.length} not classified`);
+  `${said.filter((r) => r.nonfulfilment === "permanent").length} permanent, ${unfulfilled - said.length} not classified; ` +
+  `${said.filter((r) => r.nonfulfilment === "temporary" && !r.approved).length} temporary without the leadership's approval of the risk (4.1.1)`);
+const anonymous = [...reviewed].filter(([id, r]) => applicable.has(id) && !r.by).length;
+if (anonymous) console.error(`ssp: ${anonymous} reviews name no person who checked (BSI-Standard 300-1, 4.3)`);
 process.stdout.write(JSON.stringify(out, null, 2) + "\n");

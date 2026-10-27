@@ -298,7 +298,8 @@ the standard:
 | For a permanently unfulfilled SOLLTE the risk analysis takes in its elementary threats (Annex 3, criterion 17) | the worksheet names them per requirement (`threats G 0.x`, the last CSV column) and counts them in `--summary` |
 | *erhöht* requirements are KANN, optional (3.4.2) | `--levels normal-SdT` is the baseline |
 | Blueprints (*Blaupausen*): catalogs cut to a scenario, with parameters set (3.3) | the profile presets `lieferkette` and `wlan` |
-| Evidence names the tool, the time and the result of an automated check, and who documented or checked it (4.3) | `results.mjs`: start and end of the run, the check, `measured_by`, the evidence links; a person is not named |
+| Evidence names the tool, the time and the result of an automated check, and who documented or checked it (4.3) | `results.mjs`: start and end of the run, the check, `measured_by`, the evidence links, `performed_by`; a review's `date` and `by`, for the file or per requirement, become the plan's `reviewed` and `reviewed-by` |
+| Every measure has a responsible person and a deadline (4.4) | an action's `owner` and `due` in `poam.mjs`; the owner becomes the remediation's `responsible` |
 
 Catalog and standard do not agree everywhere yet. At `160c177` the catalog
 gives the implementation status two values, not three (UMS.1.1), asks the
@@ -473,7 +474,9 @@ implementation plan, with a reason -- or permanently. A review says which:
   "approved": { "by": "Management", "date": "2026-10-27" } }
 ```
 
-A temporary one needs its note. A permanent one is refused for a MUSS, which
+A temporary one needs its note, and takes `approved` as well: the risk of what
+is still in the plan is the leadership's to bear (4.1.1), and stderr counts the
+temporary ones without it. A permanent one is refused for a MUSS, which
 allows neither exception nor risk acceptance, and needs for a SOLLTE the risk
 analysis it rests on and the leadership's approval of the residual risk; a KANN
 is optional. To know the modal verb, `ssp.mjs` reads the catalog the profile
@@ -481,6 +484,12 @@ imports, checked against its SHA-256 -- only then, and with `--catalog <file>`
 from disk. The plan carries `nonfulfilment`, `risk-analysis` and
 `residual-risk-approved(-by)` as props, and stderr counts the unfulfilled
 requirements no review classifies yet.
+
+**Who checked, and when.** The standard asks of every check its date and the
+person who documented or checked it (4.3). A reviews file names them once
+(`"date"`, `"by"`), a requirement where it differs (`"date"`, `"by"` on its
+entry); the plan carries them as `reviewed` and `reviewed-by`, and stderr
+counts the reviews that name no one.
 
 Why not compliance-trestle, which assembles plans too: at 5.1.0 its
 `ssp-assemble` rejects version-5 UUIDs, drops the links of implemented
@@ -549,6 +558,9 @@ node validate.mjs results.json
   description stood in for the plan, which no OSCAL tool accepts.
 - **IDs checked** against the catalog at the pinned commit, as in the other
   generators.
+- **Who ran it.** `performed_by`, optional, names the person or the account a
+  schedule runs as; it becomes the result's prop `performed-by`
+  (BSI-Standard 300-1, 4.3).
 - **Not a verdict on the system.** It states what this run observed. Whether a
   system meets the requirements is an assessment by a person.
 
@@ -604,7 +616,9 @@ your own register (ID, title, requirements, due date, status); an item without
 one gets no invented date, says that it has none, and is counted. A
 requirement the plan calls permanently unfulfilled with an approved residual
 risk is a decision, not a missing action: its risk is `deviation-approved`, and
-the metadata counts it as `items-deviation-approved`.
+the metadata counts it as `items-deviation-approved`. An action's `owner`, the
+person who answers for it (BSI-Standard 300-1, 4.4), becomes the remediation's
+prop `responsible`; stderr counts the actions without one.
 
 ```bash
 node poam.mjs poam.json > poam-out.json

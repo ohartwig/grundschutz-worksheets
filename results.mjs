@@ -29,6 +29,10 @@
 //                      "mapping_sha256": "<64 hex>" },
 //                                              optional: the code that measured,
 //                                              written into the result's props
+//     "performed_by": "jdoe",                 optional: who ran or answers for
+//                                              the run -- a person, or the
+//                                              account a schedule runs as
+//                                              (BSI-Standard 300-1, 4.3)
 //     "subjects": [
 //       { "title": "group/app", "href": "https://git.example.org/group/app",
 //         "satisfied": true, "detail": "main protected, force push off" }
@@ -97,6 +101,7 @@ if (by) {
   if (!/^([0-9a-f]{40}|local)$/.test(by.commit ?? "")) fail("measured_by.commit must be a 40-character commit or \"local\"");
   if (by.mapping_sha256 !== undefined && !/^[0-9a-f]{64}$/.test(by.mapping_sha256)) fail("measured_by.mapping_sha256 must be 64 hex characters");
 }
+if (r.performed_by !== undefined && (typeof r.performed_by !== "string" || !r.performed_by.trim())) fail("performed_by must be a non-empty string");
 for (const s of r.subjects) {
   if (!s.title) fail("every subject needs a title");
   if (typeof s.satisfied !== "boolean") fail(`${s.title}: satisfied must be true or false`);
@@ -218,6 +223,7 @@ const out = {
                 .filter(([, v]) => v)
                 .map(([name, value]) => ({ name, ns: NS, value: String(value) }))
             : []),
+          ...(r.performed_by ? [{ name: "performed-by", ns: NS, value: r.performed_by.trim() }] : []),
         ],
         "reviewed-controls": {
           "control-selections": [{ "include-controls": [...r.requirements].sort(byId).map((id) => ({ "control-id": id })) }],

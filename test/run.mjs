@@ -883,4 +883,63 @@ for (const [file, want] of cases) {
   const poam = JSON.parse(readFileSync(".schema-cache/test-poam.json", "utf8"))["plan-of-action-and-milestones"];
   report("poam: the plan is imported through back-matter with its SHA-256", /^[0-9a-f]{64}$/.test(resolveImport(poam, poam["import-ssp"].href).sha256));
 }
+// BSI-Standard 300-1, 4.3 and 4.4: who checked, when, who answers for an
+// action, who ran a measurement.
+{
+  const { writeFileSync, readFileSync } = await import("node:fs");
+  const prop = (x, name) => (x?.props ?? []).find((q) => q.name === name)?.value;
+  // results: performed_by becomes a prop of the result; an empty one is refused.
+  const run = JSON.parse(readFileSync("test/fixtures/results-run.json", "utf8"));
+  const gen = (r) => {
+    writeFileSync(".schema-cache/run-performed.json", JSON.stringify(r));
+    return spawnSync(process.execPath, ["results.mjs", ".schema-cache/run-performed.json", "--catalog", "test/fixtures/recheck-catalog.json"], { encoding: "utf8" });
+  };
+  const res = gen({ ...run, plan: { href: "assessment-plan.json" }, performed_by: "scheduler@example.org" });
+  const rr = res.status === 0 ? JSON.parse(res.stdout)["assessment-results"].results[0] : null;
+  // ssp: the file's reviewer, a requirement's own reviewer and date.
+  const sys = JSON.parse(readFileSync("test/fixtures/ssp/system.json", "utf8"));
+  writeFileSync(".schema-cache/ssp-by.json", JSON.stringify({ ...sys, profile: { ...sys.profile, file: "../test/fixtures/ssp/profile.json" },
+    components: ["ssp-component.json"], results: ["ssp-results.json"], reviews: "ssp-by-reviews.json" }));
+  const reviews = (r) => {
+    writeFileSync(".schema-cache/ssp-by-reviews.json", JSON.stringify(r));
+    return spawnSync(process.execPath, ["ssp.mjs", ".schema-cache/ssp-by.json"], { encoding: "utf8" });
+  };
+  const s = reviews({ date: "2026-10-27", source: "Fixture review", by: "J. Doe", requirements: [
+    { id: "DET.5.3", state: "partial", note: "rollout", nonfulfilment: "temporary" },
+    { id: "DEV.4.5", state: "planned", note: "x", date: "2026-10-20", by: "A. Roe", nonfulfilment: "temporary", approved: { by: "Management", date: "2026-10-21" } },
+  ] });
+  const reqs = s.status === 0 ? Object.fromEntries(JSON.parse(s.stdout)["system-security-plan"]["control-implementation"]["implemented-requirements"].map((r) => [r["control-id"], r])) : {};
+  writeFileSync(".schema-cache/test-ssp-by.json", s.stdout);
+  const sv = spawnSync(process.execPath, ["validate.mjs", ".schema-cache/test-ssp-by.json"], { encoding: "utf8" });
+  const anon = reviews({ date: "2026-10-27", source: "Fixture review", requirements: [{ id: "DET.5.3", state: "partial", note: "x" }] });
+  // poam: an action's owner becomes the remediation's responsible.
+  writeFileSync(".schema-cache/actions-owner.json", JSON.stringify({ source: "Fixture register", items: [
+    { id: "I-1", title: "Scan every image", requirements: ["DET.5.3"], due: "2026-10-31", owner: "J. Doe" },
+    { id: "I-2", title: "Update dependencies", requirements: ["DEV.4.5"], due: "2026-11-30" },
+  ] }));
+  writeFileSync(".schema-cache/poam-owner.json", JSON.stringify({ id: "owner-poam", title: "Fixture POA&M", version: "1", "last-modified": "2026-10-27T00:00:00Z",
+    ssp: { file: "test-ssp-by.json", href: "security-plan.json" }, results: ["ssp-results.json"], actions: "actions-owner.json" }));
+  const po = spawnSync(process.execPath, ["poam.mjs", ".schema-cache/poam-owner.json"], { encoding: "utf8" });
+  writeFileSync(".schema-cache/test-poam-owner.json", po.stdout);
+  const pv = spawnSync(process.execPath, ["validate.mjs", ".schema-cache/test-poam-owner.json"], { encoding: "utf8" });
+  const pm = po.status === 0 ? JSON.parse(po.stdout)["plan-of-action-and-milestones"] : {};
+  const remediation = (id) => (pm.risks ?? []).flatMap((r) => r.remediations ?? []).find((x) => x.title.startsWith(id));
+  for (const [name, ok] of [
+    ["results: performed_by becomes the result's performed-by", res.status === 0 && prop(rr, "performed-by") === "scheduler@example.org"],
+    ["results: an empty performed_by is refused", gen({ ...run, plan: { href: "assessment-plan.json" }, performed_by: " " }).status === 1],
+    ["ssp: the file's reviewer and date hold where a requirement names none", s.status === 0 && sv.status === 0
+      && prop(reqs["DET.5.3"], "reviewed") === "2026-10-27" && prop(reqs["DET.5.3"], "reviewed-by") === "J. Doe"],
+    ["ssp: a requirement's own reviewer and date win", prop(reqs["DEV.4.5"], "reviewed") === "2026-10-20" && prop(reqs["DEV.4.5"], "reviewed-by") === "A. Roe"
+      && /Reviewed 2026-10-20 by A\. Roe/.test(reqs["DEV.4.5"]["by-components"].at(-1)["implementation-status"].remarks)],
+    ["ssp: a temporary one without the leadership's approval is counted", /1 temporary without the leadership's approval/.test(s.stderr)],
+    ["ssp: reviews that name no one are counted", /1 reviews name no person who checked/.test(anon.stderr) && !/name no person/.test(s.stderr)],
+    ["ssp: a review date that is not YYYY-MM-DD is refused", reviews({ date: "2026-10-27", source: "x", requirements: [{ id: "DET.5.3", state: "partial", date: "27.10.2026" }] }).status === 1],
+    ["poam: an action's owner is the remediation's responsible, and validates", po.status === 0 && pv.status === 0
+      && prop(remediation("I-1"), "responsible") === "J. Doe" && !prop(remediation("I-2"), "responsible")],
+    ["poam: actions without an owner are counted", /1 actions name no one responsible/.test(po.stderr)],
+  ]) {
+    failed += !ok;
+    console.log(`${ok ? "ok  " : "FAIL"} persons: ${name}${ok ? "" : ": " + res.stderr + s.stderr + sv.stdout + po.stderr + pv.stdout}`);
+  }
+}
 process.exit(failed ? 1 : 0);
