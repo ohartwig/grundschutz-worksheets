@@ -6,6 +6,12 @@ tagged `vX.Y.Z` and written here by the release tool from the commit messages;
 **breaking**: what can change an existing call or a spreadsheet built on the
 output.
 
+## [1.9.0](https://github.com/ohartwig/grundschutz-worksheets/compare/v1.8.0...v1.9.0) (2026-10-27)
+
+### :sparkles: Features
+
+* package.mjs builds the requirement package of BSI-Standard 300-1
+
 ## [1.8.0](https://github.com/ohartwig/grundschutz-worksheets/compare/v1.7.32...v1.8.0) (2026-10-27)
 
 ### :sparkles: Features
