@@ -15,7 +15,9 @@
 //                  "commit": "<40-char sha of the BSI library>" },
 //     "applicable": ["DET.2.1", "KONF.3.2", ...],
 //     "not-applicable": [{ "id": "ARCH.6.1", "reason": "no own WAN links" }, ...],
-//     "parameters": { "rea.1.2-prm1": "jährlich", "rea.1.1.2-prm1": ["CISO", "SOC"] }
+//     "parameters": { "rea.1.2-prm1": "jährlich", "rea.1.1.2-prm1": ["CISO", "SOC"] },
+//     "own": { "file": "own-requirements.json",                     optional
+//              "href": "https://example.org/own-requirements.json" }
 //   }
 //
 // Output: an OSCAL 1.1.3 profile on stdout (the version the library's own
@@ -50,12 +52,27 @@
 // tailoring may be a benchmark rather than a package by the standard; with
 // --strict it is an error.
 //
+// Where an asset is not covered well enough by the catalog, or where the law,
+// a contract or a stakeholder asks for more, BSI-Standard 300-1 (3.4.3) has
+// the institution write requirements of its own, in the format of
+// Grundschutz++, and add them to the package. "own" names them: an OSCAL
+// catalog whose every control has a title and a statement with its prose and
+// a modal verb (MUSS, SOLLTE or KANN, as the statement's prop `modal_verb` in
+// the library's namespace, as the catalog has it),
+// and whose IDs the BSI catalog does not use. All of them belong to the
+// package. The profile imports them as a second catalog, through a
+// back-matter resource that links to `href` with the file's SHA-256, and
+// carries a copy (base64) in a resource next to it, so a reader of the
+// profile has them even when `href` is not public. `file` is read relative to the tailoring file. Their parameters
+// take values like the catalog's.
+//
 //   node profile.mjs tailoring.json [--strict] > profile.json
 //
 // No dependencies. Node 24 (LTS) or later.
 
 import { readFileSync } from "node:fs";
-import { NS, byId, everyControl, importResource, libraryUrl, uuid5 as uuid5From } from "./lib/oscal.mjs";
+import { dirname, resolve } from "node:path";
+import { NS, byId, copyResource, everyControl, importResource, libraryUrl, uuid5 as uuid5From } from "./lib/oscal.mjs";
 
 // Fixed namespace for the derived UUIDs of this tool.
 const UUID_NS = "b1f0c6a2-5d3e-4f7a-9c8b-2e6d1a4f0b37";
@@ -107,6 +124,37 @@ for (const c of everyControl(catalog)) {
 // tailoring of one of them is not a package by the standard.
 const isGspp = t.catalog.path.startsWith("control_layer/Grundschutz++/");
 
+// The own requirements (3.4.3): checked for the format, never for content.
+// The modal verb in the library's namespace, as the catalog has it: without
+// one, a prop named modal_verb is no valid OSCAL.
+const MODAL_NS = "https://github.com/BSI-Bund/Stand-der-Technik-Bibliothek/tree/main/documentation/namespaces/modal_verbs.csv";
+let own = null; // { bytes, catalog, ids }
+const ownErrors = [];
+if (t.own !== undefined) {
+  if (!t.own?.file || !t.own?.href) fail('"own" needs "file" and "href"');
+  let bytes, oc;
+  try {
+    bytes = readFileSync(resolve(dirname(resolve(file)), t.own.file));
+    oc = JSON.parse(bytes.toString("utf8")).catalog;
+  } catch (e) {
+    fail(`own requirements ${t.own.file}: ${e.message}`);
+  }
+  if (!oc?.metadata?.title) fail(`own requirements ${t.own.file}: not an OSCAL catalog with a title`);
+  const ids = [];
+  for (const c of everyControl(oc)) {
+    const stm = (c.parts ?? []).find((p) => p.name === "statement");
+    const verb = (stm?.props ?? []).find((p) => p.name === "modal_verb" && p.ns === MODAL_NS)?.value;
+    if (known.has(c.id)) ownErrors.push(`own ${c.id}: the catalog uses this ID already`);
+    if (ids.includes(c.id)) ownErrors.push(`own ${c.id}: listed twice`);
+    if (!c.title || !stm?.prose) ownErrors.push(`own ${c.id}: needs a title and a statement with prose`);
+    if (!["MUSS", "SOLLTE", "KANN"].includes(verb)) ownErrors.push(`own ${c.id}: the statement needs the prop modal_verb (ns ${MODAL_NS}): MUSS, SOLLTE or KANN`);
+    for (const p of c.params ?? []) paramOwner.set(p.id, c.id);
+    ids.push(c.id);
+  }
+  if (!ids.length) ownErrors.push(`own requirements ${t.own.file}: no requirement in it`);
+  own = { bytes, catalog: oc, ids };
+}
+
 const applicable = [...(t.applicable ?? [])];
 const na = [...(t["not-applicable"] ?? [])];
 const seen = new Map();
@@ -116,12 +164,15 @@ for (const e of na) {
   if (!e.reason) errors.push(`${e.id}: not-applicable without a reason`);
   seen.set(e.id, (seen.get(e.id) ?? 0) + 1);
 }
+const ownIds = new Set(own?.ids);
 for (const [id, n] of seen) {
   if (n > 1) errors.push(`${id}: listed ${n} times`);
-  if (!known.has(id)) errors.push(`${id}: not in the catalog at ${t.catalog.commit.slice(0, 7)}`);
+  if (ownIds.has(id)) errors.push(`${id}: an own requirement is always part of the package; it is not listed here`);
+  else if (!known.has(id)) errors.push(`${id}: not in the catalog at ${t.catalog.commit.slice(0, 7)}`);
 }
+errors.push(...ownErrors);
 const params = Object.entries(t.parameters ?? {}).map(([id, v]) => [id, Array.isArray(v) ? v : [v]]);
-const inScope = new Set(applicable);
+const inScope = new Set([...applicable, ...ownIds]);
 for (const [id, values] of params) {
   const owner = paramOwner.get(id);
   if (!owner) errors.push(`parameter ${id}: not in the catalog at ${t.catalog.commit.slice(0, 7)}`);
@@ -144,6 +195,11 @@ else for (const f of findings) console.error(`profile: warning: ${f}`);
 if (errors.length) fail(`${errors.length} error(s):\n  ${errors.join("\n  ")}`);
 
 const catalogResource = importResource(uuid5(`import:catalog:${href}`), `${catalog.metadata?.title ?? "Catalog"} at ${t.catalog.commit.slice(0, 7)}`, href, catalogBytes);
+const ownResource = own && {
+  ...importResource(uuid5(`import:own:${t.own.href}`), `Own requirements: ${own.catalog.metadata.title}`, t.own.href, own.bytes),
+  props: [{ name: "tailoring", ns: NS, value: "own-requirements" }],
+};
+const ownCopy = own && copyResource(uuid5(`copy:own:${t.own.href}`), ownResource.uuid, `Copy of the own requirements: ${own.catalog.metadata.title}`, "own-requirements.json", own.bytes);
 
 const profile = {
   profile: {
@@ -158,6 +214,7 @@ const profile = {
         { name: "applicable", ns: NS, value: String(applicable.length) },
         { name: "not-applicable", ns: NS, value: String(na.length) },
         { name: "parameters", ns: NS, value: String(params.length) },
+        ...(own ? [{ name: "own", ns: NS, value: String(own.ids.length) }] : []),
       ],
       remarks:
         "Generated by grundschutz-worksheets profile.mjs from a tailoring file. Do not edit by hand. " +
@@ -170,6 +227,9 @@ const profile = {
         href: `#${catalogResource.uuid}`,
         "include-controls": [{ "with-child-controls": "no", "with-ids": applicable.sort(byId) }],
       },
+      ...(own
+        ? [{ href: `#${ownResource.uuid}`, "include-controls": [{ "with-child-controls": "no", "with-ids": [...own.ids].sort(byId) }] }]
+        : []),
     ],
     merge: { "as-is": true },
     ...(params.length && {
@@ -182,6 +242,7 @@ const profile = {
     "back-matter": {
       resources: [
         catalogResource,
+        ...(own ? [ownResource, ownCopy] : []),
         ...na
           .sort((a, b) => byId(a.id, b.id))
           .map((e) => ({

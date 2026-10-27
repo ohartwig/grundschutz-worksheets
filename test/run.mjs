@@ -418,6 +418,120 @@ for (const [file, want] of cases) {
     console.log(`${ok ? "ok  " : "FAIL"} nonfulfilment: ${name}${ok ? "" : ": " + a.stderr + v.stdout + po.stderr + pv.stdout}`);
   }
 }
+// BSI-Standard 300-1, Annex 3: the risk register behind the plan's risk
+// analyses -- the minimum of criterion 15, the threats of 17, the limit of an
+// acceptance (28), the owner's approval of the plan (31), the yearly review
+// (35).
+{
+  const { writeFileSync, readFileSync } = await import("node:fs");
+  writeFileSync(".schema-cache/rr-actions.json", JSON.stringify({ source: "Improvement register",
+    items: [{ id: "I-173", title: "Approvals in the pipeline", requirements: ["TEST.3.1.3"], due: "2026-12-31", status: "open", owner: "J. Doe" }] }));
+  const r021 = { id: "R-021", object: "Release pipeline", description: "Unreviewed changes reach production", goals: ["integrity"], level: "high",
+    owner: "J. Doe", threats: ["G 0.28", "G 0.46"], treatment: "reduce", priority: "1", actions: ["I-173"],
+    "plan-approved": { by: "J. Doe", date: "2026-10-27" }, reviewed: "2026-10-27" };
+  const r030 = { id: "R-030", object: "Shop", description: "Outage during the sale", goals: ["availability"], level: "medium", owner: "A. Roe",
+    treatment: "accept", accepted: { by: "Management", date: "2025-01-01", until: "2026-01-31" }, reviewed: "2025-01-01" };
+  const r031 = { id: "R-031", object: "Office", description: "Theft of a laptop", goals: ["confidentiality"], level: "low", owner: "A. Roe" };
+  const run = (items, ssp = "test-ssp-nf.json") => {
+    writeFileSync(".schema-cache/rr-risks.json", JSON.stringify({ source: "Risk register", items }));
+    writeFileSync(".schema-cache/rr-poam.json", JSON.stringify({ id: "rr-poam", title: "Fixture POA&M", version: "1", "last-modified": "2026-10-27T00:00:00Z",
+      ssp: { file: ssp, href: "security-plan.json" }, results: ["ssp-results.json"], actions: "rr-actions.json", risks: "rr-risks.json" }));
+    return spawnSync(process.execPath, ["poam.mjs", ".schema-cache/rr-poam.json"], { encoding: "utf8" });
+  };
+  const good = run([r021, r030, r031]);
+  writeFileSync(".schema-cache/test-poam-rr.json", good.stdout);
+  const v = spawnSync(process.execPath, ["validate.mjs", ".schema-cache/test-poam-rr.json"], { encoding: "utf8" });
+  const pm = good.status === 0 ? JSON.parse(good.stdout)["plan-of-action-and-milestones"] : {};
+  const reg = (id) => (pm.risks ?? []).find((r) => r.props?.some((q) => q.name === "risk-id" && q.value === id));
+  const item = (pm["poam-items"] ?? []).find((i) => i.props.some((q) => q.name === "control-id" && q.value === "TEST.3.1.3"));
+  const sspPlan = JSON.parse(readFileSync(".schema-cache/test-ssp-nf.json", "utf8"))["system-security-plan"];
+  const threats = sspPlan["control-implementation"]["implemented-requirements"].find((r) => r["control-id"] === "TEST.3.1.3")?.props.find((q) => q.name === "threats")?.value;
+  // A temporary nonfulfilment that names an accepted risk: the acceptance needs its limit.
+  const tmp = JSON.parse(JSON.stringify(sspPlan));
+  tmp["control-implementation"]["implemented-requirements"].find((r) => r["control-id"] === "DET.5.3").props.push({ name: "risk-analysis", ns: "x", value: "R-030" });
+  writeFileSync(".schema-cache/rr-ssp-tmp.json", JSON.stringify({ "system-security-plan": tmp }));
+  const { until, ...unlimited } = r030.accepted;
+  for (const [name, ok] of [
+    ["ssp: a permanent nonfulfilment carries the elementary threats of its requirement", threats === "G 0.28, G 0.46"],
+    ["the register becomes risks of the POA&M, and validates", good.status === 0 && v.status === 0 && reg("R-021")?.status === "open"
+      && reg("R-030")?.status === "deviation-approved" && reg("R-030")?.deadline === "2026-01-31T23:59:59Z"
+      && reg("R-021").props.some((q) => q.name === "risk-owner" && q.value === "J. Doe") && reg("R-021").remediations?.length === 1
+      && pm.metadata.props.find((q) => q.name === "risks-register")?.value === "3"],
+    ["the item of a requirement relates to its risk analysis", item?.["related-risks"]?.some((x) => x["risk-uuid"] === reg("R-021")?.uuid)],
+    ["stderr counts approval, review and expiry", /3 risks; 0 treated without the owner's approval of the plan[^\n]*, 0 approved by someone other than the owner, 2 not reviewed within a year \(35\), 1 acceptances run out \(28\)/.test(good.stderr)],
+    ["the plan approved by someone other than the owner is counted", /1 treated without[^\n]*1 approved by someone other/.test(run([{ ...r021, "plan-approved": { by: "CISO", date: "2026-10-27" } }, { ...r030, actions: ["I-173"], treatment: "reduce", priority: "2" }, r031]).stderr)],
+    ["a risk analysis the register lacks is refused", /names risk analysis R-021, which the risk register does not have/.test(run([r030]).stderr)],
+    ["a risk that misses a threat of its requirement is refused (17)", /does not consider G 0\.46, the elementary threats of TEST\.3\.1\.3/.test(run([{ ...r021, threats: ["G 0.28"] }]).stderr)],
+    ["a risk without owner is refused (16)", /R-021: needs "owner"/.test(run([{ ...r021, owner: "" }]).stderr)],
+    ["a reduced risk without actions is refused (25)", /needs its "actions"/.test(run([{ ...r021, actions: [] }]).stderr)],
+    ["an action the register does not have is refused", /action I-999 is not in the actions register/.test(run([{ ...r021, actions: ["I-999"] }]).stderr)],
+    ["an accepted risk without acceptance is refused (29, 30)", /needs "accepted"/.test(run([r021, { ...r030, accepted: undefined }]).stderr)],
+    ["a temporary nonfulfilment accepted without a limit is refused (28)", /accepted for the temporary nonfulfilment of DET\.5\.3, so it needs accepted\.until/.test(run([r021, { ...r030, accepted: unlimited }], "rr-ssp-tmp.json").stderr)],
+    ["a treatment outside the four options is refused", /treatment must be reduce, avoid, transfer or accept/.test(run([{ ...r021, treatment: "ignore" }]).stderr)],
+  ]) {
+    failed += !ok;
+    console.log(`${ok ? "ok  " : "FAIL"} risk register: ${name}${ok ? "" : ": " + good.stderr + v.stdout}`);
+  }
+}
+// BSI-Standard 300-1, 3.4.3: own requirements become part of the package, as a
+// second catalog the profile carries along.
+{
+  const { writeFileSync } = await import("node:fs");
+  const base = { title: "t", version: "1", "last-modified": "2026-10-27T00:00:00Z",
+    catalog: { path: "control_layer/Mindeststandard-TLS/Entwurf-Mindeststandard-TLS-catalog.json", commit: "367d775010abee641b258926bb482fcd05270059" },
+    applicable: ["KONF.2.2"], parameters: { "own.1.1-prm1": "zehn Jahre" } };
+  const own = { file: "../test/fixtures/own-requirements.json", href: "https://example.org/own-requirements.json" };
+  const run = (t) => {
+    writeFileSync(".schema-cache/own-tailoring.json", JSON.stringify(t));
+    return spawnSync(process.execPath, ["profile.mjs", ".schema-cache/own-tailoring.json"], { encoding: "utf8" });
+  };
+  const a = run({ ...base, own });
+  writeFileSync(".schema-cache/test-profile-own.json", a.stdout);
+  const v = spawnSync(process.execPath, ["validate.mjs", ".schema-cache/test-profile-own.json"], { encoding: "utf8" });
+  const pr = a.status === 0 ? JSON.parse(a.stdout).profile : {};
+  const { resolveImport } = await import("../lib/oscal.mjs");
+  const second = pr.imports?.[1];
+  const emb = second && resolveImport(pr, second.href);
+  const { readFileSync } = await import("node:fs");
+  // The plan reads the own catalog from the profile: a permanent own SOLLTE gets its threats.
+  writeFileSync(".schema-cache/own-reviews.json", JSON.stringify({ date: "2026-10-27", source: "Fixture review", by: "J. Doe",
+    requirements: [{ id: "OWN.1.1", state: "planned", note: "archive not yet bought", nonfulfilment: "permanent", risk: "R-040", approved: { by: "Management", date: "2026-10-27" } }] }));
+  const sys = JSON.parse(readFileSync("test/fixtures/ssp/system.json", "utf8"));
+  writeFileSync(".schema-cache/own-system.json", JSON.stringify({ ...sys, profile: { file: "test-profile-own.json", href: "https://example.org/profile.json" },
+    components: [], results: [], reviews: "own-reviews.json" }));
+  const s = spawnSync(process.execPath, ["ssp.mjs", ".schema-cache/own-system.json"], { encoding: "utf8" });
+  const req = s.status === 0 ? JSON.parse(s.stdout)["system-security-plan"]["control-implementation"]["implemented-requirements"].find((r) => r["control-id"] === "OWN.1.1") : null;
+  for (const [name, ok] of [
+    ["the profile imports them as a second catalog, embedded, and validates", a.status === 0 && v.status === 0
+      && JSON.stringify(second?.["include-controls"]?.[0]?.["with-ids"]) === '["OWN.1.1","OWN.1.2"]'
+      && emb?.bytes?.equals(readFileSync("test/fixtures/own-requirements.json")) && /^[0-9a-f]{64}$/.test(emb.sha256)
+      && pr.metadata.props.some((q) => q.name === "own" && q.value === "2")
+      && pr.modify?.["set-parameters"]?.some((x) => x["param-id"] === "own.1.1-prm1")],
+    ["without own requirements the profile has one import", run(base).status === 1 && JSON.parse(run({ ...base, parameters: {} }).stdout).profile.imports.length === 1],
+    ["the plan includes them and reads their modal verb and threats from the profile", s.status === 0
+      && req?.props.some((q) => q.name === "threats" && q.value === "G 0.18")],
+    ["a permanent own MUSS is refused like the catalog's", /OWN\.1\.2: a MUSS cannot be permanently unfulfilled/.test((() => {
+      writeFileSync(".schema-cache/own-reviews.json", JSON.stringify({ date: "2026-10-27", source: "x", requirements: [{ id: "OWN.1.2", state: "planned", note: "x", nonfulfilment: "permanent", risk: "R-1", approved: { by: "M", date: "2026-10-27" } }] }));
+      return spawnSync(process.execPath, ["ssp.mjs", ".schema-cache/own-system.json"], { encoding: "utf8" }).stderr;
+    })())],
+    ["an own ID the catalog uses is refused", /own KONF\.2\.2: the catalog uses this ID already/.test((() => {
+      const c = JSON.parse(readFileSync("test/fixtures/own-requirements.json", "utf8"));
+      c.catalog.groups[0].controls[1].id = "KONF.2.2";
+      writeFileSync(".schema-cache/own-bad.json", JSON.stringify(c));
+      return run({ ...base, parameters: {}, own: { ...own, file: "own-bad.json" } }).stderr;
+    })())],
+    ["an own requirement without a modal verb is refused", /own OWN\.1\.2: the statement needs the prop modal_verb/.test((() => {
+      const c = JSON.parse(readFileSync("test/fixtures/own-requirements.json", "utf8"));
+      c.catalog.groups[0].controls[1].parts[0].props = [];
+      writeFileSync(".schema-cache/own-bad.json", JSON.stringify(c));
+      return run({ ...base, parameters: {}, own: { ...own, file: "own-bad.json" } }).stderr;
+    })())],
+    ["an own requirement listed as applicable is refused", /OWN\.1\.2: an own requirement is always part of the package/.test(run({ ...base, applicable: ["KONF.2.2", "OWN.1.2"], own }).stderr)],
+  ]) {
+    failed += !ok;
+    console.log(`${ok ? "ok  " : "FAIL"} own requirements: ${name}${ok ? "" : ": " + a.stderr + v.stdout + s.stderr}`);
+  }
+}
 // worksheet.mjs: the elementary threats of each requirement, last in the CSV.
 {
   const { LIBRARY } = await import("../tools/bsi-library.mjs");
