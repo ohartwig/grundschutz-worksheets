@@ -58,7 +58,26 @@
 // Paths are relative to the system file. `profile.href` is what the plan
 // imports; `file` is the local copy read to learn which requirements apply.
 //
-//   node ssp.mjs system.json > ssp.json && node validate.mjs ssp.json
+// BSI-Standard 300-1 (4.1) knows three states: erfüllt, nicht erfüllt and
+// nicht anwendbar. Implemented is erfüllt; partial and planned are both nicht
+// erfüllt; not applicable is the profile's. A requirement that is not
+// fulfilled is either temporarily so -- it is in the implementation plan, and
+// the note says why it is not yet -- or permanently, and then a SOLLTE needs a
+// risk analysis whose residual risk the leadership has approved. A MUSS cannot
+// be permanently unfulfilled: neither an exception nor a risk acceptance
+// replaces it. A review says which, for partial and planned only:
+//   { "id": "DET.5.3", "state": "partial", "note": "...",
+//     "nonfulfilment": "temporary" }
+//   { "id": "TEST.4.1", "state": "planned", "note": "...",
+//     "nonfulfilment": "permanent", "risk": "R-021",
+//     "approved": { "by": "Management", "date": "2026-10-27" } }
+// The plan carries it as props of the requirement, and poam.mjs turns an
+// approved permanent nonfulfilment into an approved deviation. To refuse a
+// permanent MUSS, the catalog is read -- from the profile's import, checked
+// against its SHA-256, or from --catalog <file> (tests, offline use) -- but
+// only when a review declares a permanent nonfulfilment.
+//
+//   node ssp.mjs system.json [--catalog <file>] > ssp.json && node validate.mjs ssp.json
 //
 // A requirement a component or measurement names that the profile does not
 // include is reported on stderr: either the profile lacks it or the claim is
@@ -68,17 +87,19 @@
 
 import { readFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
-import { NS, byId, importResource, measurements, uuid5 as uuid5From } from "./lib/oscal.mjs";
+import { NS, REPO, byId, everyControl, importResource, libraryUrl, measurements, resolveImport, sha256, uuid5 as uuid5From } from "./lib/oscal.mjs";
 
 const UUID_NS = "8e3f1a52-6c0d-4b7e-9a21-f4c5d7e6b039";
 
-const file = process.argv[2];
+const args = process.argv.slice(2);
+const localCatalog = args.includes("--catalog") ? args[args.indexOf("--catalog") + 1] : "";
+const file = args.find((a, i) => !a.startsWith("--") && args[i - 1] !== "--catalog");
 const fail = (msg) => {
   console.error(`ssp: ${msg}`);
   process.exit(1);
 };
 if (!file) {
-  console.error("usage: ssp.mjs <system.json>");
+  console.error("usage: ssp.mjs <system.json> [--catalog <file>]");
   process.exit(2);
 }
 const base = dirname(resolve(file));
@@ -174,14 +195,54 @@ if (s.inventory) {
 }
 
 // --- What a person reviewed, dated. ----------------------------------------
-const reviewed = new Map(); // id -> { state, note }
+const reviewed = new Map(); // id -> { state, note, nonfulfilment, risk, approved }
 let review = null;
 if (s.reviews) {
   review = read(s.reviews, "reviews");
   if (!review.date || !review.source) fail('reviews need "date" and "source"');
   for (const r of review.requirements ?? []) {
     if (!["implemented", "partial", "planned"].includes(r.state)) fail(`review ${r.id}: state must be implemented, partial or planned`);
-    reviewed.set(r.id, { state: r.state, note: r.note || "" });
+    const nf = r.nonfulfilment;
+    if (nf !== undefined) {
+      if (r.state === "implemented") fail(`review ${r.id}: an implemented requirement has no nonfulfilment`);
+      if (nf !== "temporary" && nf !== "permanent") fail(`review ${r.id}: nonfulfilment must be temporary or permanent`);
+      if (nf === "temporary" && !r.note) fail(`review ${r.id}: a temporary nonfulfilment needs a note that says why`);
+      if (r.approved !== undefined && (!r.approved?.by || !/^\d{4}-\d\d-\d\d$/.test(r.approved?.date ?? "")))
+        fail(`review ${r.id}: approved needs "by" and a "date" as YYYY-MM-DD`);
+    }
+    reviewed.set(r.id, { state: r.state, note: r.note || "", nonfulfilment: nf, risk: r.risk || "", approved: r.approved });
+  }
+}
+
+// A permanent nonfulfilment depends on the modal verb: never for a MUSS, with
+// a risk analysis and approved residual risk for a SOLLTE, free for a KANN.
+const permanent = [...reviewed].filter(([, r]) => r.nonfulfilment === "permanent");
+if (permanent.length) {
+  const target = resolveImport(profile, profile.imports?.[0]?.href);
+  let bytes;
+  if (localCatalog) bytes = readFileSync(localCatalog);
+  else {
+    // Only from the library at a commit, the form profile.mjs writes.
+    const [, commit, path] = target.href?.match(/^[^:]+:\/\/[^/]+\/[^/]+\/[^/]+\/([0-9a-f]{40})\/(.+)$/) ?? [];
+    if (!commit || !target.href.startsWith(`${REPO}/`) || libraryUrl(commit, path.split("/").map(decodeURIComponent).join("/")) !== target.href)
+      fail(`the profile imports its catalog from ${target.href ?? "nowhere"}, not from the library at a commit: name a local copy with --catalog`);
+    const res = await fetch(target.href);
+    if (!res.ok) fail(`${res.status} for ${target.href}`);
+    bytes = Buffer.from(await res.arrayBuffer());
+  }
+  if (target.sha256 && target.sha256 !== sha256(bytes)) fail(`the catalog read is not the one the profile was made against: sha256 ${sha256(bytes)}, the profile names ${target.sha256}`);
+  const catalog = JSON.parse(bytes.toString("utf8")).catalog ?? fail("not an OSCAL catalog");
+  const modal = new Map();
+  for (const c of everyControl(catalog)) {
+    const stm = (c.parts ?? []).find((p) => p.name === "statement");
+    modal.set(c.id, (stm?.props ?? []).find((p) => p.name === "modal_verb")?.value || (stm?.prose?.match(/\b(MUSS|SOLLTE|KANN)\b/) ?? [""])[0]);
+  }
+  for (const [id, r] of permanent) {
+    const verb = modal.get(id);
+    if (verb === undefined) fail(`review ${id}: not in the catalog the profile imports`);
+    if (verb === "MUSS") fail(`review ${id}: a MUSS cannot be permanently unfulfilled; BSI-Standard 300-1 (4.1.2) allows neither an exception nor a risk acceptance`);
+    if (verb !== "KANN" && (!r.risk || !r.approved))
+      fail(`review ${id}: a permanently unfulfilled ${verb || "requirement"} needs "risk" (its risk analysis) and "approved" (the residual risk, by the leadership)`);
   }
 }
 
@@ -261,6 +322,14 @@ const requirements = [...applicable].sort(byId).map((id) => {
       { name: "implementation-status", ns: NS, value: state },
       { name: "basis", ns: NS, value: basis },
       ...(alt ? [{ name: "alt-identifier", ns: NS, value: alt }] : []),
+      ...(rv?.nonfulfilment ? [{ name: "nonfulfilment", ns: NS, value: rv.nonfulfilment }] : []),
+      ...(rv?.nonfulfilment && rv.risk ? [{ name: "risk-analysis", ns: NS, value: rv.risk }] : []),
+      ...(rv?.nonfulfilment && rv.approved
+        ? [
+            { name: "residual-risk-approved", ns: NS, value: rv.approved.date },
+            { name: "residual-risk-approved-by", ns: NS, value: rv.approved.by },
+          ]
+        : []),
       ...(m
         ? [
             { name: "assessed", ns: NS, value: m.at },
@@ -381,4 +450,10 @@ console.error(`ssp: state from -- ${bases.reviewed} reviews, ${bases.claimed} co
   `${withClaim} requirements carry a component claim${bases.reviewed ? " (a review, where there is one, decides the state)" : ""}`);
 console.error(`ssp: assessed -- ${assessedIn} of ${applicable.size}, ${notSatisfied} not satisfied, ` +
   `${disagreements} of them against a claim of implemented`);
+// BSI-Standard 300-1 asks of every unfulfilled requirement whether it is so
+// for now or for good; one the reviews do not say of is counted, not guessed.
+const unfulfilled = counts.partial + counts.planned;
+const said = [...reviewed].filter(([id, r]) => applicable.has(id) && r.nonfulfilment).map(([, r]) => r);
+console.error(`ssp: not fulfilled (BSI-Standard 300-1) -- ${unfulfilled}: ${said.filter((r) => r.nonfulfilment === "temporary").length} temporary, ` +
+  `${said.filter((r) => r.nonfulfilment === "permanent").length} permanent, ${unfulfilled - said.length} not classified`);
 process.stdout.write(JSON.stringify(out, null, 2) + "\n");

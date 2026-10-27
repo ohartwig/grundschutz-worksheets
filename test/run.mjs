@@ -53,6 +53,29 @@ for (const [file, want] of cases) {
   const oos = spawnSync(process.execPath, ["profile.mjs", "test/fixtures/tailoring-param-out-of-scope.json"], { encoding: "utf8" });
   failed += oos.status !== 1;
   console.log(`${oos.status === 1 ? "ok  " : "FAIL"} profile: a parameter of a requirement out of scope is refused (exit ${oos.status})`);
+  // BSI-Standard 300-1, 3.4.1: the method and every requirement without a
+  // target-object category belong in the package -- named for the
+  // Anwenderkatalog, a warning, and an error with --strict.
+  const tls = a.stderr.includes("warning");
+  failed += tls;
+  console.log(`${!tls ? "ok  " : "FAIL"} profile: a tailoring of another catalog gets no package warning`);
+  const { writeFileSync } = await import("node:fs");
+  const { LIBRARY } = await import("../tools/bsi-library.mjs");
+  writeFileSync(".schema-cache/tailoring-gspp.json", JSON.stringify({ title: "t", version: "1", "last-modified": "2026-10-27T00:00:00Z",
+    catalog: { path: "control_layer/Grundschutz++/Grundschutz++-resolved_catalog.json", commit: LIBRARY.commit },
+    applicable: ["DET.2.1"], "not-applicable": [{ id: "GC.1.1", reason: "x" }, { id: "REA.2.5", reason: "y" }] }));
+  const warn = spawnSync(process.execPath, ["profile.mjs", ".schema-cache/tailoring-gspp.json"], { encoding: "utf8" });
+  const strict = spawnSync(process.execPath, ["profile.mjs", ".schema-cache/tailoring-gspp.json", "--strict"], { encoding: "utf8" });
+  for (const [name, ok] of [
+    ["a method requirement called not applicable is named", warn.status === 0 && /warning: 1 requirement\(s\) of the method called not applicable[^\n]*: GC\.1\.1\n/.test(warn.stderr)],
+    ["method requirements left out are named", /warning: \d+ requirement\(s\) of the method left out[^\n]*GC\.1\.2/.test(warn.stderr)],
+    ["requirements without a target-object category left out are named, not those called not applicable",
+      /without a target-object category left out[^\n]*ASST\.1\.1/.test(warn.stderr) && !/left out[^\n]*REA\.2\.5(,|\n)/.test(warn.stderr)],
+    ["with --strict they are errors", strict.status === 1 && /3 error\(s\)/.test(strict.stderr)],
+  ]) {
+    failed += !ok;
+    console.log(`${ok ? "ok  " : "FAIL"} profile: ${name}${ok ? "" : ": " + warn.stderr.slice(0, 400) + strict.stderr.slice(0, 200)}`);
+  }
 }
 // component.mjs: deterministic, validates, unknown ID refused, subject checked.
 {
@@ -338,6 +361,79 @@ for (const [file, want] of cases) {
   for (const [name, ok] of cases) {
     failed += !ok;
     console.log(`${ok ? "ok  " : "FAIL"} poam: ${name}`);
+  }
+}
+// BSI-Standard 300-1, 4.1: an unfulfilled requirement is so for now or for
+// good; for good never for a MUSS, for a SOLLTE only with a risk analysis and
+// an approved residual risk. The plan carries it, the POA&M makes the approved
+// ones deviations.
+{
+  const { writeFileSync, readFileSync } = await import("node:fs");
+  const cat = ["--catalog", "test/fixtures/ssp/catalog.json"];
+  const sys = JSON.parse(readFileSync("test/fixtures/ssp/system.json", "utf8"));
+  writeFileSync(".schema-cache/ssp-nf.json", JSON.stringify({ ...sys, profile: { ...sys.profile, file: "../test/fixtures/ssp/profile.json" },
+    components: ["ssp-component.json"], results: ["ssp-results.json"], reviews: "ssp-nf-reviews.json" }));
+  const approved = { by: "Management", date: "2026-10-27" };
+  const run = (requirements, extra = cat) => {
+    writeFileSync(".schema-cache/ssp-nf-reviews.json", JSON.stringify({ date: "2026-10-27", source: "Fixture review", requirements }));
+    return spawnSync(process.execPath, ["ssp.mjs", ".schema-cache/ssp-nf.json", ...extra], { encoding: "utf8" });
+  };
+  const good = [
+    { id: "DET.5.3", state: "partial", note: "scanner rollout under way", nonfulfilment: "temporary" },
+    { id: "TEST.3.1.3", state: "planned", note: "no licence for approvals", nonfulfilment: "permanent", risk: "R-021", approved },
+    { id: "DEV.4.3", state: "planned", note: "optional", nonfulfilment: "permanent" },
+  ];
+  const a = run(good);
+  writeFileSync(".schema-cache/test-ssp-nf.json", a.stdout);
+  const v = spawnSync(process.execPath, ["validate.mjs", ".schema-cache/test-ssp-nf.json"], { encoding: "utf8" });
+  const reqs = a.status === 0 ? Object.fromEntries(JSON.parse(a.stdout)["system-security-plan"]["control-implementation"]["implemented-requirements"].map((r) => [r["control-id"], r])) : {};
+  const p = (id, name) => reqs[id]?.props.find((q) => q.name === name)?.value;
+  writeFileSync(".schema-cache/poam-nf.json", JSON.stringify({ id: "nf-poam", title: "Fixture POA&M", version: "1", "last-modified": "2026-10-27T00:00:00Z",
+    ssp: { file: "test-ssp-nf.json", href: "security-plan.json" }, results: ["ssp-results.json"] }));
+  const po = spawnSync(process.execPath, ["poam.mjs", ".schema-cache/poam-nf.json"], { encoding: "utf8" });
+  writeFileSync(".schema-cache/test-poam-nf.json", po.stdout);
+  const pv = spawnSync(process.execPath, ["validate.mjs", ".schema-cache/test-poam-nf.json"], { encoding: "utf8" });
+  const pm = po.status === 0 ? JSON.parse(po.stdout)["plan-of-action-and-milestones"] : {};
+  const item = (id) => (pm["poam-items"] ?? []).find((i) => i.props.some((q) => q.name === "control-id" && q.value === id));
+  const risk = (id) => (pm.risks ?? []).find((r) => r.uuid === item(id)?.["related-risks"]?.[0]?.["risk-uuid"]);
+  for (const [name, ok] of [
+    ["ssp: the plan carries temporary and permanent, and validates", a.status === 0 && v.status === 0
+      && p("DET.5.3", "nonfulfilment") === "temporary" && p("TEST.3.1.3", "nonfulfilment") === "permanent"
+      && p("TEST.3.1.3", "risk-analysis") === "R-021" && p("TEST.3.1.3", "residual-risk-approved") === "2026-10-27"
+      && p("TEST.3.1.3", "residual-risk-approved-by") === "Management"],
+    ["ssp: the unclassified are counted", /not fulfilled \(BSI-Standard 300-1\) -- 4: 1 temporary, 2 permanent, 1 not classified/.test(a.stderr)],
+    ["ssp: a permanent KANN needs no risk analysis", a.status === 0 && !p("DEV.4.3", "risk-analysis")],
+    ["ssp: a permanent MUSS is refused", /DEV\.4\.5: a MUSS cannot be permanently unfulfilled/.test(run([...good, { id: "DEV.4.5", state: "planned", note: "x", nonfulfilment: "permanent", risk: "R-1", approved }]).stderr)],
+    ["ssp: a permanent SOLLTE without risk analysis or approval is refused", /DET\.5\.3: a permanently unfulfilled SOLLTE needs/.test(run([{ ...good[0], nonfulfilment: "permanent" }]).stderr)],
+    ["ssp: a temporary nonfulfilment without a note is refused", /needs a note/.test(run([{ ...good[0], note: "" }]).stderr)],
+    ["ssp: an implemented requirement with a nonfulfilment is refused", /implemented requirement has no nonfulfilment/.test(run([{ ...good[0], state: "implemented" }]).stderr)],
+    ["ssp: a catalog from outside the library is not fetched", /not from the library at a commit: name a local copy with --catalog/.test(run(good, []).stderr)],
+    ["ssp: without a permanent nonfulfilment no catalog is read", run([good[0]], []).status === 0],
+    ["poam: an approved permanent nonfulfilment is a deviation, not a missing action", po.status === 0 && pv.status === 0
+      && risk("TEST.3.1.3")?.status === "deviation-approved" && !item("TEST.3.1.3").props.some((q) => q.name === "no-action")
+      && pm.metadata.props.find((q) => q.name === "items-deviation-approved")?.value === "1"],
+    ["poam: a temporary one stays open", risk("DET.5.3")?.status === "open" && item("DET.5.3").props.some((q) => q.name === "nonfulfilment" && q.value === "temporary")],
+  ]) {
+    failed += !ok;
+    console.log(`${ok ? "ok  " : "FAIL"} nonfulfilment: ${name}${ok ? "" : ": " + a.stderr + v.stdout + po.stderr + pv.stdout}`);
+  }
+}
+// worksheet.mjs: the elementary threats of each requirement, last in the CSV.
+{
+  const { LIBRARY } = await import("../tools/bsi-library.mjs");
+  const ws = (fmt) => spawnSync(process.execPath, ["worksheet.mjs", "control_layer/Grundschutz++/Grundschutz++-resolved_catalog.json",
+    "--commit", LIBRARY.commit, "--practices", "REA", ...fmt], { encoding: "utf8" });
+  const csv = ws(["--format", "csv"]);
+  const [head, row] = csv.stdout.split("\n");
+  const md = ws([]);
+  const sum = ws(["--summary"]);
+  for (const [name, ok] of [
+    ["the CSV keeps its columns and adds threats last", csv.status === 0 && head.endsWith(',"statement","evidence","status","note","threats"'.replace(/"/g, "")) && /,"G 0\.\d+[^"]*"$/.test(row)],
+    ["the Markdown row names them", md.status === 0 && / · threats G 0\.\d+/.test(md.stdout)],
+    ["the summary counts each threat", sum.status === 0 && /## Elementary threat\n\n- G 0\.\d+: \d+/.test(sum.stdout)],
+  ]) {
+    failed += !ok;
+    console.log(`${ok ? "ok  " : "FAIL"} worksheet: ${name}${ok ? "" : ": " + csv.stderr + head}`);
   }
 }
 // Partial coverage: a check that shows only part of a requirement says so in

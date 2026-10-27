@@ -41,7 +41,16 @@
 // an ID listed twice, or an ID that is both applicable and not applicable is
 // an error - nothing is dropped silently.
 //
-//   node profile.mjs tailoring.json > profile.json
+// BSI-Standard 300-1 (3.4.1) leaves two kinds of requirement out of the
+// tailoring's hands: those of the method practices (GC, STM, UMS, VRB, PERF)
+// apply to every information domain, and every other requirement without a
+// target-object category belongs in the package as well. For a catalog under
+// control_layer/Grundschutz++/ the tool names each such requirement the tailoring leaves out, and
+// each method requirement it calls not applicable. A warning, because a
+// tailoring may be a benchmark rather than a package by the standard; with
+// --strict it is an error.
+//
+//   node profile.mjs tailoring.json [--strict] > profile.json
 //
 // No dependencies. Node 24 (LTS) or later.
 
@@ -51,9 +60,11 @@ import { NS, byId, everyControl, importResource, libraryUrl, uuid5 as uuid5From 
 // Fixed namespace for the derived UUIDs of this tool.
 const UUID_NS = "b1f0c6a2-5d3e-4f7a-9c8b-2e6d1a4f0b37";
 
-const file = process.argv[2];
+const args = process.argv.slice(2);
+const strict = args.includes("--strict");
+const file = args.find((a) => !a.startsWith("--"));
 if (!file) {
-  console.error("usage: profile.mjs <tailoring.json>");
+  console.error("usage: profile.mjs <tailoring.json> [--strict]");
   process.exit(2);
 }
 const t = JSON.parse(readFileSync(file, "utf8"));
@@ -79,10 +90,22 @@ if (!catalog) fail("not an OSCAL catalog");
 
 const known = new Set();
 const paramOwner = new Map();
+// What BSI-Standard 300-1 makes part of every package: the method practices
+// (their requirements carry the class of the method catalog) and every other
+// requirement without a target-object category on its statement.
+const method = new Set();
+const noTarget = new Set();
 for (const c of everyControl(catalog)) {
   known.add(c.id);
   for (const p of c.params ?? []) paramOwner.set(p.id, c.id);
+  const stm = (c.parts ?? []).find((p) => p.name === "statement");
+  if (c.class?.startsWith("BSI-Methodik")) method.add(c.id);
+  else if (!(stm?.props ?? []).some((p) => p.name === "target_object_categories")) noTarget.add(c.id);
 }
+// The package is made from the Anwenderkatalog. Other catalogs of the library
+// carry method requirements too (the TLS minimum standard does), but a
+// tailoring of one of them is not a package by the standard.
+const isGspp = t.catalog.path.startsWith("control_layer/Grundschutz++/");
 
 const applicable = [...(t.applicable ?? [])];
 const na = [...(t["not-applicable"] ?? [])];
@@ -105,6 +128,19 @@ for (const [id, values] of params) {
   else if (!inScope.has(owner)) errors.push(`parameter ${id}: belongs to ${owner}, which is not applicable`);
   if (!values.length || values.some((v) => typeof v !== "string" || !v.trim())) errors.push(`parameter ${id}: needs a non-empty value`);
 }
+const findings = [];
+if (isGspp) {
+  const listed = (ids) => ids.sort(byId).join(", ");
+  const methodNa = na.map((e) => e.id).filter((id) => method.has(id));
+  if (methodNa.length)
+    findings.push(`${methodNa.length} requirement(s) of the method called not applicable; BSI-Standard 300-1 (3.4.1) applies them to every information domain: ${listed(methodNa)}`);
+  const missing = (set) => [...set].filter((id) => !seen.has(id));
+  const m = missing(method), n = missing(noTarget);
+  if (m.length) findings.push(`${m.length} requirement(s) of the method left out; BSI-Standard 300-1 (3.4.1) makes them part of every package: ${listed(m)}`);
+  if (n.length) findings.push(`${n.length} requirement(s) without a target-object category left out; BSI-Standard 300-1 (3.4.1) makes them part of every package: ${listed(n)}`);
+}
+if (strict) errors.push(...findings);
+else for (const f of findings) console.error(`profile: warning: ${f}`);
 if (errors.length) fail(`${errors.length} error(s):\n  ${errors.join("\n  ")}`);
 
 const catalogResource = importResource(uuid5(`import:catalog:${href}`), `${catalog.metadata?.title ?? "Catalog"} at ${t.catalog.commit.slice(0, 7)}`, href, catalogBytes);
