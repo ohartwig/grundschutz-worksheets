@@ -7,10 +7,10 @@
         "id": "OWN",
         "title": "Own requirements",
         "controls": [
-          { "id": "OWN.1.1", "title": "Contractual log retention", "props": [{ "name": "threats", "value": "G 0.18" }],
+          { "id": "OWN.1.1", "title": "Contractual log retention", "props": [{ "name": "threats", "ns": "https://github.com/BSI-Bund/Stand-der-Technik-Bibliothek/tree/main/documentation/namespaces/basethreats.csv", "value": "G 0.18" }],
             "params": [{ "id": "own.1.1-prm1", "label": "retention" }],
-            "parts": [{ "name": "statement", "prose": "Logs of the shop SOLLTEN {{ insert: param, own.1.1-prm1 }} aufbewahrt werden.", "props": [{ "name": "modal_verb", "value": "SOLLTE" }] }] },
-          { "id": "OWN.1.2", "title": "Customer notice", "parts": [{ "name": "statement", "prose": "Ein Sicherheitsvorfall MUSS dem Kunden binnen 24 Stunden gemeldet werden.", "props": [{ "name": "modal_verb", "value": "MUSS" }] }] }
+            "parts": [{ "name": "statement", "prose": "Logs of the shop SOLLTEN {{ insert: param, own.1.1-prm1 }} aufbewahrt werden.", "props": [{ "name": "modal_verb", "ns": "https://github.com/BSI-Bund/Stand-der-Technik-Bibliothek/tree/main/documentation/namespaces/modal_verbs.csv", "value": "SOLLTE" }] }] },
+          { "id": "OWN.1.2", "title": "Customer notice", "parts": [{ "name": "statement", "prose": "Ein Sicherheitsvorfall MUSS dem Kunden binnen 24 Stunden gemeldet werden.", "props": [{ "name": "modal_verb", "ns": "https://github.com/BSI-Bund/Stand-der-Technik-Bibliothek/tree/main/documentation/namespaces/modal_verbs.csv", "value": "MUSS" }] }] }
         ]
       }
     ]

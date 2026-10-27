@@ -57,12 +57,13 @@
 // the institution write requirements of its own, in the format of
 // Grundschutz++, and add them to the package. "own" names them: an OSCAL
 // catalog whose every control has a title and a statement with its prose and
-// a modal verb (MUSS, SOLLTE or KANN, as the statement's prop `modal_verb`),
+// a modal verb (MUSS, SOLLTE or KANN, as the statement's prop `modal_verb` in
+// the library's namespace, as the catalog has it),
 // and whose IDs the BSI catalog does not use. All of them belong to the
 // package. The profile imports them as a second catalog, through a
-// back-matter resource that links to `href` and also carries the file itself
-// (base64), so a reader of the profile has them even when `href` is not
-// public. `file` is read relative to the tailoring file. Their parameters
+// back-matter resource that links to `href` with the file's SHA-256, and
+// carries a copy (base64) in a resource next to it, so a reader of the
+// profile has them even when `href` is not public. `file` is read relative to the tailoring file. Their parameters
 // take values like the catalog's.
 //
 //   node profile.mjs tailoring.json [--strict] > profile.json
@@ -71,7 +72,7 @@
 
 import { readFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
-import { NS, byId, embeddedResource, everyControl, importResource, libraryUrl, uuid5 as uuid5From } from "./lib/oscal.mjs";
+import { NS, byId, copyResource, everyControl, importResource, libraryUrl, uuid5 as uuid5From } from "./lib/oscal.mjs";
 
 // Fixed namespace for the derived UUIDs of this tool.
 const UUID_NS = "b1f0c6a2-5d3e-4f7a-9c8b-2e6d1a4f0b37";
@@ -124,6 +125,9 @@ for (const c of everyControl(catalog)) {
 const isGspp = t.catalog.path.startsWith("control_layer/Grundschutz++/");
 
 // The own requirements (3.4.3): checked for the format, never for content.
+// The modal verb in the library's namespace, as the catalog has it: without
+// one, a prop named modal_verb is no valid OSCAL.
+const MODAL_NS = "https://github.com/BSI-Bund/Stand-der-Technik-Bibliothek/tree/main/documentation/namespaces/modal_verbs.csv";
 let own = null; // { bytes, catalog, ids }
 const ownErrors = [];
 if (t.own !== undefined) {
@@ -139,11 +143,11 @@ if (t.own !== undefined) {
   const ids = [];
   for (const c of everyControl(oc)) {
     const stm = (c.parts ?? []).find((p) => p.name === "statement");
-    const verb = (stm?.props ?? []).find((p) => p.name === "modal_verb")?.value;
+    const verb = (stm?.props ?? []).find((p) => p.name === "modal_verb" && p.ns === MODAL_NS)?.value;
     if (known.has(c.id)) ownErrors.push(`own ${c.id}: the catalog uses this ID already`);
     if (ids.includes(c.id)) ownErrors.push(`own ${c.id}: listed twice`);
     if (!c.title || !stm?.prose) ownErrors.push(`own ${c.id}: needs a title and a statement with prose`);
-    if (!["MUSS", "SOLLTE", "KANN"].includes(verb)) ownErrors.push(`own ${c.id}: the statement needs the prop modal_verb, MUSS, SOLLTE or KANN`);
+    if (!["MUSS", "SOLLTE", "KANN"].includes(verb)) ownErrors.push(`own ${c.id}: the statement needs the prop modal_verb (ns ${MODAL_NS}): MUSS, SOLLTE or KANN`);
     for (const p of c.params ?? []) paramOwner.set(p.id, c.id);
     ids.push(c.id);
   }
@@ -192,9 +196,10 @@ if (errors.length) fail(`${errors.length} error(s):\n  ${errors.join("\n  ")}`);
 
 const catalogResource = importResource(uuid5(`import:catalog:${href}`), `${catalog.metadata?.title ?? "Catalog"} at ${t.catalog.commit.slice(0, 7)}`, href, catalogBytes);
 const ownResource = own && {
-  ...embeddedResource(uuid5(`import:own:${t.own.href}`), `Own requirements: ${own.catalog.metadata.title}`, t.own.href, "own-requirements.json", own.bytes),
+  ...importResource(uuid5(`import:own:${t.own.href}`), `Own requirements: ${own.catalog.metadata.title}`, t.own.href, own.bytes),
   props: [{ name: "tailoring", ns: NS, value: "own-requirements" }],
 };
+const ownCopy = own && copyResource(uuid5(`copy:own:${t.own.href}`), ownResource.uuid, `Copy of the own requirements: ${own.catalog.metadata.title}`, "own-requirements.json", own.bytes);
 
 const profile = {
   profile: {
@@ -237,7 +242,7 @@ const profile = {
     "back-matter": {
       resources: [
         catalogResource,
-        ...(own ? [ownResource] : []),
+        ...(own ? [ownResource, ownCopy] : []),
         ...na
           .sort((a, b) => byId(a.id, b.id))
           .map((e) => ({

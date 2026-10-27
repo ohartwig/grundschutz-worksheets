@@ -434,16 +434,17 @@ node worksheet.mjs $CAT --profile profile.json --commit $C   # the worksheet for
   standard has you write your own and add them to the package (3.4.3). Write
   them as a small OSCAL catalog in the format of Grundschutz++: an ID the BSI
   catalog does not use, a title, a statement with its prose and its modal verb
-  as the prop `modal_verb`, and parameters if you like. Name it in the
+  as the prop `modal_verb` in the library's namespace (`…/namespaces/modal_verbs.csv`,
+  as in the catalog), and parameters if you like. Name it in the
   tailoring:
 
   ```json
   "own": { "file": "own-requirements.json", "href": "https://example.org/own-requirements.json" }
   ```
 
-  The profile imports it as a second catalog and carries a copy along (base64,
-  next to the link with its SHA-256), so a reader has it even when `href` is
-  not public. All of them belong to the package; `parameters` sets their
+  The profile imports it as a second catalog, through a link with its SHA-256,
+  and carries a copy along (base64, in a resource of its own), so a reader has
+  it even when `href` is not public. All of them belong to the package; `parameters` sets their
   blanks too. `ssp.mjs` applies the same rules to them as to the catalog's:
   a permanent MUSS is refused. The worksheet lists the BSI catalog only.
 
