@@ -1,0 +1,10 @@
+Zielobjekt,Definition,Beispiel,Typ,Kategorie,Synonyme,ChildOfUUID,UUID
+Anwendungen,"Software, die Funktionen bereitstellt, ""zum Beispiel"" diese,
+über zwei Zeilen.",,Anwendungen,Technisch,,,a0000000-0000-4000-8000-000000000001
+Webserver,"(Server-)Anwendungen, die HTTP sprechen.",,Anwendungen,Technisch,,a0000000-0000-4000-8000-000000000001,a0000000-0000-4000-8000-000000000002
+IT-Systeme,Systeme.,,IT-Systeme,Technisch,,,a0000000-0000-4000-8000-000000000003
+Mobile Endgeräte,Mobile IT-Systeme.,Notebooks,IT-Systeme,Technisch,,a0000000-0000-4000-8000-000000000003,a0000000-0000-4000-8000-000000000004
+Nutzende,Personen.,,Nutzende,Organisatorisch,,,a0000000-0000-4000-8000-000000000005
+Mitarbeitende,Beschäftigte.,,Nutzende,Organisatorisch,,a0000000-0000-4000-8000-000000000005,a0000000-0000-4000-8000-000000000006
+Netze,Verbindungen.,,Netze,Technisch,,,a0000000-0000-4000-8000-000000000007
+WLANs,Drahtlose Netze.,,Netze,Technisch,,a0000000-0000-4000-8000-000000000007,a0000000-0000-4000-8000-000000000008
