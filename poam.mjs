@@ -32,7 +32,11 @@
 //   actions.json: { "source": "Improvement register",
 //     "items": [{ "id": "I-173", "title": "Protect release tags everywhere",
 //                 "requirements": ["TEST.4.1"], "due": "2026-10-31",
-//                 "status": "open" }] }               open | in-progress | done
+//                 "status": "open",                   open | in-progress | done
+//                 "owner": "J. Doe" }] }             optional: who answers for it
+// BSI-Standard 300-1 (4.4) gives every measure a responsible person and a
+// deadline: the owner becomes the remediation's prop `responsible`, and
+// stderr counts the actions without one.
 //
 // Paths are relative to the input file. Output: OSCAL 1.2.3 POA&M on stdout,
 // deterministic for the same input.
@@ -110,6 +114,7 @@ const findings = new Map([...latest].filter(([, v]) => v.state === "not-satisfie
 
 // --- Actions from the owner's register. -------------------------------------
 const actions = new Map(); // requirement -> [action]
+const ownerless = new Set();
 let source = "";
 if (p.actions) {
   const a = read(p.actions, "actions");
@@ -119,6 +124,8 @@ if (p.actions) {
     if (it.due && !/^\d{4}-\d\d-\d\d$/.test(it.due)) fail(`action ${it.id}: due must be YYYY-MM-DD`);
     // Own keys only: "constructor" or "toString" would pass a plain lookup.
     if (!Object.hasOwn(STATUS, it.status ?? "open")) fail(`action ${it.id}: status must be open, in-progress or done`);
+    if (it.owner !== undefined && (typeof it.owner !== "string" || !it.owner.trim())) fail(`action ${it.id}: owner must be a non-empty string`);
+    if (!it.owner) ownerless.add(it.id);
     for (const id of it.requirements) actions.set(id, [...(actions.get(id) ?? []), it]);
   }
 }
@@ -176,7 +183,8 @@ const items = ids.map((id) => {
         uuid: uuid5(`response:${p.id}:${id}:${a.id}`),
         lifecycle: (a.status ?? "open") === "done" ? "completed" : "planned",
         title: `${a.id}: ${a.title}`,
-        description: `${a.title} (${source}${a.due ? `, due ${a.due}` : ", no due date"}).`,
+        description: `${a.title} (${source}${a.due ? `, due ${a.due}` : ", no due date"}${a.owner ? `, ${a.owner}` : ""}).`,
+        ...(a.owner && { props: [{ name: "responsible", ns: NS, value: a.owner.trim() }] }),
       })),
     }),
   });
@@ -229,4 +237,5 @@ const out = {
 };
 if (!items.length) fail("nothing to plan: no gap in the security plan and no unsatisfied finding -- check the inputs");
 console.error(`poam: ${items.length} items -- ${findings.size} from findings, ${withDeadline} with a deadline, ${withoutAction} without an action, ${deviations} approved deviations`);
+if (ownerless.size) console.error(`poam: ${ownerless.size} actions name no one responsible (BSI-Standard 300-1, 4.4)`);
 process.stdout.write(JSON.stringify(out, null, 2) + "\n");
