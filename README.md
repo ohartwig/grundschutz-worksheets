@@ -35,7 +35,7 @@ node worksheet.mjs $CAT --mapping $MAP --sources @applicable-controls.txt --form
 # One practice at a time
 node worksheet.mjs $CAT --mapping $MAP --practices DET,KONF --commit $C
 
-# Where does the work lie? Counts by practice, level, modal verb, action word, subject, documentation
+# Where does the work lie? Counts by practice, level, modal verb, action word, subject, documentation, threat
 node worksheet.mjs $CAT --mapping $MAP --summary --commit $C
 
 # Any other catalog of the library, without a mapping
@@ -50,7 +50,7 @@ node worksheet.mjs control_layer/Mindeststandard-TLS/Entwurf-Mindeststandard-TLS
 | `--sources <list\|@file>` | With `--mapping`: only these source controls, comma-separated or one per line in a file. |
 | `--practices <list>` | Only these practices, e.g. `DET,KONF`. |
 | `--format md\|csv` | Markdown checklist (default) or CSV with empty `evidence`, `status` and `note` columns. |
-| `--summary` | Counts instead of rows. |
+| `--summary` | Counts instead of rows, including one per elementary threat (G 0.x). |
 | `--levels <list>` | Only these security levels, e.g. `normal-SdT` or `erhöht`. |
 | `--modal <list>` | Only these modal verbs, e.g. `MUSS`. |
 | `--preset <id>` | A named audit scope, see below. |
@@ -62,7 +62,7 @@ source control that starts with it.
 A Markdown row looks like this:
 
 ```text
-- [ ] **KONF.2.1** Grundkonfiguration für Systeme · normal-SdT · SOLLTE · dokumentieren · subject Konfiguration für IT-Systeme · doc Konfigurationshistorie · effort 3 · from 8.9 (subset-of)
+- [ ] **KONF.2.1** Grundkonfiguration für Systeme · normal-SdT · SOLLTE · dokumentieren · subject Konfiguration für IT-Systeme · doc Konfigurationshistorie · effort 3 · threats G 0.18 · from 8.9 (subset-of)
       Konfiguration für IT-Systeme SOLLTE eine Grundkonfiguration dokumentieren.
 ```
 
@@ -281,6 +281,38 @@ can give the firm is the evidence of Type II: dated results of the same checks
 over the period (`period.mjs`, below), per criterion through `coverage.mjs
 --preset soc2`.
 
+## BSI-Standard 300-1: the method behind the catalog
+
+Since 2026-10-26 the BSI publishes the method of Grundschutz++ as
+[BSI-Standard 300-1](https://www.bsi.bund.de/SharedDocs/Downloads/DE/BSI/Grundschutz/BSI_Standards/standard_300-1.pdf)
+(version 1.0 of 2026-10-20, for early adopters). The catalog says *what* is
+required; the standard says how a package of requirements is put together and
+what follows when one is not met. Where the tools here touch that, they follow
+the standard:
+
+| The standard | Here |
+|---|---|
+| The method practices (GC, STM, UMS, VRB, PERF) apply to every information domain; every other requirement without a target-object category belongs in the package too (3.4.1) | `profile.mjs` names each one a tailoring of the Anwenderkatalog leaves out, and each method requirement it calls not applicable; `--strict` makes that an error |
+| Three states: *erfüllt*, *nicht erfüllt*, *nicht anwendbar* with a reason (4.1.1) | *implemented* is erfüllt; *partial* and *planned* are both nicht erfüllt; not applicable is the profile's, with its reason |
+| An unfulfilled SOLLTE is temporary or permanent; permanent needs a risk analysis and the leadership's approval of the residual risk; a MUSS allows neither exception nor risk acceptance (4.1.2) | a review in `ssp.mjs` says `nonfulfilment`; a permanent MUSS is refused, a permanent SOLLTE needs `risk` and `approved`; `poam.mjs` makes the approved ones deviations |
+| For a permanently unfulfilled SOLLTE the risk analysis takes in its elementary threats (Annex 3, criterion 17) | the worksheet names them per requirement (`threats G 0.x`, the last CSV column) and counts them in `--summary` |
+| *erhöht* requirements are KANN, optional (3.4.2) | `--levels normal-SdT` is the baseline |
+| Blueprints (*Blaupausen*): catalogs cut to a scenario, with parameters set (3.3) | the profile presets `lieferkette` and `wlan` |
+| Evidence names the tool, the time and the result of an automated check, and who documented or checked it (4.3) | `results.mjs`: start and end of the run, the check, `measured_by`, the evidence links; a person is not named |
+
+Catalog and standard do not agree everywhere yet. At `160c177` the catalog
+gives the implementation status two values, not three (UMS.1.1), asks the
+approval of the residual risk only with SOLLTE (UMS.1.2), and three *erhöht*
+requirements carry SOLLTE instead of KANN (BES.1.4, DET.4.12.1, REA.2.5); the
+community lists more in
+[issue #116](https://github.com/BSI-Bund/Stand-der-Technik-Bibliothek/issues/116)
+of the library. Where they disagree, the tools follow the standard; a later
+catalog that settles it arrives as a raised library commit.
+
+Choosing the business processes, their protection needs and the assets behind
+them (chapter 2 and 3.1, 3.2) is the institution's work, and so is the risk
+analysis itself. Nothing here does it.
+
 ## Your tailoring as an OSCAL profile
 
 `profile.mjs` turns a small tailoring file — which requirements apply, which do
@@ -325,6 +357,13 @@ node worksheet.mjs $CAT --profile profile.json --commit $C   # the worksheet for
   `set-parameters`, and the worksheet prints `[jährlich]` instead of
   `[regelmäßig]`. A parameter of a requirement that is not applicable, or one
   the catalog does not have, is an error.
+- **What the standard does not leave to you:** for the Anwenderkatalog
+  (`control_layer/Grundschutz++/`), every requirement of the method and every
+  one without a target-object category that the tailoring neither applies nor
+  calls not applicable is named on stderr, and so is a method requirement
+  called not applicable (BSI-Standard 300-1, 3.4.1). A warning, since a
+  tailoring may be a benchmark against Annex A rather than a package by the
+  standard; `profile.mjs tailoring.json --strict` refuses it.
 
 ## Self-describing images: a component definition per build
 
@@ -422,6 +461,26 @@ the header of `ssp.mjs`. A requirement that a component or measurement names
 but the profile does not include is reported: either the profile lacks it, or
 the claim is out of scope. On its first real run that found three requirements
 the image pipeline implements but our Statement of Applicability did not list.
+
+**For now or for good.** BSI-Standard 300-1 counts *partial* and *planned* as
+not fulfilled and asks of each whether it is so temporarily -- in the
+implementation plan, with a reason -- or permanently. A review says which:
+
+```json
+{ "id": "DET.5.3", "state": "partial", "note": "rollout under way", "nonfulfilment": "temporary" }
+{ "id": "TEST.4.1", "state": "planned", "note": "no licence for approvals",
+  "nonfulfilment": "permanent", "risk": "R-021",
+  "approved": { "by": "Management", "date": "2026-10-27" } }
+```
+
+A temporary one needs its note. A permanent one is refused for a MUSS, which
+allows neither exception nor risk acceptance, and needs for a SOLLTE the risk
+analysis it rests on and the leadership's approval of the residual risk; a KANN
+is optional. To know the modal verb, `ssp.mjs` reads the catalog the profile
+imports, checked against its SHA-256 -- only then, and with `--catalog <file>`
+from disk. The plan carries `nonfulfilment`, `risk-analysis` and
+`residual-risk-approved(-by)` as props, and stderr counts the unfulfilled
+requirements no review classifies yet.
 
 Why not compliance-trestle, which assembles plans too: at 5.1.0 its
 `ssp-assemble` rejects version-5 UUIDs, drops the links of implemented
@@ -542,7 +601,10 @@ requirement the security plan itself claims as *partial* or *planned*, and one
 the latest assessment did not find satisfied, whatever the plan claims. Each
 item gets a risk that stays open until an action closes it. Actions come from
 your own register (ID, title, requirements, due date, status); an item without
-one gets no invented date, says that it has none, and is counted.
+one gets no invented date, says that it has none, and is counted. A
+requirement the plan calls permanently unfulfilled with an approved residual
+risk is a decision, not a missing action: its risk is `deviation-approved`, and
+the metadata counts it as `items-deviation-approved`.
 
 ```bash
 node poam.mjs poam.json > poam-out.json
@@ -663,8 +725,9 @@ find what no repository knows about.
 ## What this is not
 
 It does not assess anything. It makes sure no requirement is missed; answering
-them is your work. It is not affiliated with the BSI, and Grundschutz++ is still
-evolving — nothing here claims conformance.
+them is your work. It is not affiliated with the BSI. The method is published as BSI-Standard
+300-1, but catalog and standard are still settling, and a tool cannot
+establish conformance anyway — nothing here claims it.
 
 ## Development
 

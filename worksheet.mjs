@@ -46,7 +46,8 @@
 //   --levels <list>       only these security levels, e.g. normal-SdT
 //   --modal <list>        only these modal verbs, e.g. MUSS,SOLLTE
 //   --format md|csv       Markdown checklist (default) or CSV for a spreadsheet
-//   --summary             counts by practice, level, modal verb and action word
+//   --summary             counts by practice, level, modal verb, action word,
+//                         subject, documentation and elementary threat
 
 import { createHash } from "node:crypto";
 import { readFileSync, readdirSync } from "node:fs";
@@ -229,6 +230,10 @@ const index = (controls, practice, params, depth) => {
       subject: modal ? statement.slice(0, statement.indexOf(modal)).trim() : "",
       target: fact("target_object_categories", "target_objects"),
       documentation: fact("documentation", "documentation"),
+      // The elementary threats (G 0.x) the requirement counters: where a
+      // SOLLTE stays unfulfilled for good, the risk analysis starts from them
+      // (BSI-Standard 300-1, Annex 3, criterion 17).
+      threats: propOf(c.props, "threats"),
       statement,
       from: [],
     });
@@ -338,6 +343,12 @@ if (summary) {
     for (const [k, n] of count(key)) console.log(`- ${k}: ${n}`);
     console.log("");
   }
+  // A requirement counters several threats, so each is counted on its own.
+  const threats = new Map();
+  for (const r of selected) for (const g of (r.threats || "-").split(/,\s*/)) threats.set(g, (threats.get(g) ?? 0) + 1);
+  console.log(`## Elementary threat\n`);
+  for (const [k, n] of [...threats].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], "en", { numeric: true }))) console.log(`- ${k}: ${n}`);
+  console.log("");
 } else if (format === "csv") {
   // A CSV has no place for prose above the header; the caveat goes to stderr.
   if (notice) console.error(notice);
@@ -349,9 +360,11 @@ if (summary) {
     return `"${(/^[=+@\t\r-]/.test(s) ? `'${s}` : s).replace(/"/g, '""')}"`;
   };
   // relationship lists one entry per source in `from`, in the same order.
+  // threats came later and stands last, so a sheet that reads columns by
+  // position keeps working.
   const cols = ["id", "practice", "title", "level", "modal", "action", "subject", "target", "documentation", "effort", "from", "relationship", "statement"];
-  console.log([...cols, "evidence", "status", "note"].join(","));
-  for (const r of selected) console.log([...cols.map((c) => q(c === "from" ? r.from.join(" ") : c === "relationship" ? (r.relationship ?? []).join(" ") : r[c])), "", "", ""].join(","));
+  console.log([...cols, "evidence", "status", "note", "threats"].join(","));
+  for (const r of selected) console.log([...cols.map((c) => q(c === "from" ? r.from.join(" ") : c === "relationship" ? (r.relationship ?? []).join(" ") : r[c])), "", "", "", q(r.threats)].join(","));
 } else {
   console.log(`# Worksheet: ${meta}`);
   if (presetId) console.log(`Preset: ${presetId} · ${preset.title}${!catalogFile && commit !== LIBRARY.commit ? ` · tested at ${LIBRARY.commit}, run at another commit` : ""}`);
@@ -368,7 +381,7 @@ if (summary) {
       console.log(`\n## ${practice || "(no practice)"} (${selected.filter((x) => x.practice === practice).length})\n`);
     }
     const pad = "  ".repeat(r.depth);
-    const facts = [r.level, r.modal, r.action, r.subject && `subject ${r.subject}`, r.documentation && `doc ${r.documentation}`, r.effort && `effort ${r.effort}`, r.from.length && `from ${r.from.map((s, i) => `${s} (${r.relationship[i]})`).join(", ")}`].filter(Boolean);
+    const facts = [r.level, r.modal, r.action, r.subject && `subject ${r.subject}`, r.documentation && `doc ${r.documentation}`, r.effort && `effort ${r.effort}`, r.threats && `threats ${r.threats}`, r.from.length && `from ${r.from.map((s, i) => `${s} (${r.relationship[i]})`).join(", ")}`].filter(Boolean);
     console.log(`${pad}- [ ] **${r.id}** ${r.title} · ${facts.join(" · ")}`);
     if (r.statement) console.log(`${pad}      ${r.statement}`);
   }
