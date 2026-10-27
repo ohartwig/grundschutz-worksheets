@@ -16,6 +16,12 @@ it needs.
 
 Background and method: [Grundschutz++ against my own documentation](https://ole-hartwig.eu/en/blog/grundschutz-plus-plus-check-own-documentation).
 
+To run the whole chain every night, from your tailoring to an OSCAL package
+with measurements in it, copy
+[grundschutz-starter](https://github.com/ohartwig/grundschutz-starter): a
+template with the checks of
+[grundschutz-checks](https://github.com/ohartwig/grundschutz-checks) wired in.
+
 ## Usage
 
 Node 24 (the current LTS) or later. `worksheet.mjs` has no dependencies and needs no install. The catalog is fetched from the
@@ -296,7 +302,9 @@ the standard:
 | The method practices (GC, STM, UMS, VRB, PERF) apply to every information domain; every other requirement without a target-object category belongs in the package too (3.4.1) | `package.mjs` puts them in; `profile.mjs` names each one a hand-made tailoring of the Anwenderkatalog leaves out, and each method requirement it calls not applicable; `--strict` makes that an error |
 | Three states: *erfüllt*, *nicht erfüllt*, *nicht anwendbar* with a reason (4.1.1) | *implemented* is erfüllt; *partial* and *planned* are both nicht erfüllt; not applicable is the profile's, with its reason |
 | An unfulfilled SOLLTE is temporary or permanent; permanent needs a risk analysis and the leadership's approval of the residual risk; a MUSS allows neither exception nor risk acceptance (4.1.2) | a review in `ssp.mjs` says `nonfulfilment`; a permanent MUSS is refused, a permanent SOLLTE needs `risk` and `approved`; `poam.mjs` makes the approved ones deviations |
-| For a permanently unfulfilled SOLLTE the risk analysis takes in its elementary threats (Annex 3, criterion 17) | the worksheet names them per requirement (`threats G 0.x`, the last CSV column) and counts them in `--summary` |
+| For a permanently unfulfilled SOLLTE the risk analysis takes in its elementary threats (Annex 3, criterion 17) | the worksheet names them per requirement (`threats G 0.x`, the last CSV column) and counts them in `--summary`; `ssp.mjs` writes them on the permanent nonfulfilment, and `poam.mjs` refuses a risk register entry that leaves one out |
+| A risk register with at least ID, object, risk, protection goals, level and owner, and for a treated risk its priority, option and measures; a time limit on a temporary acceptance; the owner approves the implementation plan; the analysis is reviewed every year (Annex 3, criteria 14 to 16, 23, 25, 28 to 31, 35) | the `risks` file of `poam.mjs`; see [The risk register](#the-risk-register) |
+| Requirements of your own, where an asset is not covered well enough or the law or a contract asks for more, in the format of Grundschutz++ (3.4.3) | `own` in the tailoring: a catalog of your own the profile imports and carries along; see [Your tailoring as an OSCAL profile](#your-tailoring-as-an-oscal-profile) |
 | *erhöht* requirements are KANN, optional (3.4.2) | `--levels normal-SdT` is the baseline |
 | Blueprints (*Blaupausen*): catalogs cut to a scenario, with parameters set (3.3) | the profile presets `lieferkette` and `wlan` |
 | Evidence names the tool, the time and the result of an automated check, and who documented or checked it (4.3) | `results.mjs`: start and end of the run, the check, `measured_by`, the evidence links, `performed_by`; a review's `date` and `by`, for the file or per requirement, become the plan's `reviewed` and `reviewed-by` |
@@ -313,7 +321,8 @@ catalog that settles it arrives as a raised library commit.
 
 Choosing the business processes, their protection needs and the assets behind
 them (chapter 2 and 3.1, 3.2) is the institution's work, and so is the risk
-analysis itself. What follows from them, the package, `package.mjs` derives.
+analysis itself: the register records what it found, the tools check that the
+record is complete, not that it is right. What follows from them, the package, `package.mjs` derives.
 
 ## The package from processes and assets
 
@@ -420,6 +429,23 @@ node worksheet.mjs $CAT --profile profile.json --commit $C   # the worksheet for
   called not applicable (BSI-Standard 300-1, 3.4.1). A warning, since a
   tailoring may be a benchmark against Annex A rather than a package by the
   standard; `profile.mjs tailoring.json --strict` refuses it.
+- **Requirements of your own:** where an asset is not covered well enough by
+  the catalog, or the law, a contract or a stakeholder asks for more, the
+  standard has you write your own and add them to the package (3.4.3). Write
+  them as a small OSCAL catalog in the format of Grundschutz++: an ID the BSI
+  catalog does not use, a title, a statement with its prose and its modal verb
+  as the prop `modal_verb`, and parameters if you like. Name it in the
+  tailoring:
+
+  ```json
+  "own": { "file": "own-requirements.json", "href": "https://example.org/own-requirements.json" }
+  ```
+
+  The profile imports it as a second catalog and carries a copy along (base64,
+  next to the link with its SHA-256), so a reader has it even when `href` is
+  not public. All of them belong to the package; `parameters` sets their
+  blanks too. `ssp.mjs` applies the same rules to them as to the catalog's:
+  a permanent MUSS is refused. The worksheet lists the BSI catalog only.
 
 ## Self-describing images: a component definition per build
 
@@ -679,6 +705,50 @@ prop `responsible`; stderr counts the actions without one.
 node poam.mjs poam.json > poam-out.json
 node validate.mjs poam-out.json
 ```
+
+### The risk register
+
+A permanent nonfulfilment names its risk analysis by ID (`risk`). The
+register, named as `"risks": "risks.json"` in the POA&M input, says what that
+analysis found, with what BSI-Standard 300-1 asks of it at the least
+(Annex 3):
+
+```json
+{ "source": "Risk register",
+  "items": [
+    { "id": "R-021", "object": "Release pipeline",
+      "description": "Unreviewed changes reach production",
+      "goals": ["integrity"], "level": "high", "owner": "J. Doe",
+      "threats": ["G 0.28", "G 0.46"],
+      "treatment": "reduce", "priority": "1", "actions": ["I-173"],
+      "plan-approved": { "by": "J. Doe", "date": "2026-10-27" },
+      "reviewed": "2026-10-27" },
+    { "id": "R-030", "object": "Shop", "description": "Outage during the sale",
+      "goals": ["availability"], "level": "medium", "owner": "A. Roe",
+      "treatment": "accept",
+      "accepted": { "by": "Management", "date": "2026-10-27", "until": "2027-03-31" },
+      "reviewed": "2026-10-27" }
+  ] }
+```
+
+- **The minimum is required:** ID, object, description, protection goals,
+  level and owner (criteria 14 to 16); a risk treated by `reduce`, `avoid` or
+  `transfer` also needs its priority and its actions, which must be in the
+  actions register (15, 23, 25); an accepted one needs `accepted` (29, 30).
+  The scale of `level` and `priority` is yours, as your criteria define it.
+- **Checked against the plan:** every risk analysis the plan names must be in
+  the register, and its `threats` must include the elementary threats of the
+  requirement (17). A risk accepted for a temporary nonfulfilment needs
+  `accepted.until` (28).
+- **Counted on stderr,** against the POA&M's `last-modified`: treated risks
+  whose implementation plan the owner has not approved (31) and those approved
+  by someone else, risks not `reviewed` within a year (35), and acceptances
+  whose `until` has passed.
+- Each entry becomes a risk of the POA&M with its fields as props (`risk-id`,
+  `risk-owner`, `protection-goal`, `risk-level`, `threat`, `treatment`,
+  `accepted-until`, `plan-approved` …), the actions as remediations, and an
+  accepted one as `deviation-approved` with its limit as deadline. The items
+  of its requirements relate to it.
 
 ## When the catalog moves
 

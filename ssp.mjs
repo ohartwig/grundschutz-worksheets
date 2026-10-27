@@ -236,26 +236,36 @@ if (s.reviews) {
 
 // A permanent nonfulfilment depends on the modal verb: never for a MUSS, with
 // a risk analysis and approved residual risk for a SOLLTE, free for a KANN.
+// Every catalog the profile imports is read: the library's, and the own
+// requirements profile.mjs embeds (BSI-Standard 300-1, 3.4.3). The elementary
+// threats of a permanent nonfulfilment go into the plan as well: its risk
+// analysis has to consider them (Annex 3, criterion 17), and poam.mjs checks
+// that the risk register does.
 const permanent = [...reviewed].filter(([, r]) => r.nonfulfilment === "permanent");
+const threatsOf = new Map();
 if (permanent.length) {
-  const target = resolveImport(profile, profile.imports?.[0]?.href);
-  let bytes;
-  if (localCatalog) bytes = readFileSync(localCatalog);
-  else {
-    // Only from the library at a commit, the form profile.mjs writes.
-    const [, commit, path] = target.href?.match(/^[^:]+:\/\/[^/]+\/[^/]+\/[^/]+\/([0-9a-f]{40})\/(.+)$/) ?? [];
-    if (!commit || !target.href.startsWith(`${REPO}/`) || libraryUrl(commit, path.split("/").map(decodeURIComponent).join("/")) !== target.href)
-      fail(`the profile imports its catalog from ${target.href ?? "nowhere"}, not from the library at a commit: name a local copy with --catalog`);
-    const res = await fetch(target.href);
-    if (!res.ok) fail(`${res.status} for ${target.href}`);
-    bytes = Buffer.from(await res.arrayBuffer());
-  }
-  if (target.sha256 && target.sha256 !== sha256(bytes)) fail(`the catalog read is not the one the profile was made against: sha256 ${sha256(bytes)}, the profile names ${target.sha256}`);
-  const catalog = JSON.parse(bytes.toString("utf8")).catalog ?? fail("not an OSCAL catalog");
   const modal = new Map();
-  for (const c of everyControl(catalog)) {
-    const stm = (c.parts ?? []).find((p) => p.name === "statement");
-    modal.set(c.id, (stm?.props ?? []).find((p) => p.name === "modal_verb")?.value || (stm?.prose?.match(/\b(MUSS|SOLLTE|KANN)\b/) ?? [""])[0]);
+  for (const imp of profile.imports ?? []) {
+    const target = resolveImport(profile, imp.href);
+    let bytes = target.bytes;
+    if (!bytes && localCatalog) bytes = readFileSync(localCatalog);
+    else if (!bytes) {
+      // Only from the library at a commit, the form profile.mjs writes.
+      const [, commit, path] = target.href?.match(/^[^:]+:\/\/[^/]+\/[^/]+\/[^/]+\/([0-9a-f]{40})\/(.+)$/) ?? [];
+      if (!commit || !target.href.startsWith(`${REPO}/`) || libraryUrl(commit, path.split("/").map(decodeURIComponent).join("/")) !== target.href)
+        fail(`the profile imports its catalog from ${target.href ?? "nowhere"}, not from the library at a commit: name a local copy with --catalog`);
+      const res = await fetch(target.href);
+      if (!res.ok) fail(`${res.status} for ${target.href}`);
+      bytes = Buffer.from(await res.arrayBuffer());
+    }
+    if (target.sha256 && target.sha256 !== sha256(bytes)) fail(`the catalog read is not the one the profile was made against: sha256 ${sha256(bytes)}, the profile names ${target.sha256}`);
+    const catalog = JSON.parse(bytes.toString("utf8")).catalog ?? fail("not an OSCAL catalog");
+    for (const c of everyControl(catalog)) {
+      const stm = (c.parts ?? []).find((p) => p.name === "statement");
+      modal.set(c.id, (stm?.props ?? []).find((p) => p.name === "modal_verb")?.value || (stm?.prose?.match(/\b(MUSS|SOLLTE|KANN)\b/) ?? [""])[0]);
+      const g = (c.props ?? []).find((p) => p.name === "threats")?.value;
+      if (g) threatsOf.set(c.id, g);
+    }
   }
   for (const [id, r] of permanent) {
     const verb = modal.get(id);
@@ -352,6 +362,7 @@ const requirements = [...applicable].sort(byId).map((id) => {
             { name: "residual-risk-approved-by", ns: NS, value: rv.approved.by },
           ]
         : []),
+      ...(rv?.nonfulfilment === "permanent" && threatsOf.get(id) ? [{ name: "threats", ns: NS, value: threatsOf.get(id) }] : []),
       ...(m
         ? [
             { name: "assessed", ns: NS, value: m.at },

@@ -10,7 +10,7 @@
           { "id": "DET.5.3", "title": "SOLLTE", "parts": [{ "name": "statement", "prose": "x SOLLTE y.", "props": [{ "name": "modal_verb", "value": "SOLLTE" }] }] },
           { "id": "DEV.4.5", "title": "MUSS", "parts": [{ "name": "statement", "prose": "x MUSS y.", "props": [{ "name": "modal_verb", "value": "MUSS" }] }] },
           { "id": "DEV.4.3", "title": "KANN", "parts": [{ "name": "statement", "prose": "x KANN y.", "props": [{ "name": "modal_verb", "value": "KANN" }] }] },
-          { "id": "TEST.3.1.3", "title": "SOLLTE", "parts": [{ "name": "statement", "prose": "x SOLLTE y.", "props": [{ "name": "modal_verb", "value": "SOLLTE" }] }] }
+          { "id": "TEST.3.1.3", "title": "SOLLTE", "props": [{ "name": "threats", "value": "G 0.28, G 0.46" }], "parts": [{ "name": "statement", "prose": "x SOLLTE y.", "props": [{ "name": "modal_verb", "value": "SOLLTE" }] }] }
         ]
       }
     ]

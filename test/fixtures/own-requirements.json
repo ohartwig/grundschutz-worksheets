@@ -1,0 +1,18 @@
+{
+  "catalog": {
+    "uuid": "3a7c9e15-2f4b-4d60-8b1e-6c5d4a3b2f10",
+    "metadata": { "title": "Own requirements of Example GmbH", "last-modified": "2026-10-27T00:00:00Z", "version": "1", "oscal-version": "1.1.3" },
+    "groups": [
+      {
+        "id": "OWN",
+        "title": "Own requirements",
+        "controls": [
+          { "id": "OWN.1.1", "title": "Contractual log retention", "props": [{ "name": "threats", "value": "G 0.18" }],
+            "params": [{ "id": "own.1.1-prm1", "label": "retention" }],
+            "parts": [{ "name": "statement", "prose": "Logs of the shop SOLLTEN {{ insert: param, own.1.1-prm1 }} aufbewahrt werden.", "props": [{ "name": "modal_verb", "value": "SOLLTE" }] }] },
+          { "id": "OWN.1.2", "title": "Customer notice", "parts": [{ "name": "statement", "prose": "Ein Sicherheitsvorfall MUSS dem Kunden binnen 24 Stunden gemeldet werden.", "props": [{ "name": "modal_verb", "value": "MUSS" }] }] }
+        ]
+      }
+    ]
+  }
+}
