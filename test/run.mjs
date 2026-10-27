@@ -942,4 +942,50 @@ for (const [file, want] of cases) {
     console.log(`${ok ? "ok  " : "FAIL"} persons: ${name}${ok ? "" : ": " + res.stderr + s.stderr + sv.stdout + po.stderr + pv.stdout}`);
   }
 }
+// package.mjs: the package of BSI-Standard 300-1, 3.4, from processes and assets.
+{
+  const { writeFileSync } = await import("node:fs");
+  const fx = ["--catalog", "test/fixtures/package/catalog.json", "--categories", "test/fixtures/package/categories.csv"];
+  const base = { title: "Fixture package", version: "1", "last-modified": "2026-10-27T00:00:00Z",
+    catalog: { path: "control_layer/Grundschutz++/Grundschutz++-resolved_catalog.json", commit: "160c177db6c84d3c621fff614559943b1de8c600" },
+    processes: [
+      { id: "GP-1", name: "Hosting", owner: "Ops", description: "Sites are served.", protection: { confidentiality: "normal", integrity: "hoch", availability: "normal" } },
+      { id: "GP-2", name: "Office", owner: "Office", description: "Invoices.", protection: { confidentiality: "normal", integrity: "normal", availability: "normal" } },
+    ],
+    assets: [
+      { id: "A-1", name: "Web server", categories: ["Webserver"], processes: ["GP-1"] },
+      { id: "A-2", name: "Staff", categories: ["Mitarbeitende"], processes: ["GP-1", "GP-2"] },
+    ] };
+  const run = (p, extra = []) => {
+    writeFileSync(".schema-cache/package.json", JSON.stringify(p));
+    return spawnSync(process.execPath, ["package.mjs", ".schema-cache/package.json", ...fx, ...extra], { encoding: "utf8" });
+  };
+  const a = run(base);
+  const t = a.status === 0 ? JSON.parse(a.stdout) : { applicable: [] };
+  const has = (x, id) => x.applicable.includes(id);
+  const mobile = run({ ...base, assets: [...base.assets, { id: "A-3", name: "Notebook", categories: ["Mobile Endgeräte"], processes: ["GP-2"] }] });
+  const tm = mobile.status === 0 ? JSON.parse(mobile.stdout) : { applicable: [] };
+  const adopted = run({ ...base, adopt: ["KONF.3.1"], "not-applicable": [{ id: "ASST.1.1", reason: "x" }, { id: "KONF.4.1", reason: "y" }] });
+  const ta = adopted.status === 0 ? JSON.parse(adopted.stdout) : { applicable: [] };
+  const rep = run(base, ["--report"]);
+  for (const [name, ok] of [
+    ["the method and every requirement without a category are in", a.status === 0 && has(t, "GC.1.1") && has(t, "ASST.1.1")],
+    ["an asset holds the categories above its own", has(t, "KONF.1.1")],
+    ["a requirement of a category no asset holds is out", !has(t, "KONF.4.1")],
+    ["several categories need all of them", !has(t, "KONF.2.1") && has(tm, "KONF.2.1")],
+    ["erhöht is a candidate for a process of high protection need, not in the package", !has(t, "KONF.3.1")
+      && /\| KONF\.3\.1 \| GP-1 \|/.test(rep.stdout) && /GP-1 has a high protection need: it needs a risk analysis/.test(a.stderr)],
+    ["adopt takes a candidate over; not-applicable leaves the package with its reason", has(ta, "KONF.3.1") && !has(ta, "ASST.1.1")
+      && ta["not-applicable"].some((e) => e.id === "ASST.1.1") && /not-applicable KONF\.4\.1: not in the package anyway/.test(adopted.stderr)],
+    ["the same input gives the same bytes", a.stdout === run(base).stdout],
+    ["an unknown category is refused, with the known ones", /"Server" is not a target-object category; known: .*Webserver/.test(run({ ...base, assets: [{ ...base.assets[0], categories: ["Server"] }] }).stderr)],
+    ["an asset of a process not listed is refused", /process GP-9 is not listed/.test(run({ ...base, assets: [{ ...base.assets[0], processes: ["GP-9"] }] }).stderr)],
+    ["a process without its responsible is refused (Annex 2)", /process GP-1: missing "owner"/.test(run({ ...base, processes: [{ ...base.processes[0], owner: "" }, base.processes[1]] }).stderr)],
+    ["a protection need other than normal or hoch is refused", run({ ...base, processes: [{ ...base.processes[0], protection: { confidentiality: "sehr hoch", integrity: "normal", availability: "normal" } }, base.processes[1]] }).status === 1],
+    ["another catalog than the Anwenderkatalog is refused", run({ ...base, catalog: { ...base.catalog, path: "control_layer/WLAN/WLAN-resolved_catalog.json" } }).status === 1],
+  ]) {
+    failed += !ok;
+    console.log(`${ok ? "ok  " : "FAIL"} package: ${name}${ok ? "" : ": " + a.stderr + mobile.stderr + adopted.stderr}`);
+  }
+}
 process.exit(failed ? 1 : 0);

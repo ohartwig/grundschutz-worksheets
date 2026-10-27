@@ -1,0 +1,185 @@
+{
+ "catalog": {
+  "uuid": "6a1b2c3d-4e5f-4a6b-8c7d-9e0f1a2b3c4d",
+  "metadata": {
+   "title": "Fixture Anwenderkatalog",
+   "last-modified": "2026-10-27T00:00:00Z",
+   "version": "1",
+   "oscal-version": "1.1.3"
+  },
+  "groups": [
+   {
+    "id": "GC",
+    "title": "Governance",
+    "controls": [
+     {
+      "id": "GC.1.1",
+      "class": "BSI-Methodik-Grundschutz-plus-plus",
+      "title": "GC.1.1",
+      "props": [
+       {
+        "name": "sec_level",
+        "value": "normal-SdT"
+       }
+      ],
+      "parts": [
+       {
+        "name": "statement",
+        "prose": "x SOLLTE y.",
+        "props": [
+         {
+          "name": "modal_verb",
+          "value": "SOLLTE"
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "id": "ASST",
+    "title": "Assets",
+    "controls": [
+     {
+      "id": "ASST.1.1",
+      "class": "BSI-Stand-der-Technik-Kernel",
+      "title": "ASST.1.1",
+      "props": [
+       {
+        "name": "sec_level",
+        "value": "normal-SdT"
+       }
+      ],
+      "parts": [
+       {
+        "name": "statement",
+        "prose": "x SOLLTE y.",
+        "props": [
+         {
+          "name": "modal_verb",
+          "value": "SOLLTE"
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "id": "KONF",
+    "title": "Konfiguration",
+    "controls": [
+     {
+      "id": "KONF.1.1",
+      "class": "BSI-Stand-der-Technik-Kernel",
+      "title": "KONF.1.1",
+      "props": [
+       {
+        "name": "sec_level",
+        "value": "normal-SdT"
+       }
+      ],
+      "parts": [
+       {
+        "name": "statement",
+        "prose": "x SOLLTE y.",
+        "props": [
+         {
+          "name": "modal_verb",
+          "value": "SOLLTE"
+         },
+         {
+          "name": "target_object_categories",
+          "value": "Anwendungen"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "id": "KONF.2.1",
+      "class": "BSI-Stand-der-Technik-Kernel",
+      "title": "KONF.2.1",
+      "props": [
+       {
+        "name": "sec_level",
+        "value": "normal-SdT"
+       }
+      ],
+      "parts": [
+       {
+        "name": "statement",
+        "prose": "x SOLLTE y.",
+        "props": [
+         {
+          "name": "modal_verb",
+          "value": "SOLLTE"
+         },
+         {
+          "name": "target_object_categories",
+          "value": "Nutzende, Mobile Endgeräte"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "id": "KONF.3.1",
+      "class": "BSI-Stand-der-Technik-Kernel",
+      "title": "KONF.3.1",
+      "props": [
+       {
+        "name": "sec_level",
+        "value": "erhöht"
+       }
+      ],
+      "parts": [
+       {
+        "name": "statement",
+        "prose": "x SOLLTE y.",
+        "props": [
+         {
+          "name": "modal_verb",
+          "value": "KANN"
+         },
+         {
+          "name": "target_object_categories",
+          "value": "Webserver"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "id": "KONF.4.1",
+      "class": "BSI-Stand-der-Technik-Kernel",
+      "title": "KONF.4.1",
+      "props": [
+       {
+        "name": "sec_level",
+        "value": "normal-SdT"
+       }
+      ],
+      "parts": [
+       {
+        "name": "statement",
+        "prose": "x SOLLTE y.",
+        "props": [
+         {
+          "name": "modal_verb",
+          "value": "SOLLTE"
+         },
+         {
+          "name": "target_object_categories",
+          "value": "WLANs"
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ }
+}

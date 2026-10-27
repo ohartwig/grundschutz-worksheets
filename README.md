@@ -292,7 +292,8 @@ the standard:
 
 | The standard | Here |
 |---|---|
-| The method practices (GC, STM, UMS, VRB, PERF) apply to every information domain; every other requirement without a target-object category belongs in the package too (3.4.1) | `profile.mjs` names each one a tailoring of the Anwenderkatalog leaves out, and each method requirement it calls not applicable; `--strict` makes that an error |
+| The package follows from the business processes, their protection need and the assets assigned to target-object categories, an asset holding every category above its own (2.5, 2.6, 3.4.2) | `package.mjs` builds it and writes the tailoring file; see [The package from processes and assets](#the-package-from-processes-and-assets) |
+| The method practices (GC, STM, UMS, VRB, PERF) apply to every information domain; every other requirement without a target-object category belongs in the package too (3.4.1) | `package.mjs` puts them in; `profile.mjs` names each one a hand-made tailoring of the Anwenderkatalog leaves out, and each method requirement it calls not applicable; `--strict` makes that an error |
 | Three states: *erfüllt*, *nicht erfüllt*, *nicht anwendbar* with a reason (4.1.1) | *implemented* is erfüllt; *partial* and *planned* are both nicht erfüllt; not applicable is the profile's, with its reason |
 | An unfulfilled SOLLTE is temporary or permanent; permanent needs a risk analysis and the leadership's approval of the residual risk; a MUSS allows neither exception nor risk acceptance (4.1.2) | a review in `ssp.mjs` says `nonfulfilment`; a permanent MUSS is refused, a permanent SOLLTE needs `risk` and `approved`; `poam.mjs` makes the approved ones deviations |
 | For a permanently unfulfilled SOLLTE the risk analysis takes in its elementary threats (Annex 3, criterion 17) | the worksheet names them per requirement (`threats G 0.x`, the last CSV column) and counts them in `--summary` |
@@ -312,7 +313,61 @@ catalog that settles it arrives as a raised library commit.
 
 Choosing the business processes, their protection needs and the assets behind
 them (chapter 2 and 3.1, 3.2) is the institution's work, and so is the risk
-analysis itself. Nothing here does it.
+analysis itself. What follows from them, the package, `package.mjs` derives.
+
+## The package from processes and assets
+
+For a certification by BSI-Standard 300-1 the requirements are not picked:
+they follow from what the institution does and what it does it with.
+`package.mjs` takes that as data and writes the tailoring file `profile.mjs`
+reads.
+
+```json
+{
+  "title": "Grundschutz++ package of Example GmbH", "version": "2026-10-27",
+  "last-modified": "2026-10-27T00:00:00Z",
+  "catalog": { "path": "control_layer/Grundschutz++/Grundschutz++-resolved_catalog.json",
+               "commit": "160c177db6c84d3c621fff614559943b1de8c600" },
+  "processes": [{ "id": "GP-1", "name": "Web hosting", "owner": "Operations",
+                  "description": "Customer sites are served and kept current.",
+                  "applications": ["CMS"],
+                  "protection": { "confidentiality": "normal", "integrity": "hoch",
+                                  "availability": "normal" } }],
+  "assets": [{ "id": "A-1", "name": "Web server", "categories": ["Webserver", "Hostsysteme"],
+               "processes": ["GP-1"] }],
+  "adopt": [], "not-applicable": [], "parameters": {}
+}
+```
+
+```bash
+node package.mjs package.json > tailoring.json     # the package, as a tailoring
+node package.mjs package.json --report > package.md # where every part of it comes from
+node profile.mjs tailoring.json --strict > profile.json
+```
+
+- **Processes as Annex 2 asks:** ID, name, the responsible person or role, a
+  short description, the main applications; the protection need per
+  protection goal, *normal* or *hoch* (2.6). A process of high protection need
+  is named on stderr and in the report: it needs a risk analysis (Annex 3,
+  criterion 32).
+- **Assets and their categories:** the names of
+  `documentation/namespaces/target_object_categories.csv` in the library at
+  the same commit, read for the hierarchy. An asset holds its categories and
+  every one above them, as 3.4.2 says; a name that is not a category is
+  refused, with the list.
+- **What goes in:** every requirement of the method, every requirement without
+  a category, and every requirement of level normal-SdT whose categories the
+  assets hold. A requirement that names several categories ("Nutzende, Mobile
+  Endgeräte") goes in only where the assets hold all of them -- the reading
+  chosen here; the standard does not say.
+- **erhöht stays optional:** those requirements are KANN (3.4.2). The report
+  lists the ones that fit the assets of each process of high protection need,
+  as candidates for its risk analysis; `adopt` takes one into the package.
+- **Not applicable** with a reason, and parameters, pass through to the
+  tailoring; one that is not in the package anyway is named.
+
+Whether an asset is covered well enough by its categories (3.4.3, Annex 3,
+criterion 33) and the risk analysis itself remain the institution's work.
 
 ## Your tailoring as an OSCAL profile
 
