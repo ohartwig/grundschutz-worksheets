@@ -6,6 +6,13 @@ tagged `vX.Y.Z` and written here by the release tool from the commit messages;
 **breaking**: what can change an existing call or a spreadsheet built on the
 output.
 
+## [1.8.0](https://github.com/ohartwig/grundschutz-worksheets/compare/v1.7.32...v1.8.0) (2026-10-27)
+
+### :sparkles: Features
+
+* name who checked, who answers and who measured (BSI-Standard 300-1)
+* follow BSI-Standard 300-1, the method of Grundschutz++
+
 ## [1.7.32](https://github.com/ohartwig/grundschutz-worksheets/compare/v1.7.31...v1.7.32) (2026-10-27)
 
 ### :repeat: Chores
