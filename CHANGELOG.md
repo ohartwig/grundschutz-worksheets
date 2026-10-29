@@ -6,6 +6,25 @@ tagged `vX.Y.Z` and written here by the release tool from the commit messages;
 **breaking**: what can change an existing call or a spreadsheet built on the
 output.
 
+## [1.10.4](https://github.com/ohartwig/grundschutz-worksheets/compare/v1.10.3...v1.10.4) (2026-10-29)
+
+### :repeat: Continuous Integrations
+
+* **deps:** update registry.ole-hartwig.eu/devops/images/python:3.14 docker digest to 2e6821c
+* **deps:** update registry.ole-hartwig.eu/devops/images/python:3.14 docker digest to 907f994
+* **deps:** update registry.ole-hartwig.eu/devops/images/python:3.14 docker digest to ab0457c
+* **deps:** update registry.ole-hartwig.eu/devops/images/python:3.14 docker digest to 16fc2f0
+* **deps:** update registry.ole-hartwig.eu/devops/images/python:3.14 docker digest to 9142d7d
+* **deps:** update registry.ole-hartwig.eu/devops/images/python:3.14 docker digest to 5eb0ef3
+* **deps:** update registry.ole-hartwig.eu/devops/images/python:3.14 docker digest to 0291eac
+* **deps:** update registry.ole-hartwig.eu/devops/images/python:3.14 docker digest to 70fe92a
+* **deps:** update registry.ole-hartwig.eu/devops/images/python:3.14 docker digest to a30d55a
+* **deps:** update registry.ole-hartwig.eu/devops/images/python:3.14 docker digest to 1efe423
+
+### :repeat: Chores
+
+* **deps:** update dependency registry.ole-hartwig.eu/devops/images/franken-php/ci to v3.2.0
+
 ## [1.10.3](https://github.com/ohartwig/grundschutz-worksheets/compare/v1.10.2...v1.10.3) (2026-10-28)
 
 ### :repeat: Chores
