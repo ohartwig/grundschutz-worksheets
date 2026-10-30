@@ -6,6 +6,29 @@ tagged `vX.Y.Z` and written here by the release tool from the commit messages;
 **breaking**: what can change an existing call or a spreadsheet built on the
 output.
 
+## [1.10.5](https://github.com/ohartwig/grundschutz-worksheets/compare/v1.10.4...v1.10.5) (2026-10-30)
+
+### :repeat: Continuous Integrations
+
+* **deps:** update registry.ole-hartwig.eu/devops/images/python:3.14 docker digest to 6f48ac1
+* **deps:** update registry.ole-hartwig.eu/devops/images/python:3.14 docker digest to d281b95
+* **deps:** update registry.ole-hartwig.eu/devops/images/python:3.14 docker digest to 06b06ec
+* **deps:** update registry.ole-hartwig.eu/devops/images/python:3.14 docker digest to 83c52c5
+* **deps:** update registry.ole-hartwig.eu/devops/images/python:3.14 docker digest to fb6e32c
+* **deps:** update registry.ole-hartwig.eu/devops/images/python:3.14 docker digest to 41be4b7
+* **deps:** update registry.ole-hartwig.eu/devops/images/python:3.14 docker digest to 04dc0a5
+* **deps:** update registry.ole-hartwig.eu/devops/images/python:3.14 docker digest to cf5189d
+* **deps:** update registry.ole-hartwig.eu/devops/images/python:3.14 docker digest to c28af9c
+* **deps:** update registry.ole-hartwig.eu/devops/images/python:3.14 docker digest to 38c4154
+* **deps:** update registry.ole-hartwig.eu/devops/images/python:3.14 docker digest to 3062da7
+* **deps:** update registry.ole-hartwig.eu/devops/images/python:3.14 docker digest to d0a6d8c
+* **deps:** update registry.ole-hartwig.eu/devops/images/python:3.14 docker digest to db12237
+* **deps:** update registry.ole-hartwig.eu/devops/images/python:3.14 docker digest to 6ca0601
+
+### :repeat: Chores
+
+* **deps:** update dependency registry.ole-hartwig.eu/devops/images/franken-php/ci to v3.2.1
+
 ## [1.10.4](https://github.com/ohartwig/grundschutz-worksheets/compare/v1.10.3...v1.10.4) (2026-10-29)
 
 ### :repeat: Continuous Integrations
