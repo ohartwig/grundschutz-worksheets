@@ -6,6 +6,16 @@ tagged `vX.Y.Z` and written here by the release tool from the commit messages;
 **breaking**: what can change an existing call or a spreadsheet built on the
 output.
 
+## [1.10.94](https://github.com/ohartwig/grundschutz-worksheets/compare/v1.10.93...v1.10.94) (2026-11-04)
+
+### :repeat: Continuous Integrations
+
+* **deps:** update registry.ole-hartwig.eu/devops/images/python:3.14 docker digest to 74a8cad
+
+### :repeat: Chores
+
+* **deps:** update dependency registry.ole-hartwig.eu/devops/images/franken-php/ci to v3.2.100
+
 ## [1.10.93](https://github.com/ohartwig/grundschutz-worksheets/compare/v1.10.92...v1.10.93) (2026-11-04)
 
 ### :repeat: Chores
