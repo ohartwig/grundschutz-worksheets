@@ -12,12 +12,13 @@
   },
   "catalog": {
     "path": "control_layer/Grundschutz++/Grundschutz++-resolved_catalog.json",
-    "commit": "160c177db6c84d3c621fff614559943b1de8c600"
+    "commit": "dc44ea4fb5815ef84b941a8b5bcc4eaf363daf35"
   },
   "via": {
     "iso27001": {
       "title": "ISO/IEC 27001:2022 Annex A",
-      "path": "control_layer/Mappings/ISO-27001-zu-GSpp/ISO27001-AnnexA-to-GS++-mapping_collection.json"
+      "path": "control_layer/Mappings/ISO-27001-zu-GSpp/ISO27001-AnnexA-to-GS++-mapping_collection.json",
+      "read-at": "160c177db6c84d3c621fff614559943b1de8c600"
     }
   },
   "maps": [

@@ -1,0 +1,7 @@
+{
+  "id": "wlan-gast",
+  "title": "Stand der Technik WLAN, personal and guest networks with a shared passphrase (profile, resolved)",
+  "catalog": "control_layer/WLAN-Einzelplatz-und-Gastnetze/WLAN-Einzelplatz-und-Gastnetze-resolved_catalog.json",
+  "expect": { "requirements": 37, "orphans": 0 },
+  "notes": "The second WLAN profile of the library, for single workplaces and guest networks; wlan is the one for WLAN-Enterprise."
+}

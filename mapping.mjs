@@ -21,7 +21,8 @@
 //     "catalog": { "path": "control_layer/.../...-resolved_catalog.json",
 //                  "commit": "<40-char sha of the BSI library>" },
 //     "via": { "iso27001": { "title": "ISO/IEC 27001:2022 Annex A",
-//                            "path": "control_layer/Mappings/.../...mapping_collection.json" } },
+//                            "path": "control_layer/Mappings/.../...mapping_collection.json",
+//                            "read-at": "<40-char sha>" } },   // optional
 //     "maps": [{ "source": "21.2.a", "remarks": "why",
 //                "via": { "iso27001": ["5.1", "5.2"] },             // derived
 //                "relationship": "intersects-with", "targets": ["RISK.1.1"] }, // direct
@@ -36,6 +37,10 @@
 // derived target gets "intersects-with": two set relationships in a row do
 // not give a sharper one. Direct targets cover what ISO does not have; they
 // carry their own relationship. A source needs at least one of the two.
+// The BSI mapping names its targets by ID and is not republished when the
+// catalog renumbers: "read-at" is the commit its IDs are those of, and its
+// targets are carried from there to catalog.commit (lib/oscal.mjs,
+// carryMapping). What was carried is listed in the output.
 // Until the mapping is "complete", no relationship may claim that the targets
 // cover the whole source (subset-of, equal-to, equivalent-to).
 //
@@ -75,7 +80,7 @@
 // No dependencies. Node 24 (LTS) or later.
 
 import { readFileSync } from "node:fs";
-import { NS, byId, everyControl, importResource, libraryUrl, uuid5 as uuid5From } from "./lib/oscal.mjs";
+import { NS, byId, carryMapping, everyControl, importResource, libraryUrl, uuid5 as uuid5From } from "./lib/oscal.mjs";
 
 const UUID_NS = "b1f0c6a2-5d3e-4f7a-9c8b-2e6d1a4f0b37";
 const RELATIONSHIPS = ["equivalent-to", "equal-to", "subset-of", "superset-of", "intersects-with"];
@@ -157,7 +162,9 @@ for (const [name, v] of Object.entries(m.via ?? {})) {
   const u = pinned(v.path, `via.${name}.path`);
   const res = await fetch(u);
   if (!res.ok) fail(`${res.status} for ${u}`);
-  const { "mapping-collection": mc } = await res.json();
+  const mappingBytes = Buffer.from(await res.arrayBuffer());
+  const { "mapping-collection": mc } = JSON.parse(mappingBytes.toString("utf8"));
+  const carried = await carryMapping({ commit: m.catalog.commit, readAt: v["read-at"], catalogPath: m.catalog.path, catalog, mappingPath: v.path, mappingBytes }).catch((e) => fail(e.message));
   const targets = new Map();
   for (const mp of mc?.mappings ?? [])
     for (const x of mp.maps ?? [])
@@ -166,9 +173,10 @@ for (const [name, v] of Object.entries(m.via ?? {})) {
         for (const t of x.targets ?? []) set.add(t["id-ref"]);
         targets.set(s["id-ref"], set);
       }
-  via.set(name, { ...v, href: u, targets });
+  via.set(name, { ...v, href: u, targets, carried });
 }
 const lagging = new Set();
+const moved = new Set();
 for (const [i, x] of maps.entries()) {
   const at = `maps[${i}] (${x.source})`;
   if (!ids.has(x.source)) errors.push(`${at}: source not in source.ids`);
@@ -189,8 +197,12 @@ for (const [i, x] of maps.entries()) {
     }
     for (const c of controls) {
       if (!v.targets.has(c)) errors.push(`${at}: ${name} ${c} is not a source of ${v.path.split("/").pop()}`);
-      for (const t of v.targets.get(c) ?? []) {
-        if (!known.has(t)) lagging.add(`${t} (${name} ${c})`);
+      for (const named of v.targets.get(c) ?? []) {
+        // The ID the requirement has now; null where it is gone, and then
+        // the ID the mapping names may belong to another requirement.
+        const t = v.carried.has(named) ? v.carried.get(named) : named;
+        if (t && t !== named) moved.add(`${named} -> ${t} (${name} ${c})`);
+        if (!t || !known.has(t)) lagging.add(`${named} (${name} ${c})`);
         else if (!x.derived.includes(t) && !(x.targets ?? []).includes(t)) x.derived.push(t);
       }
     }
@@ -207,6 +219,8 @@ for (const [i, x] of maps.entries()) {
 }
 const laggingNote = lagging.size ? `Targets of the BSI mapping not in the catalog, left out (${lagging.size}): ${[...lagging].sort(byId).join("; ")}` : "";
 if (laggingNote) console.error(laggingNote);
+const movedNote = moved.size ? `Targets of the BSI mapping the catalog has renumbered, carried to their current IDs (${moved.size}): ${[...moved].sort(byId).join("; ")}` : "";
+if (movedNote) console.error(movedNote);
 for (const u of unmapped) {
   if (!ids.has(u.source)) errors.push(`unmapped ${u.source}: not in source.ids`);
   if (!u.reason) errors.push(`unmapped ${u.source}: no reason`);
@@ -259,6 +273,7 @@ const reviewSheet = () => {
     lines.push("- [ ] The remark is our own wording, not the source's text", "");
   }
   if (laggingNote) lines.push("## Left out", "", laggingNote, "");
+  if (movedNote) lines.push("## Renumbered", "", movedNote, "");
   return lines.join("\n");
 };
 
@@ -275,9 +290,12 @@ const out = {
         { name: "catalog-commit", ns: NS, value: m.catalog.commit },
         { name: "source-ids", ns: NS, value: String(ids.size) },
         { name: "unmapped", ns: NS, value: String(unmapped.length) },
-        ...[...via].map(([name, v]) => ({ name: "derived-via", ns: NS, value: v.href, remarks: `${name}: ${v.title}` })),
+        ...[...via].flatMap(([name, v]) => [
+          { name: "derived-via", ns: NS, value: v.href, remarks: `${name}: ${v.title}` },
+          ...(v["read-at"] && v["read-at"] !== m.catalog.commit ? [{ name: "derived-via-read-at", ns: NS, value: v["read-at"], remarks: `${name}: the commit its IDs are those of` }] : []),
+        ]),
       ],
-      remarks: `Generated by grundschutz-worksheets mapping.mjs from a mapping file. Do not edit by hand.${laggingNote ? `\n\n${laggingNote}.` : ""}`,
+      remarks: `Generated by grundschutz-worksheets mapping.mjs from a mapping file. Do not edit by hand.${laggingNote ? `\n\n${laggingNote}.` : ""}${movedNote ? `\n\n${movedNote}.` : ""}`,
     },
     provenance: {
       method: m.method,

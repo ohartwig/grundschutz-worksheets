@@ -1,6 +1,6 @@
 # Review: NIS2 Implementing Regulation (EU) 2024/2690, Annex, to Grundschutz++
 
-Version 0.1.0 · status draft · catalog Grundschutz++-resolved_catalog.json at 160c177
+Version 0.1.0 · status draft · catalog Grundschutz++-resolved_catalog.json at dc44ea4
 
 Source: Implementing Regulation (EU) 2024/2690, Annex (standards/nis2-ir.json). Check every section against the original text, not against the remark.
 Derived targets come from the BSI's own mapping and are only as right as the step to it; a direct target is this repository's judgement.
@@ -133,7 +133,7 @@ Derived targets come from the BSI's own mapping and are only as right as the ste
 > Überwachung und Protokollierung (Anhang Nr. 3.2).
 
 - [ ] Step to ISO/IEC 27001:2022 Annex A: 5.28, 8.15, 8.16, 8.17 -- these and no others
-  - derived, intersects-with: DET.3.1 Protokollierung sicherheitsrelevanter Ereignisse; DET.3.2 Integration von Cloud-Diensten; DET.3.3 Filterung nicht benötigter Inhalte; DET.3.4 Speicherkapazität; DET.4.1 Überwachung der Protokollierung; DET.4.2 Automatische Angriffserkennung; DET.4.3 Überwachung der Angriffserkennung; DET.4.6 Anomale Nutzung der Anwendung; DET.4.11 Anomalien in Netzen und am Perimeter; DET.4.12 Monitoring der Netzverfügbarkeit; DET.4.13 Verfügbarkeit des Hostsystems; DET.4.14 Verfügbarkeit der Anwendung; KONF.4.5 Zeitquellen; REA.2.5 IT-Forensik; REA.2.5.1 Rechtssichere Beweissicherung; REA.2.5.2 Vier-Augen-Prinzip
+  - derived, intersects-with: DET.3.1 Protokollierung in Anwendungen; DET.3.4 Integration von Cloud-Diensten; DET.3.5 Filterung nicht benötigter Inhalte; DET.3.6 Speicherkapazität; DET.4.1 Überwachung der Protokollierung; DET.4.2 Automatische Angriffserkennung; DET.4.3 Überwachung der Angriffserkennung; DET.4.6 Anomale Nutzung der Anwendung; DET.4.11 Anomalien in Netzen und am Perimeter; DET.4.12 Monitoring der Netzverfügbarkeit; DET.4.13 Verfügbarkeit des Hostsystems; DET.4.14 Verfügbarkeit der Anwendung; KONF.4.5 Zeitquellen; REA.2.5 IT-Forensik; REA.2.5.1 Rechtssichere Beweissicherung; REA.2.5.2 Vier-Augen-Prinzip
 - [ ] The remark is our own wording, not the source's text
 
 ## Nr.3.3
@@ -349,7 +349,7 @@ Derived targets come from the BSI's own mapping and are only as right as the ste
 > Konfigurationsmanagement (Anhang Nr. 6.3).
 
 - [ ] Step to ISO/IEC 27001:2022 Annex A: 8.9 -- these and no others
-  - derived, intersects-with: KONF.2.1 Grundkonfiguration für Systeme; KONF.2.1.1 Versionierung der Systemkonfiguration; KONF.2.5 Überprüfung der Konfiguration; KONF.10.1 Grundkonfiguration für Anwendungen; KONF.10.5 Überprüfung der Konfiguration
+  - derived, intersects-with: KONF.2.1 Grundkonfiguration für Systeme; KONF.2.1.1 Versionierung der Systemkonfiguration; KONF.2.5 Überprüfung der Systemkonfiguration; KONF.10.1 Grundkonfiguration für Anwendungen; KONF.10.5 Überprüfung der Konfiguration
 - [ ] The remark is our own wording, not the source's text
 
 ## Nr.6.4
@@ -708,7 +708,7 @@ Derived targets come from the BSI's own mapping and are only as right as the ste
 > Anlagen- und Werteklassifizierung (Anhang Nr. 12.1).
 
 - [ ] Step to ISO/IEC 27001:2022 Annex A: 5.9, 5.12, 5.13 -- these and no others
-  - derived, intersects-with: ARCH.2.4 Inventar der Netze; ASST.2.1 Inventar der Informationen; ASST.2.1.1 Informationsverantwortung; ASST.2.2 Inventar der Systeme; ASST.2.3 Inventar der Anwendungen; ASST.2.4 Klassifizierung; ASST.3.3 Kennzeichnung; ASST.3.4 Kennzeichnung ohne vertrauliche Daten
+  - derived, intersects-with: ARCH.2.4 Inventar der Netze; ASST.2.1 Inventar der Informationen; ASST.2.1.1 Informationsverantwortung; ASST.2.2 Inventar der Systeme; ASST.2.3 Inventar der Anwendungen; ASST.2.5 Klassifizierung; ASST.3.3 Kennzeichnung; ASST.3.4 Kennzeichnung ohne vertrauliche Daten
 - [ ] The remark is our own wording, not the source's text
 
 ## Nr.12.2
@@ -818,3 +818,7 @@ Derived targets come from the BSI's own mapping and are only as right as the ste
 ## Left out
 
 Targets of the BSI mapping not in the catalog, left out (17): BER.5.1.2 (iso27001 8.2); BER.6.8 (iso27001 5.17); BER.6.8 (iso27001 8.5); DET.3.1.13 (iso27001 5.23); GC.6.1.2 (iso27001 5.4); GC.6.1.3 (iso27001 5.1); GC.6.1.3 (iso27001 5.4); GC.6.1.4 (iso27001 5.1); GC.7.1.3 (iso27001 5.31); GC.8.1.1 (iso27001 5.2); GC.8.1.1.1 (iso27001 5.4); GC.8.1.3 (iso27001 5.3); GC.8.1.4 (iso27001 5.2); PERF.1.1.1 (iso27001 5.7); PERF.5.1.4 (iso27001 5.35); PERF.6.1.3 (iso27001 5.7); PERF.7.1 (iso27001 5.1)
+
+## Renumbered
+
+Targets of the BSI mapping the catalog has renumbered, carried to their current IDs (4): ASST.2.4 -> ASST.2.5 (iso27001 5.12); DET.3.2 -> DET.3.4 (iso27001 8.15); DET.3.3 -> DET.3.5 (iso27001 8.15); DET.3.4 -> DET.3.6 (iso27001 8.15)

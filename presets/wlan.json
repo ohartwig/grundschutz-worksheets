@@ -1,7 +1,7 @@
 {
   "id": "wlan",
-  "title": "Stand der Technik WLAN (profile, resolved)",
-  "catalog": "control_layer/WLAN/WLAN-resolved_catalog.json",
-  "expect": { "requirements": 48, "orphans": 0 },
-  "notes": "The profile regroups requirements into WLAN.1 to WLAN.n and sets parameters such as WPA3."
+  "title": "Stand der Technik WLAN-Enterprise (profile, resolved)",
+  "catalog": "control_layer/WLAN-Enterprise/WLAN-Enterprise-resolved_catalog.json",
+  "expect": { "requirements": 47, "orphans": 0 },
+  "notes": "Up to library commit 160c177 this was the one WLAN profile; the library has split it since, see wlan-gast."
 }

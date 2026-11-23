@@ -1,7 +1,7 @@
 // Tests for validate.mjs: valid fixtures pass, broken ones fail, an unknown
 // OSCAL version is a setup error rather than a pass. Run with `npm test`.
 import { spawnSync } from "node:child_process";
-import { everyControl, resolveImport, sha256 } from "../lib/oscal.mjs";
+import { carriedIds, everyControl, resolveImport, sha256 } from "../lib/oscal.mjs";
 
 const cases = [
   ["test/fixtures/valid-catalog.json", 0],
@@ -1061,7 +1061,7 @@ for (const [file, want] of cases) {
   const { writeFileSync } = await import("node:fs");
   const fx = ["--catalog", "test/fixtures/package/catalog.json", "--categories", "test/fixtures/package/categories.csv"];
   const base = { title: "Fixture package", version: "1", "last-modified": "2026-10-27T00:00:00Z",
-    catalog: { path: "control_layer/Grundschutz++/Grundschutz++-resolved_catalog.json", commit: "160c177db6c84d3c621fff614559943b1de8c600" },
+    catalog: { path: "control_layer/Grundschutz++/Grundschutz++-resolved_catalog.json", commit: "dc44ea4fb5815ef84b941a8b5bcc4eaf363daf35" },
     processes: [
       { id: "GP-1", name: "Hosting", owner: "Ops", description: "Sites are served.", protection: { confidentiality: "normal", integrity: "hoch", availability: "normal" } },
       { id: "GP-2", name: "Office", owner: "Office", description: "Invoices.", protection: { confidentiality: "normal", integrity: "normal", availability: "normal" } },
@@ -1096,10 +1096,49 @@ for (const [file, want] of cases) {
     ["an asset of a process not listed is refused", /process GP-9 is not listed/.test(run({ ...base, assets: [{ ...base.assets[0], processes: ["GP-9"] }] }).stderr)],
     ["a process without its responsible is refused (Annex 2)", /process GP-1: missing "owner"/.test(run({ ...base, processes: [{ ...base.processes[0], owner: "" }, base.processes[1]] }).stderr)],
     ["a protection need other than normal or hoch is refused", run({ ...base, processes: [{ ...base.processes[0], protection: { confidentiality: "sehr hoch", integrity: "normal", availability: "normal" } }, base.processes[1]] }).status === 1],
-    ["another catalog than the Anwenderkatalog is refused", run({ ...base, catalog: { ...base.catalog, path: "control_layer/WLAN/WLAN-resolved_catalog.json" } }).status === 1],
+    ["another catalog than the Anwenderkatalog is refused", run({ ...base, catalog: { ...base.catalog, path: "control_layer/WLAN-Enterprise/WLAN-Enterprise-resolved_catalog.json" } }).status === 1],
   ]) {
     failed += !ok;
     console.log(`${ok ? "ok  " : "FAIL"} package: ${name}${ok ? "" : ": " + a.stderr + mobile.stderr + adopted.stderr}`);
+  }
+}
+// A renumbered catalog: an ID written against an earlier commit is carried to
+// the ID the same requirement (alt-identifier) has now.
+{
+  const c = (id, uuid, controls) => ({ id, props: [{ name: "alt-identifier", value: uuid }], ...(controls && { controls }) });
+  const then = { groups: [{ id: "G", controls: [c("A.1", "u1"), c("A.2", "u2", [c("A.2.1", "u3")]), c("A.3", "u4"), c("A.4", "u5")] }] };
+  const now = { groups: [{ id: "G", controls: [c("A.1", "u1"), c("A.2", "u3"), c("A.3", "u2"), c("A.5", "u6")] }] };
+  const carried = carriedIds(then, now);
+  for (const [name, ok] of [
+    ["an ID that means the same is not carried", !carried.has("A.1")],
+    ["a requirement that moved is found under its new ID", carried.get("A.2") === "A.3" && carried.get("A.2.1") === "A.2"],
+    ["an ID another requirement took over is not that requirement", carried.get("A.3") === null],
+    ["a requirement that is gone is null, and a new one is not in the map", carried.get("A.4") === null && !carried.has("A.5") && carried.size === 4],
+  ]) {
+    failed += !ok;
+    console.log(`${ok ? "ok  " : "FAIL"} renumbering: ${name}`);
+  }
+  // Against the library: ISO 27001 5.12 (classification) is mapped to
+  // ASST.2.4, which at dc44ea4 is the SBOM; read at 160c177 it is ASST.2.5.
+  const pin = "dc44ea4fb5815ef84b941a8b5bcc4eaf363daf35";
+  const before = "160c177db6c84d3c621fff614559943b1de8c600";
+  const ws = (...more) => spawnSync(process.execPath, ["worksheet.mjs", "control_layer/Grundschutz++/Grundschutz++-resolved_catalog.json", "--commit", pin,
+    "--mapping", "control_layer/Mappings/ISO-27001-zu-GSpp/ISO27001-AnnexA-to-GS++-mapping_collection.json", "--sources", "5.12", ...more], { encoding: "utf8" });
+  const ids = (r) => r.stdout.split("\n").slice(1).map((l) => l.split(",")[0].replace(/"/g, "")).filter(Boolean);
+  const plain = ws("--format", "csv");
+  const read = ws("--format", "csv", "--mapping-read-at", before);
+  const self = ws("--format", "csv", "--mapping-read-at", pin);
+  const sheet = ws("--mapping-read-at", before);
+  for (const [name, ok] of [
+    ["without a commit to read the mapping at, its IDs are taken as they are", plain.status === 0 && ids(plain).includes("ASST.2.4") && !ids(plain).includes("ASST.2.5")],
+    ["read at the earlier commit, the target is the requirement it meant", read.status === 0 && ids(read).includes("ASST.2.5") && !ids(read).includes("ASST.2.4")],
+    ["what was carried is said in the worksheet", /ASST\.2\.4 -> ASST\.2\.5/.test(read.stderr) && /ASST\.2\.4 -> ASST\.2\.5/.test(sheet.stdout)],
+    ["read at the catalog's own commit nothing is carried", self.status === 0 && self.stdout === plain.stdout],
+    ["a commit that is not one is refused", ws("--mapping-read-at", "main").status === 2],
+    ["without --mapping it is refused", spawnSync(process.execPath, ["worksheet.mjs", "--preset", "gspp", "--mapping-read-at", before, "--summary"], { encoding: "utf8" }).status === 2],
+  ]) {
+    failed += !ok;
+    console.log(`${ok ? "ok  " : "FAIL"} renumbering: ${name}${ok ? "" : ": " + plain.stderr.slice(0, 200) + read.stderr.slice(0, 300)}`);
   }
 }
 process.exit(failed ? 1 : 0);

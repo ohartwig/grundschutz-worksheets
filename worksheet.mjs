@@ -34,6 +34,9 @@
 //   --mapping <path>      only requirements a mapping collection of the
 //                         library points at, each with the source controls
 //                         that lead to it
+//   --mapping-read-at <sha> with --mapping: the commit the mapping's IDs are
+//                         those of; requirements the catalog renumbered since
+//                         are carried to their current IDs
 //   --mapping-file <file> the same with a mapping collection on disk (see
 //                         mapping.mjs); it must target the catalog at --commit
 //   --sources <list|@file> with --mapping: only these source controls
@@ -51,11 +54,11 @@
 
 import { createHash } from "node:crypto";
 import { readFileSync, readdirSync } from "node:fs";
-import { libraryUrl, resolveImport, sha256 } from "./lib/oscal.mjs";
+import { carryMapping, libraryUrl, resolveImport, sha256 } from "./lib/oscal.mjs";
 import { LIBRARY } from "./tools/bsi-library.mjs";
 
 const args = process.argv.slice(2);
-const valued = ["--commit", "--mapping", "--sources", "--profile", "--practices", "--levels", "--modal", "--format", "--preset", "--catalog-file", "--mapping-file"];
+const valued = ["--commit", "--mapping", "--sources", "--profile", "--practices", "--levels", "--modal", "--format", "--preset", "--catalog-file", "--mapping-file", "--mapping-read-at"];
 const opt = (name) => {
   const i = args.indexOf(name);
   return i >= 0 ? args[i + 1] ?? "" : "";
@@ -113,6 +116,11 @@ const settings = () => {
   const mappingPath = opt("--mapping") || (own ? "" : preset.mapping ?? "");
   const mappingFile = opt("--mapping-file") || (own || !preset["mapping-file"] ? "" : new URL(preset["mapping-file"], import.meta.url));
   const mappingName = mappingPath || (mappingFile ? String(opt("--mapping-file") || preset["mapping-file"]) : "");
+  // A mapping of the library is read at the commit its IDs were last right
+  // and carried to the catalog's commit (lib/oscal.mjs, carryMapping). A
+  // preset's mapping is read where the repository says; one named on the
+  // command line where the command line says, by default at --commit itself.
+  const mappingReadAt = opt("--mapping-read-at") || (mappingPath && !opt("--mapping") ? LIBRARY.mappingsReadAt : "");
 
   const sourcesArg = opt("--sources");
   const sourceFilter = new Set(sourcesArg.startsWith("@") ? list(readFileSync(sourcesArg.slice(1), "utf8")) : list(sourcesArg));
@@ -129,10 +137,12 @@ const settings = () => {
   if (opt("--mapping") && opt("--mapping-file")) throw new UsageError("--mapping and --mapping-file exclude each other");
   if (profilePath && (mappingPath || mappingFile)) throw new UsageError("--profile and --mapping exclude each other");
   if (sourceFilter.size && !mappingPath && !mappingFile) throw new UsageError("--sources needs --mapping");
+  if (opt("--mapping-read-at") && !mappingPath) throw new UsageError("--mapping-read-at needs --mapping: only a mapping of the library is read at another commit");
+  if (mappingReadAt && !/^[0-9a-f]{40}$/.test(mappingReadAt)) throw new UsageError("--mapping-read-at takes a 40-character commit");
 
   return {
     presetId, preset, catalogFile, fileSha, path, commit,
-    mappingPath, mappingFile, mappingName, profilePath, sourceFilter,
+    mappingPath, mappingFile, mappingName, mappingReadAt, profilePath, sourceFilter,
     practices: list(opt("--practices")),
     levels: list(opt("--levels")),
     modals: list(opt("--modal")),
@@ -150,7 +160,7 @@ try {
 }
 const {
   presetId, preset, catalogFile, fileSha, path, commit,
-  mappingPath, mappingFile, mappingName, profilePath, sourceFilter,
+  mappingPath, mappingFile, mappingName, mappingReadAt, profilePath, sourceFilter,
   practices, levels, modals, format, summary,
 } = config;
 const sourcePrefixes = [...sourceFilter].filter((s) => s.endsWith("*")).map((s) => s.slice(0, -1));
@@ -253,10 +263,23 @@ walkGroups(catalog.groups, null, 0);
 // Select: the whole catalog, or the targets of a mapping collection.
 let selected = [...rows.values()];
 let mappingStatus = "";
+let carriedNote = "";
 const orphans = [];
 if (mappingPath || mappingFile) {
   const own = Boolean(mappingFile);
-  const { "mapping-collection": mc } = own ? JSON.parse(readFileSync(mappingFile, "utf8")) : await load(mappingPath);
+  const mappingBytes = own ? readFileSync(mappingFile) : await fetchBytes(mappingPath);
+  const { "mapping-collection": mc } = JSON.parse(mappingBytes.toString("utf8"));
+  // The library's mapping names IDs of an earlier catalog: carry them.
+  let carried = new Map();
+  if (!own) {
+    try {
+      carried = await carryMapping({ commit, readAt: mappingReadAt, catalogPath: path, catalog, mappingPath, mappingBytes });
+    } catch (e) {
+      console.error(e.message);
+      process.exit(2);
+    }
+  }
+  const moved = new Set();
   // An own mapping is derived from one catalog at one commit; applied to
   // another, its targets may not exist or may mean something else. So it must
   // name exactly the catalog this run reads -- the form mapping.mjs writes.
@@ -277,21 +300,31 @@ if (mappingPath || mappingFile) {
       const src = (x.sources ?? []).map((s) => s["id-ref"]).filter(sourceWanted);
       if (!src.length) continue;
       for (const t of x.targets ?? []) {
-        const bySource = sources.get(t["id-ref"]) ?? new Map();
+        // A requirement that is gone keeps the ID the mapping names: it is
+        // reported below as not in the catalog, under that name.
+        const id = carried.get(t["id-ref"]) ?? t["id-ref"];
+        if (id !== t["id-ref"]) moved.add(`${t["id-ref"]} -> ${id}`);
+        const bySource = sources.get(id) ?? new Map();
         for (const s of src) bySource.set(s, (bySource.get(s) ?? new Set()).add(x.relationship || "-"));
-        sources.set(t["id-ref"], bySource);
+        sources.set(id, bySource);
       }
     }
   }
   selected = [];
   for (const [id, bySource] of [...sources].sort(([a], [b]) => a.localeCompare(b, "en", { numeric: true }))) {
     const from = [...bySource.keys()];
-    const r = rows.get(id);
+    // An ID the catalog gave to another requirement is not the mapping's
+    // target, even though it exists.
+    const r = carried.get(id) === null ? null : rows.get(id);
     if (!r) {
       orphans.push(`${id} (from ${from.join(", ")})`);
       continue;
     }
     selected.push({ ...r, depth: 0, from, relationship: from.map((s) => [...bySource.get(s)].join("/")) });
+  }
+  if (moved.size) {
+    carriedNote = `The mapping names IDs of the catalog at ${mappingReadAt.slice(0, 7)}; ${moved.size} renumbered since are carried to their current IDs (${[...moved].sort((a, b) => a.localeCompare(b, "en", { numeric: true })).join(", ")}).`;
+    console.error(carriedNote);
   }
 }
 if (profile) {
@@ -329,6 +362,7 @@ const meta = `${catalog.metadata?.title} · catalog version ${catalog.metadata?.
 const notice = [
   presetId && "The preset is a starting point, not an approved audit scope: check the selection against the original texts.",
   mappingStatus && mappingStatus !== "complete" && `The mapping is a ${mappingStatus}, not reviewed: every "from" is a proposal.`,
+  carriedNote,
 ].filter(Boolean).join(" ");
 
 if (summary) {
