@@ -1,6 +1,6 @@
 # Review: SOC 2 common criteria, availability and confidentiality to Grundschutz++
 
-Version 0.2.0 · status draft · catalog Grundschutz++-resolved_catalog.json at 160c177
+Version 0.2.0 · status draft · catalog Grundschutz++-resolved_catalog.json at dc44ea4
 
 Source: AICPA Trust Services Criteria 2017 (revised points of focus 2022): common criteria, availability, confidentiality (standards/soc2.json). Check every section against the original text, not against the remark.
 Derived targets come from the BSI's own mapping and are only as right as the step to it; a direct target is this repository's judgement.
@@ -183,7 +183,7 @@ Text: The text of CC5.2 is not reproduced here; it is the AICPA's. Read it, with
 > General control activities over technology: access, configuration, development and change.
 
 - [ ] Step to ISO/IEC 27001:2022 Annex A: 5.15, 8.9, 8.25, 8.32 -- these and no others
-  - derived, intersects-with: ARCH.4.1 Netzzugangskontrolle; BER.5.1 Ausgabe, Registrierung und Zuordnung; BER.5.3 Vorgehensweise zum Widerruf; BES.4.5.1 Entwicklung nach einem Sicherheitslebenszyklus; DEV.1.1 Verfahren und Regelungen; DEV.2.1 Security by Design Architektur; DEV.6.1 Freigabe nach Änderungen und Tests; GEB.3.3 Authentifizierung vor Zutritt; KONF.2.1 Grundkonfiguration für Systeme; KONF.2.1.1 Versionierung der Systemkonfiguration; KONF.2.5 Überprüfung der Konfiguration; KONF.10.1 Grundkonfiguration für Anwendungen; KONF.10.5 Überprüfung der Konfiguration; TEST.1.1 Verfahren und Regelungen; TEST.1.3 Einschränkung von Änderungen; TEST.2.1 Versionshistorie; TEST.2.2 Folgenabschätzung; TEST.4.1 Autorisierung von Änderungen; TEST.4.3 Rückfallösung; TEST.4.4 Geregelte Notfalländerungen; TEST.5.5 Rückblick
+  - derived, intersects-with: ARCH.4.1 Netzzugangskontrolle; BER.5.1 Ausgabe, Registrierung und Zuordnung; BER.5.3 Vorgehensweise zum Widerruf; BES.4.5.1 Entwicklung nach einem Sicherheitslebenszyklus; DEV.1.1 Verfahren und Regelungen; DEV.2.1 Security by Design Architektur; DEV.6.1 Freigabe nach Änderungen und Tests; GEB.3.3 Authentifizierung vor Zutritt; KONF.2.1 Grundkonfiguration für Systeme; KONF.2.1.1 Versionierung der Systemkonfiguration; KONF.2.5 Überprüfung der Systemkonfiguration; KONF.10.1 Grundkonfiguration für Anwendungen; KONF.10.5 Überprüfung der Konfiguration; TEST.1.1 Verfahren und Regelungen; TEST.1.3 Einschränkung von Änderungen; TEST.2.1 Versionshistorie; TEST.2.2 Folgenabschätzung; TEST.4.1 Autorisierung von Änderungen; TEST.4.3 Rückfallösung; TEST.4.4 Geregelte Notfalländerungen; TEST.5.5 Rückblick
 - [ ] The remark is our own wording, not the source's text
 
 ## CC5.3
@@ -285,7 +285,7 @@ Text: The text of CC7.1 is not reproduced here; it is the AICPA's. Read it, with
 > Detecting configuration changes that introduce vulnerabilities, and new vulnerabilities.
 
 - [ ] Step to ISO/IEC 27001:2022 Annex A: 8.8, 8.9 -- these and no others
-  - derived, intersects-with: DET.5.1 Zeitnahes Schwachstellenmanagement; DET.5.2 Schwachstellenregister; DET.5.3 Schwachstellenscans; DET.5.4 Regelmäßige Penetrationstests; DET.5.9 Externe Schwachstellenmeldungen; DET.5.10 Zeitnahes Patchmanagement; KONF.2.1 Grundkonfiguration für Systeme; KONF.2.1.1 Versionierung der Systemkonfiguration; KONF.2.5 Überprüfung der Konfiguration; KONF.10.1 Grundkonfiguration für Anwendungen; KONF.10.5 Überprüfung der Konfiguration
+  - derived, intersects-with: DET.5.1 Zeitnahes Schwachstellenmanagement; DET.5.2 Schwachstellenregister; DET.5.3 Schwachstellenscans; DET.5.4 Regelmäßige Penetrationstests; DET.5.9 Externe Schwachstellenmeldungen; DET.5.10 Zeitnahes Patchmanagement; KONF.2.1 Grundkonfiguration für Systeme; KONF.2.1.1 Versionierung der Systemkonfiguration; KONF.2.5 Überprüfung der Systemkonfiguration; KONF.10.1 Grundkonfiguration für Anwendungen; KONF.10.5 Überprüfung der Konfiguration
 - [ ] The remark is our own wording, not the source's text
 
 ## CC7.2
@@ -295,7 +295,7 @@ Text: The text of CC7.2 is not reproduced here; it is the AICPA's. Read it, with
 > Monitoring components for anomalies that indicate malicious acts, disasters or errors.
 
 - [ ] Step to ISO/IEC 27001:2022 Annex A: 8.15, 8.16 -- these and no others
-  - derived, intersects-with: DET.3.1 Protokollierung sicherheitsrelevanter Ereignisse; DET.3.2 Integration von Cloud-Diensten; DET.3.3 Filterung nicht benötigter Inhalte; DET.3.4 Speicherkapazität; DET.4.1 Überwachung der Protokollierung; DET.4.2 Automatische Angriffserkennung; DET.4.3 Überwachung der Angriffserkennung; DET.4.6 Anomale Nutzung der Anwendung; DET.4.11 Anomalien in Netzen und am Perimeter; DET.4.12 Monitoring der Netzverfügbarkeit; DET.4.13 Verfügbarkeit des Hostsystems; DET.4.14 Verfügbarkeit der Anwendung
+  - derived, intersects-with: DET.3.1 Protokollierung in Anwendungen; DET.3.4 Integration von Cloud-Diensten; DET.3.5 Filterung nicht benötigter Inhalte; DET.3.6 Speicherkapazität; DET.4.1 Überwachung der Protokollierung; DET.4.2 Automatische Angriffserkennung; DET.4.3 Überwachung der Angriffserkennung; DET.4.6 Anomale Nutzung der Anwendung; DET.4.11 Anomalien in Netzen und am Perimeter; DET.4.12 Monitoring der Netzverfügbarkeit; DET.4.13 Verfügbarkeit des Hostsystems; DET.4.14 Verfügbarkeit der Anwendung
 - [ ] The remark is our own wording, not the source's text
 
 ## CC7.3
@@ -335,7 +335,7 @@ Text: The text of CC8.1 is not reproduced here; it is the AICPA's. Read it, with
 > Authorising, designing, developing, testing, approving and implementing changes.
 
 - [ ] Step to ISO/IEC 27001:2022 Annex A: 8.9, 8.25, 8.29, 8.31, 8.32 -- these and no others
-  - derived, intersects-with: ARCH.2.2.8 Segmentierung von Test und Betrieb; ARCH.7.3 Entwicklungs- und Testumgebungen; BES.4.5.1 Entwicklung nach einem Sicherheitslebenszyklus; DEV.1.1 Verfahren und Regelungen; DEV.2.1 Security by Design Architektur; DEV.4.11 Test bei Änderungen am Quellcode; DEV.6.1 Freigabe nach Änderungen und Tests; KONF.2.1 Grundkonfiguration für Systeme; KONF.2.1.1 Versionierung der Systemkonfiguration; KONF.2.5 Überprüfung der Konfiguration; KONF.6.1.3 Isolierte Arbeitsumgebungen; KONF.10.1 Grundkonfiguration für Anwendungen; KONF.10.5 Überprüfung der Konfiguration; TEST.1.1 Verfahren und Regelungen; TEST.1.3 Einschränkung von Änderungen; TEST.2.1 Versionshistorie; TEST.2.2 Folgenabschätzung; TEST.3.1 Sicherheitstest; TEST.3.1.1 Dokumentation von Testergebnissen; TEST.3.1.4 Testdaten; TEST.3.1.5 Testumgebung; TEST.3.1.10 Lasttest; TEST.4.1 Autorisierung von Änderungen; TEST.4.3 Rückfallösung; TEST.4.4 Geregelte Notfalländerungen; TEST.5.5 Rückblick
+  - derived, intersects-with: ARCH.2.2.8 Segmentierung von Test und Betrieb; ARCH.7.3 Entwicklungs- und Testumgebungen; BES.4.5.1 Entwicklung nach einem Sicherheitslebenszyklus; DEV.1.1 Verfahren und Regelungen; DEV.2.1 Security by Design Architektur; DEV.4.11 Test bei Änderungen am Quellcode; DEV.6.1 Freigabe nach Änderungen und Tests; KONF.2.1 Grundkonfiguration für Systeme; KONF.2.1.1 Versionierung der Systemkonfiguration; KONF.2.5 Überprüfung der Systemkonfiguration; KONF.6.1.3 Isolierte Arbeitsumgebungen; KONF.10.1 Grundkonfiguration für Anwendungen; KONF.10.5 Überprüfung der Konfiguration; TEST.1.1 Verfahren und Regelungen; TEST.1.3 Einschränkung von Änderungen; TEST.2.1 Versionshistorie; TEST.2.2 Folgenabschätzung; TEST.3.1 Sicherheitstest; TEST.3.1.1 Dokumentation von Testergebnissen; TEST.3.1.4 Testdaten; TEST.3.1.5 Testumgebung; TEST.3.1.10 Lasttest; TEST.4.1 Autorisierung von Änderungen; TEST.4.3 Rückfallösung; TEST.4.4 Geregelte Notfalländerungen; TEST.5.5 Rückblick
 - [ ] The remark is our own wording, not the source's text
 
 ## CC9.1
@@ -369,8 +369,8 @@ Text: The text of A1.1 is not reproduced here; it is the AICPA's. Read it, with 
 > Keeping capacity in line with demand, so that the availability commitments can be met.
 
 - [ ] Step to ISO/IEC 27001:2022 Annex A: 8.6 -- these and no others
-  - derived, intersects-with: ARCH.9.1 Dimensionierung der Netzanbindung; ARCH.9.2 Lastverteilung; ARCH.9.3 Automatische Skalierung; DET.4.15 Ressourcenauslastung von Hostsystemen; DET.4.16 Ressourcenauslastung der Server-Dienste; KONF.9.1 Speicherplatzbegrenzung; KONF.9.2 Begrenzung der Rechenleistung
-- [ ] Direct targets, intersects-with: DET.3.4 Speicherkapazität; DET.4.17 Anwendungsbasiertes Kapazitätsmanagement
+  - derived, intersects-with: ARCH.9.1 Dimensionierung der Netzanbindung; ARCH.9.2 Lastverteilung; ARCH.9.3 Automatische Skalierung; DET.4.15 Ressourcenauslastung von Hostsystemen; DET.4.16 Ressourcenauslastung der Server-Dienste; KONF.9.1 Speicherplatzbegrenzung; KONF.9.2 Begrenzung der Hostleistung
+- [ ] Direct targets, intersects-with: DET.3.6 Speicherkapazität; DET.4.17 Anwendungsbasiertes Kapazitätsmanagement
 - [ ] Relationship: intersects-with holds (or the targets cover all of the source: then subset-of)
 - [ ] The remark is our own wording, not the source's text
 
@@ -404,7 +404,7 @@ Text: The text of C1.1 is not reproduced here; it is the AICPA's. Read it, with 
 
 - [ ] Step to ISO/IEC 27001:2022 Annex A: 5.10, 5.12, 5.13, 8.12 -- these and no others
   - derived, intersects-with: ASST.2.1.1 Informationsverantwortung; ASST.3.1 Nutzungsvereinbarungen; ASST.3.3 Kennzeichnung; ASST.3.4 Kennzeichnung ohne vertrauliche Daten; ASST.3.10 Autorisierung von Datenlokationen; ASST.3.11 Autorisierung von Systemen; ASST.3.12 Autorisierung von Personen oder Institutionen; ASST.4.2 Vertraulichkeit und Integrität beim Transport; ASST.4.3 Autorisierung von Veröffentlichungen; DET.4.5 Unerwünschte Datenabflüsse
-- [ ] Direct targets, intersects-with: ASST.2.4 Klassifizierung
+- [ ] Direct targets, intersects-with: ASST.2.5 Klassifizierung
 - [ ] Relationship: intersects-with holds (or the targets cover all of the source: then subset-of)
 - [ ] The remark is our own wording, not the source's text
 
@@ -423,3 +423,7 @@ Text: The text of C1.2 is not reproduced here; it is the AICPA's. Read it, with 
 ## Left out
 
 Targets of the BSI mapping not in the catalog, left out (16): BER.5.1.2 (iso27001 8.2); BER.6.8 (iso27001 8.5); GC.6.1.2 (iso27001 5.4); GC.6.1.3 (iso27001 5.1); GC.6.1.3 (iso27001 5.4); GC.6.1.4 (iso27001 5.1); GC.8.1.1 (iso27001 5.2); GC.8.1.1.1 (iso27001 5.4); GC.8.1.3 (iso27001 5.3); GC.8.1.4 (iso27001 5.2); GC.9.1.3 (iso27001 5.37); GC.10.2 (iso27001 5.37); PERF.1.1.1 (iso27001 5.7); PERF.5.1.4 (iso27001 5.35); PERF.6.1.3 (iso27001 5.7); PERF.7.1 (iso27001 5.1)
+
+## Renumbered
+
+Targets of the BSI mapping the catalog has renumbered, carried to their current IDs (4): ASST.2.4 -> ASST.2.5 (iso27001 5.12); DET.3.2 -> DET.3.4 (iso27001 8.15); DET.3.3 -> DET.3.5 (iso27001 8.15); DET.3.4 -> DET.3.6 (iso27001 8.15)

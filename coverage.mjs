@@ -33,7 +33,7 @@
 // No dependencies. Node 24 (LTS) or later.
 
 import { readFileSync } from "node:fs";
-import { byId, everyControl, libraryUrl, measurements } from "./lib/oscal.mjs";
+import { byId, carryMapping, everyControl, libraryUrl, measurements } from "./lib/oscal.mjs";
 import { LIBRARY } from "./tools/bsi-library.mjs";
 
 const FULL = new Set(["equivalent-to", "equal-to", "subset-of"]);
@@ -67,12 +67,13 @@ const results = files.map((f) => {
 });
 const measured = measurements(results);
 
-const fetchJson = async (path) => {
+const fetchBytes = async (path) => {
   const url = libraryUrl(LIBRARY.commit, path) ?? fail(`not a path in the library: ${path}`);
   const res = await fetch(url);
   if (!res.ok) fail(`${res.status} for ${url}`);
-  return res.json();
+  return Buffer.from(await res.arrayBuffer());
 };
+const fetchJson = async (path) => JSON.parse((await fetchBytes(path)).toString("utf8"));
 
 // source -> { relationships, targets }, from the mapping; or each requirement
 // of the catalog as its own source.
@@ -80,10 +81,22 @@ const sources = new Map();
 let status = "complete";
 let what = "";
 if (preset.mapping || preset["mapping-file"]) {
-  const mc = preset["mapping-file"]
-    ? JSON.parse(readFileSync(preset.local ? preset["mapping-file"] : new URL(preset["mapping-file"], import.meta.url), "utf8"))["mapping-collection"]
-    : (await fetchJson(preset.mapping))["mapping-collection"];
+  const mappingBytes = preset["mapping-file"]
+    ? readFileSync(preset.local ? preset["mapping-file"] : new URL(preset["mapping-file"], import.meta.url))
+    : await fetchBytes(preset.mapping);
+  const mc = JSON.parse(mappingBytes.toString("utf8"))["mapping-collection"];
   if (!mc) fail(`${preset["mapping-file"] ?? preset.mapping} is not an OSCAL mapping collection`);
+  // A mapping of the library names IDs of an earlier catalog: its targets
+  // are carried to the IDs the requirements have at the pin, as in
+  // worksheet.mjs, so a measurement is counted for the requirement meant.
+  // One that is gone keeps its name unless another requirement has it now.
+  let target = (id) => id;
+  if (!preset["mapping-file"]) {
+    const { catalog } = await fetchJson(preset.catalog);
+    const carried = await carryMapping({ commit: LIBRARY.commit, readAt: LIBRARY.mappingsReadAt, catalogPath: preset.catalog, catalog, mappingPath: preset.mapping, mappingBytes }).catch((e) => fail(e.message, 2));
+    const now = new Set([...everyControl(catalog)].map((c) => c.id));
+    target = (id) => (carried.get(id) === null ? (now.has(id) ? null : id) : carried.get(id) ?? id);
+  }
   status = mc?.provenance?.status ?? "unknown";
   what = `${preset["mapping-file"] ?? preset.mapping} (status ${status})`;
   for (const m of mc?.mappings ?? []) {
@@ -91,7 +104,7 @@ if (preset.mapping || preset["mapping-file"]) {
       for (const s of x.sources ?? []) {
         const e = sources.get(s["id-ref"]) ?? { relationships: new Set(), targets: new Set() };
         e.relationships.add(x.relationship || "unknown");
-        for (const t of x.targets ?? []) e.targets.add(t["id-ref"]);
+        for (const t of x.targets ?? []) if (target(t["id-ref"])) e.targets.add(target(t["id-ref"]));
         sources.set(s["id-ref"], e);
       }
     }

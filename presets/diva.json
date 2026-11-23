@@ -1,0 +1,6 @@
+{
+  "id": "diva",
+  "title": "DIVA, identity proofing, verification and protection (profile, resolved)",
+  "catalog": "control_layer/DIVA/DIVA-resolved_catalog.json",
+  "expect": { "requirements": 168, "orphans": 0 }
+}

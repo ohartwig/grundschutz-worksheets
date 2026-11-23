@@ -102,13 +102,15 @@ node worksheet.mjs --preset gspp --levels normal-SdT --summary
 node worksheet.mjs --preset itgs2023 --sources 'APP.1.1*,OPS.1.1.3*'
 ```
 
-| Preset | Scope | Requirements at `160c177` |
+| Preset | Scope | Requirements at `dc44ea4` |
 |---|---|---|
-| `gspp` | Grundschutz++, the whole catalog | 1000 (773 normal-SdT) |
+| `gspp` | Grundschutz++, the whole catalog | 1001 (774 normal-SdT) |
 | `iso27001` | ISO/IEC 27001:2022 Annex A through the BSI mapping | 280, 19 targets not in the catalog |
 | `itgs2023` | IT-Grundschutz-Kompendium 2023 through the BSI mapping | 322, 17 targets not in the catalog |
 | `lieferkette` | Lieferkettensicherheit profile, resolved | 146 |
-| `wlan` | WLAN profile, resolved | 48 |
+| `wlan` | WLAN-Enterprise profile, resolved | 47 |
+| `wlan-gast` | WLAN profile for personal and guest networks with a shared passphrase, resolved | 37 |
+| `diva` | DIVA profile (identity proofing, verification and protection), resolved | 168 |
 | `nis2` | NIS2 Art. 21(2), own draft mapping (below) | 187 |
 | `nis2-ir` | NIS2 Implementing Regulation (EU) 2024/2690, Annex, step to ISO by ENISA, draft (below) | 223 |
 | `dora` | DORA Art. 5 to 30, own draft mapping (below) | 176 |
@@ -153,7 +155,7 @@ from a small source file in `mappings/src/` into an OSCAL mapping collection
 in `mappings/`, which the presets name as `mapping-file` and `--mapping-file`
 reads from disk:
 
-| Preset | Source, one entry per | Requirements at `160c177` |
+| Preset | Source, one entry per | Requirements at `dc44ea4` |
 |---|---|---|
 | `nis2` | Art. 21(2) (a) to (j) NIS2 = § 30 Abs. 2 Nr. 1 to 10 BSIG, `Art.21.2.a` to `Art.21.2.j` | 187 |
 | `nis2-ir` | numbered heading of the Annex of Implementing Regulation (EU) 2024/2690, `Nr.1.1` to `Nr.13.3` (49, as in ENISA's table), each for all its points | 223 |
@@ -306,11 +308,11 @@ the standard:
 | A risk register with at least ID, object, risk, protection goals, level and owner, and for a treated risk its priority, option and measures; a time limit on a temporary acceptance; the owner approves the implementation plan; the analysis is reviewed every year (Annex 3, criteria 14 to 16, 23, 25, 28 to 31, 35) | the `risks` file of `poam.mjs`; see [The risk register](#the-risk-register) |
 | Requirements of your own, where an asset is not covered well enough or the law or a contract asks for more, in the format of Grundschutz++ (3.4.3) | `own` in the tailoring: a catalog of your own the profile imports and carries along; see [Your tailoring as an OSCAL profile](#your-tailoring-as-an-oscal-profile) |
 | *erhöht* requirements are KANN, optional (3.4.2) | `--levels normal-SdT` is the baseline |
-| Blueprints (*Blaupausen*): catalogs cut to a scenario, with parameters set (3.3) | the profile presets `lieferkette` and `wlan` |
+| Blueprints (*Blaupausen*): catalogs cut to a scenario, with parameters set (3.3) | the profile presets `lieferkette`, `wlan`, `wlan-gast` and `diva` |
 | Evidence names the tool, the time and the result of an automated check, and who documented or checked it (4.3) | `results.mjs`: start and end of the run, the check, `measured_by`, the evidence links, `performed_by`; a review's `date` and `by`, for the file or per requirement, become the plan's `reviewed` and `reviewed-by` |
 | Every measure has a responsible person and a deadline (4.4) | an action's `owner` and `due` in `poam.mjs`; the owner becomes the remediation's `responsible` |
 
-Catalog and standard do not agree everywhere yet. At `160c177` the catalog
+Catalog and standard do not agree everywhere yet. At `dc44ea4` the catalog
 gives the implementation status two values, not three (UMS.1.1), asks the
 approval of the residual risk only with SOLLTE (UMS.1.2), and three *erhöht*
 requirements carry SOLLTE instead of KANN (BES.1.4, DET.4.12.1, REA.2.5); the
@@ -336,7 +338,7 @@ reads.
   "title": "Grundschutz++ package of Example GmbH", "version": "2026-10-27",
   "last-modified": "2026-10-27T00:00:00Z",
   "catalog": { "path": "control_layer/Grundschutz++/Grundschutz++-resolved_catalog.json",
-               "commit": "160c177db6c84d3c621fff614559943b1de8c600" },
+               "commit": "dc44ea4fb5815ef84b941a8b5bcc4eaf363daf35" },
   "processes": [{ "id": "GP-1", "name": "Web hosting", "owner": "Operations",
                   "description": "Customer sites are served and kept current.",
                   "applications": ["CMS"],
@@ -671,7 +673,7 @@ node coverage.mjs --mapping-file my-mapping.json results/*.json --format csv
 
 The report leads with the gaps, not a percentage: how many requirements
 nothing measures, how many no measurement can reach, and whether the mapping
-is still a draft. A preset without a mapping (`gspp`, `lieferkette`, `wlan`)
+is still a draft. A preset without a mapping (`gspp`, `lieferkette`, `wlan`, `wlan-gast`, `diva`)
 is Grundschutz++ itself.
 
 ## Over a period: did the controls keep working?
@@ -788,6 +790,31 @@ catalog moved something, and the change is completed by hand:
 3. Run `recheck.mjs` against your own component definitions.
 
 The pin moves together with those changes, never on its own.
+
+#### When the catalog renumbers
+
+A count that stays the same does not mean nothing moved. The catalog
+renumbers: at `dc44ea4` the SBOM requirement went from ASST.2.3.2 to ASST.2.4,
+whose former holder (classification) became ASST.2.5, and most of DET.3 moved
+the same way. An ID then still exists and names another requirement. What
+stays is the `alt-identifier`, a UUID every requirement of the library
+carries; compare two commits by it, not by ID.
+
+- **The library's own mappings** (ISO 27001, IT-Grundschutz 2023) name their
+  targets by ID and are not republished with the catalog; they were last
+  changed in July 2026. `tools/bsi-library.mjs` therefore says, next to the
+  pin, the commit they are read at (`mappingsReadAt`): the tools fetch the
+  catalog at that commit as well and carry every target to the ID the same
+  requirement has at the pin. What was carried is printed and goes into the
+  worksheet and the generated mapping. With `--mapping` on the command line,
+  say `--mapping-read-at <commit>`; in a mapping source, `"read-at"` under
+  `via`. The tools refuse to run once a mapping is no longer the file it was
+  at that commit: then the library has republished it, its IDs are current,
+  and `mappingsReadAt` moves to the commit that changed it.
+- **Direct targets** in `mappings/src/*.json`, and the requirement IDs in your
+  own tailoring, component definitions and checks, are yours to carry. A
+  target the catalog dropped is an error in `mapping.mjs`; one that now names
+  another requirement is not, so check them against the list of moved IDs.
 
 ## Validating OSCAL files
 
