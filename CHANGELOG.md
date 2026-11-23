@@ -6,6 +6,16 @@ tagged `vX.Y.Z` and written here by the release tool from the commit messages;
 **breaking**: what can change an existing call or a spreadsheet built on the
 output.
 
+## [1.11.0](https://github.com/ohartwig/grundschutz-worksheets/compare/v1.10.244...v1.11.0) (2026-11-23)
+
+### :sparkles: Features
+
+* **deps:** raise the BSI library to dc44ea4 and carry renumbered IDs
+
+### :repeat: Continuous Integrations
+
+* **deps:** update registry.ole-hartwig.eu/devops/images/python:3.14 docker digest to fc6ca7c
+
 ## [1.10.244](https://github.com/ohartwig/grundschutz-worksheets/compare/v1.10.243...v1.10.244) (2026-11-23)
 
 ### :repeat: Chores
