@@ -6,6 +6,12 @@ tagged `vX.Y.Z` and written here by the release tool from the commit messages;
 **breaking**: what can change an existing call or a spreadsheet built on the
 output.
 
+## [1.11.2](https://github.com/ohartwig/grundschutz-worksheets/compare/v1.11.1...v1.11.2) (2026-11-27)
+
+### :repeat: Chores
+
+* **deps:** update dependency registry.ole-hartwig.eu/devops/images/franken-php/ci to v3.3.15
+
 ## [1.11.1](https://github.com/ohartwig/grundschutz-worksheets/compare/v1.11.0...v1.11.1) (2026-11-24)
 
 ### :repeat: Continuous Integrations
